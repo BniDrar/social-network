@@ -1,22 +1,12 @@
 package server
 
 import (
-	"io"
-	"log"
-	"os"
 	config "socialNetwork/pkg/config"
+	"socialNetwork/pkg/loger"
 )
 
 const secret string = "Forum01Oujda"
 
 func Run(cfg *config.Conf)  {
-	// Prepare logger
-	file, err := os.OpenFile("logfile.log", os.O_APPEND|os.O_RDWR|os.O_CREATE, 0o644)
-	if err != nil {
-		log.Panic("cannot create log file: ", err)
-	}
-	defer file.Close()
-	logWriter := io.MultiWriter(file, os.Stdout)
-	log.SetOutput(logWriter)
-
+	loger.NewLogger().Info.Println("Starting server on port: ", cfg.API.Port)
 }
