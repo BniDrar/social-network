@@ -14,11 +14,12 @@ func main() {
 	if err != nil {
 		Log.Error.Panicln("error while reading config file\n", err)
 	}
-  // run migrations
-	err = Db.RunMigrations()
-	if err != nil {
-		loger.NewLogger().Error.Fatalln("error while running migrations\n", err)
-	}
+  // connect to database
+  // db, err = Db.InitDB() // when you decide to use the database connection remove the comment
+  // if err != nil {
+  //   Log.Error.Panicln("error while connecting to database\n", err)
+  // }
+  
 	// run server
 	app.Run(c)
 }

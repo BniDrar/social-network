@@ -15,6 +15,26 @@ import (
 	"socialNetwork/pkg/loger"
 )
 
+
+
+// init database
+func InitDB() (*sql.DB, error) {
+	config, err := config.NewConfig()
+	if err != nil {
+		log.Fatal(err)
+	}
+	db, err := sql.Open(config.Database.Driver, config.Database.FileName)
+	if err != nil {
+		return nil, fmt.Errorf("could not open database: %w", err)
+	}
+	//  run migrations
+	if err := RunMigrations(); err != nil {
+		return nil, fmt.Errorf("could not run migrations: %w", err)
+	}
+	loger.NewLogger().Info.Println("Database connected")
+	return db, nil
+}
+
 // MigrateDB migrates the database to the latest version
 func RunMigrations() error {
     config, err := config.NewConfig()
