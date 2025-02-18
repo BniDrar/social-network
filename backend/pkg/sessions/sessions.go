@@ -3,7 +3,7 @@ package scs
 import (
 	"context"
 	"log"
-	"myforum/internal/sessions/memstore"
+	"socialNetwork/pkg/sessions/memstore"
 	"net/http"
 	"time"
 )
