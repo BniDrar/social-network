@@ -1,0 +1,11 @@
+CREATE TABLE IF NOT EXISTS event (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    group_id INTEGER,
+    user_id INTEGER,
+    title TEXT NOT NULL,
+    description TEXT,
+    event_time TIMESTAMP,
+    create_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (group_id) REFERENCES "group"(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE
+);

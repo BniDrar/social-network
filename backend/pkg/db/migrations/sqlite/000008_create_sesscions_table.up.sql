@@ -1,0 +1,8 @@
+CREATE TABLE IF NOT EXISTS session (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER,
+    token TEXT NOT NULL,
+    data TEXT,
+    expiry TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE
+);
