@@ -1,4 +1,4 @@
-package chat
+package comment
 
 import "socialNetwork/pkg/websocket"
 
@@ -7,8 +7,8 @@ type Service struct {
 	hub *websocket.Hub
 }
 
+
+
 func NewService(repo *Repository, hub *websocket.Hub) *Service {
 	return &Service{repo: repo, hub: hub}
 }
-
-//loop

@@ -1,4 +1,4 @@
-package chat
+package comment
 
 import "database/sql"
 
