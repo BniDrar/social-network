@@ -2,6 +2,7 @@ package user
 
 import (
 	"database/sql"
+	"fmt"
 	"net/http"
 )
 
@@ -26,7 +27,9 @@ func NewUser(db *sql.DB) User {
 
 func (u *user) Login(w http.ResponseWriter, r *http.Request) {}
 
-func (u *user) Register(w http.ResponseWriter, r *http.Request) {}
+func (u *user) Register(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprint(w, "something")
+}
 
 func (u *user) Logout(w http.ResponseWriter, r *http.Request) {}
 

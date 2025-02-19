@@ -7,3 +7,6 @@ type Service struct {
 func NewService(repo *Repository) *Service {
 	return &Service{repo: repo}
 }
+
+
+//repo hub(notif)

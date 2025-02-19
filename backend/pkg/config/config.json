@@ -6,6 +6,6 @@
   "database": {
     "driver": "sqlite3",
     "fileName": "socialNetwork.db",
-    "schemeDir": "pkg/db/migrations/sqlite"
+    "schemeDir": "pkg/database/migrations/sqlite"
   }
 }

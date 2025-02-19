@@ -18,12 +18,9 @@ import (
 
 
 // init database
-func InitDB() (*sql.DB, error) {
-	config, err := config.NewConfig()
-	if err != nil {
-		log.Fatal(err)
-	}
-	db, err := sql.Open(config.Database.Driver, config.Database.FileName)
+func InitDB(dbConf config.Database) (*sql.DB, error) {
+
+	db, err := sql.Open(dbConf.Driver, dbConf.FileName)
 	if err != nil {
 		return nil, fmt.Errorf("could not open database: %w", err)
 	}
@@ -43,7 +40,7 @@ func RunMigrations() error {
     }
     
     workDir, err := os.Getwd()
-		loger.NewLogger().Info.Println("Working directory: ", workDir)
+	loger.NewLogger().Info.Println("Working directory: ", workDir)
     if err != nil {
         return fmt.Errorf("failed to get working directory: %w", err)
     }

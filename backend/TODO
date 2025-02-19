@@ -1,10 +1,4 @@
-<<<<<<< HEAD
 create the router
 the middlewares
 initialize the handlers
 create the types in all the modules
-=======
-<!-- learn more about the migrations   || Done by melfihry -->
-<!-- create the migrations            ||Done by melfihry  -->
-create the sql pkg
->>>>>>> migrations

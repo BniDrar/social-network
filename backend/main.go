@@ -3,7 +3,6 @@ package main
 import (
 	app "socialNetwork/internal/server"
 	config "socialNetwork/pkg/config"
-	Db "socialNetwork/pkg/db"
 	loger "socialNetwork/pkg/loger"
 )
 

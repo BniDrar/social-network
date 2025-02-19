@@ -1,0 +1,24 @@
+INFO: 2025/02/19 14:17:12 sqlite.go:43: Working directory:  /home/kali/Desktop/social-network/backend
+2025/02/19 14:17:12 error occured while connecting database: could not run migrations: could not create migrate instance: failed to open source, "file:///home/kali/Desktop/social-network/backend/pkg/db/migrations/sqlite": open .: no such file or directory
+INFO: 2025/02/19 14:18:07 sqlite.go:43: Working directory:  /home/kali/Desktop/social-network/backend
+2025/02/19 14:18:07 error occured while connecting database: could not run migrations: could not create migrate instance: failed to open source, "file:///home/kali/Desktop/social-network/backend/pkg/db/migrations/sqlite": open .: no such file or directory
+2025/02/19 14:18:29 &{0xc00004a0f0 0xc00004a100 0xc00004a118 0xc00004a130}
+2025/02/19 14:18:29 [32mServer is running...🚀
+Link: 🌐 http://localhost:8080
+INFO: 2025/02/19 14:20:05 sqlite.go:43: Working directory:  /home/kali/Desktop/social-network/backend
+2025/02/19 14:20:05 error occured while connecting database: could not run migrations: could not create migrate instance: failed to open source, "file:///home/kali/Desktop/social-network/backend/pkg/db/migrations/sqlite": open .: no such file or directory
+2025/02/19 14:20:43 error occured while connecting database: could not run migrations: could not create migrate instance: failed to open source, "file:///home/kali/Desktop/social-network/backend/pkg/db/migrations/sqlite": open .: no such file or directory
+2025/02/19 14:22:49 error occured while connecting database: could not run migrations: could not apply migrations: no such table: main.sessions in line 0: CREATE INDEX idx_follows_following ON follows(following_user_id);
+CREATE INDEX idx_follows_followed ON follows(followed_user_id);
+CREATE INDEX idx_post_user ON post(user_id);
+CREATE INDEX idx_comment_post ON comment(post_id);
+CREATE INDEX idx_comment_user ON comment(user_id);
+CREATE INDEX idx_message_chat ON message(chat_id);
+CREATE INDEX idx_message_sender ON message(sender_id);
+CREATE INDEX idx_message_receiver ON message(receiver_id);
+-- Create an index on the expiry column for faster queries
+CREATE INDEX sessions_expiry_idx ON sessions (expiry);
+
+-- Consider adding these performance-improving indexes if needed:
+-- CREATE INDEX idx_post_created_at ON post(created_at DESC);
+-- CREATE INDEX idx_message_created_at ON message(created_at DESC);
