@@ -9,8 +9,12 @@ import (
 type Route struct {
 	Path    string
 	handler http.HandlerFunc
-	Role    uint
+	Role    uint 
 }
+const (
+	Auth uint = iota
+	User
+)
 
 func (app *App) InitRoutes(conf *config.Conf) *http.ServeMux {
 	mux := http.NewServeMux()
@@ -26,7 +30,12 @@ func (app *App) createRoutes() []Route {
 		{
 			Path:    "/api/register",
 			handler: app.Register,
-			Role:    0,
+			Role:    Auth,
+		},
+		{
+			Path: 	"/api/login",
+			handler: app.Login,
+			Role: 	Auth,
 		},
 	}
 }

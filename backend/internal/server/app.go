@@ -45,7 +45,6 @@ func Run(cfg *config.Conf) {
 		}
 	}()
 	app := NewApp(db)
-	log.Print(app)
 	server := new(Server)
 	// Start listening server
 	log.Fatalf("error occured while listening server: %s", server.Run(&cfg.API, app.InitRoutes(cfg)))
