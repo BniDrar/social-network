@@ -1,6 +1,7 @@
 package server
 
 import (
+	"fmt"
 	"net/http"
 
 	"socialNetwork/pkg/config"
@@ -9,18 +10,25 @@ import (
 type Route struct {
 	Path    string
 	handler http.HandlerFunc
-	Role    uint 
+	Role    uint
 }
+
 const (
 	Auth uint = iota
 	User
 )
 
-func (app *App) InitRoutes(conf *config.Conf) *http.ServeMux {
+func (app *App) InitRoutes(conf *config.Conf) http.Handler {
 	mux := http.NewServeMux()
 	routes := app.createRoutes()
 	for _, route := range routes {
-		mux.Handle(route.Path, route.handler)
+		if requireLogin(route.Role) {
+			fmt.Println("require login")
+			mux.Handle(route.Path, app.sessionManager.LoadAndSave(app.authenticate(app.requireAuthentication(http.HandlerFunc(route.handler)))))
+		} else {
+			fmt.Println("doesnt' require logging")
+			mux.Handle(route.Path, route.handler)
+		}
 	}
 	return mux
 }
@@ -30,12 +38,16 @@ func (app *App) createRoutes() []Route {
 		{
 			Path:    "/api/register",
 			handler: app.Register,
-			Role:    Auth,
+			Role:    User,
 		},
 		{
-			Path: 	"/api/login",
+			Path:    "/api/login",
 			handler: app.Login,
-			Role: 	Auth,
+			Role:    Auth,
 		},
 	}
+}
+
+func requireLogin(Auth uint) bool {
+	return Auth == User
 }

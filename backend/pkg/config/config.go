@@ -3,12 +3,15 @@ package config
 import (
 	"encoding/json"
 	"os"
+
+	scs "socialNetwork/pkg/sessions"
 )
 
 type (
 	Conf struct {
-		API      API      `json:"api"`
-		Database Database `json:"database"`
+		API            API      `json:"api"`
+		Database       Database `json:"database"`
+		SessionManager *scs.SessionManager
 	}
 
 	API struct {
@@ -31,5 +34,6 @@ func NewConfig() (*Conf, error) {
 	if err := json.NewDecoder(file).Decode(&newConfig); err != nil {
 		return nil, err
 	}
+
 	return &newConfig, nil
 }

@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"net/http"
+
 	"socialNetwork/entity"
 )
 
@@ -14,6 +15,7 @@ type User interface {
 	Profile(w http.ResponseWriter, r *http.Request)
 	Follow(w http.ResponseWriter, r *http.Request)
 	Followers(w http.ResponseWriter, r *http.Request)
+	Exists(id uint) (bool, error)
 }
 
 type user struct {
@@ -49,11 +51,11 @@ func (u *user) Login(w http.ResponseWriter, r *http.Request) {
 	}
 	// send response and set token in cookie
 	http.SetCookie(w, &http.Cookie{
-		Name: "token",
+		Name:  "token",
 		Value: token,
 	})
 	w.Header().Set("Content-Type", "application/json")
-  w.WriteHeader(status)
+	w.WriteHeader(status)
 }
 
 func (u *user) Register(w http.ResponseWriter, r *http.Request) {
@@ -69,7 +71,7 @@ func (u *user) Register(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
 		return
 	}
-	err,status := u.serv.Register(User)
+	err, status := u.serv.Register(User)
 	if err != nil {
 		w.WriteHeader(status)
 		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
@@ -86,3 +88,8 @@ func (u *user) Profile(w http.ResponseWriter, r *http.Request) {}
 func (u *user) Follow(w http.ResponseWriter, r *http.Request) {}
 
 func (u *user) Followers(w http.ResponseWriter, r *http.Request) {}
+
+func (s *user) Exists(id uint) (bool, error) {
+	// do something
+	return false, nil
+}

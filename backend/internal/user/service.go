@@ -4,6 +4,7 @@ import (
 	"errors"
 	"log"
 	"net/http"
+
 	"socialNetwork/entity"
 	"socialNetwork/pkg/utils"
 )
@@ -24,7 +25,7 @@ func (s *Service) Login(user entity.Credentials) (string, error, int) {
 	// get user from db
 	u, err := s.repo.GetUserByUsername(user.Username)
 	if err != nil {
-		return "",errors.New("invalid username or password"), http.StatusBadRequest
+		return "", errors.New("invalid username or password"), http.StatusBadRequest
 	}
 	// compare password
 	utils.ComparePasswords(u.Password, user.Password)
@@ -38,7 +39,7 @@ func (s *Service) Login(user entity.Credentials) (string, error, int) {
 
 func (s *Service) Register(user entity.User) (error, int) {
 	// check credentials
-	if err :=utils.ValidateRegisterCredentials(user); err != nil {
+	if err := utils.ValidateRegisterCredentials(user); err != nil {
 		return err, http.StatusBadRequest
 	}
 	// hash password
@@ -84,4 +85,9 @@ func (s *Service) Follow(user entity.User) error {
 func (s *Service) Followers(user entity.User) error {
 	// do something
 	return nil
+}
+
+func (s *Service) Exists(user uint) bool {
+	// do something
+	return false
 }
