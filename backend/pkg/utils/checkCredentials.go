@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/mail"
 	"regexp"
+	"strings"
 	"unicode"
 
 	"socialNetwork/entity"
@@ -31,8 +32,8 @@ func ValidateRegisterCredentials(user entity.User) error {
 	if !isValidNickName(user.Nickname) {
 		return fmt.Errorf("invalid nickname")
 	}
-	if ok, err := isValidateEmail(user.Email); !ok {
-		return fmt.Errorf("invalid email %v", err)
+	if !isValidateEmail(user.Email){
+		return fmt.Errorf("invalid email %v", user.Email)
 	}
 	if !isValidPassWord(user.Password) {
 		return fmt.Errorf("invalid password")
@@ -42,22 +43,31 @@ func ValidateRegisterCredentials(user entity.User) error {
 
 // this if know if the user enter email or nickname in the username field and validate it
 func ValidateUsername(username string) error {
-	if ok, err := isValidateEmail(username); ok {
-		return fmt.Errorf("invalid email%v", err)
-	}
-	if !isValidNickName(username) {
-		return fmt.Errorf("invalid nickname")
-	}
-	return nil
+    // Check if input looks like an email (contains @)
+    if strings.Contains(username, "@") {
+        if isValidateEmail(username) {
+            return nil
+        }
+        return fmt.Errorf("invalid email format: %s (example: user@domain.com)", username)
+    }
+
+    // If no @, treat as nickname
+    if isValidNickName(username) {
+        return nil
+    }
+    return fmt.Errorf("invalid nickname format: %s (must be 4-20 alphanumeric characters)", username)
 }
 
 // this function is used to validate the email
-func isValidateEmail(email string) (bool, error) {
-	_, err := mail.ParseAddress(email)
+func isValidateEmail(email string) bool {
+	m, err := mail.ParseAddress(email)
 	if err != nil {
-		return false, err
+		return false
 	}
-	return true, nil
+	if m.Address != email {
+		return false
+	}
+	return true
 }
 
 // this function is used to validate the password
@@ -91,13 +101,18 @@ func isValidPassWord(password string) bool {
 
 // this function is used to validate the username
 func isValidNickName(name string) bool {
-	if len(name) < 3 {
-		return false
-	}
-	if ok, _ := regexp.MatchString("^[a-zA-Z0-9]{4,16}$", name); !ok {
-		return false
-	}
-	return true
+    if name == "" || len(name) < 5 || len(name) > 20 {
+        return false
+    }
+    // Compile regex once at package level for better performance
+    var nickNameRegex = regexp.MustCompile(`^[a-zA-Z0-9][a-zA-Z0-9.]*[a-zA-Z0-9]$`)
+    // Early exit if pattern doesn't match
+    if !nickNameRegex.MatchString(name) {
+        return false
+    }
+
+    // Check for consecutive periods
+    return !strings.Contains(name, "..")
 }
 
 // this function is used to compare the hashed password with the plain password

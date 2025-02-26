@@ -18,7 +18,7 @@ func NewRepo(db *sql.DB) *Repository {
 
 // this function is used to get user by username
 func (r *Repository) GetUserByUsername(username string) (entity.User, error) {
-	query := `SELECT * FROM users WHERE username = $1 OR email = $1`
+	query := `SELECT * FROM user WHERE Nickname = $1 OR Email = $1`
 	var user entity.User
 	stmt, err := r.db.Prepare(query)
 	if err != nil {

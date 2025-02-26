@@ -36,41 +36,46 @@ func (u *user) Login(w http.ResponseWriter, r *http.Request) {
 	var User entity.Credentials
 	err := json.NewDecoder(r.Body).Decode(&User)
 	if err != nil {
-		http.Error(w, "Error while parsing request", http.StatusBadRequest)
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
 		return
 	}
 	// call service
 	token, err, status := u.serv.Login(User)
 	if err != nil {
-		http.Error(w, err.Error(), status)
+		w.WriteHeader(status)
+		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
 		return
 	}
 	// send response and set token in cookie
 	http.SetCookie(w, &http.Cookie{
-		Name: token,
+		Name: "token",
 		Value: token,
 	})
-  w.WriteHeader(http.StatusOK)
+	w.Header().Set("Content-Type", "application/json")
+  w.WriteHeader(status)
 }
 
 func (u *user) Register(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
 	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Method not allowed"})
 		return
 	}
 	User := entity.User{}
 	err := json.NewDecoder(r.Body).Decode(&User)
 	if err != nil {
-		http.Error(w, "Error while parsing request", http.StatusBadRequest)
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
 		return
 	}
 	err,status := u.serv.Register(User)
 	if err != nil {
-		http.Error(w, err.Error(), status)
+		w.WriteHeader(status)
+		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
 		return
 	}
-
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
 }
 

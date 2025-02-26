@@ -1,6 +1,7 @@
 package user
 
 import (
+	"errors"
 	"log"
 	"net/http"
 	"socialNetwork/entity"
@@ -23,14 +24,14 @@ func (s *Service) Login(user entity.Credentials) (string, error, int) {
 	// get user from db
 	u, err := s.repo.GetUserByUsername(user.Username)
 	if err != nil {
-		return "", err, http.StatusUnauthorized
+		return "",errors.New("invalid username or password"), http.StatusBadRequest
 	}
 	// compare password
 	utils.ComparePasswords(u.Password, user.Password)
 	// generate token
 	token, err := utils.GenerateToken()
 	if err != nil {
-		return "", err, http.StatusInternalServerError
+		return "", errors.New("internal server error"), http.StatusInternalServerError
 	}
 	return token, nil, http.StatusOK
 }
@@ -46,6 +47,16 @@ func (s *Service) Register(user entity.User) (error, int) {
 		return err, http.StatusInternalServerError
 	}
 	user.Password = hashedPassword
+	// chek if user Email already exists
+	_, err = s.repo.GetUserByUsername(user.Email)
+	if err == nil {
+		return errors.New("email already exists"), http.StatusBadRequest
+	}
+	// check if user Nickname already exists
+	_, err = s.repo.GetUserByUsername(user.Nickname)
+	if err == nil {
+		return errors.New("nickname already exists"), http.StatusBadRequest
+	}
 	// save user to db
 	err = s.repo.CreateUser(user)
 	if err != nil {
