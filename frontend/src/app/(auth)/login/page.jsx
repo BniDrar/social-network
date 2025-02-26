@@ -9,6 +9,7 @@ export default function page() {
       <form>
         <input id='username' required placeholder='enter email or username'> </input>
         <input type='password' required placeholder='enter your password' />
+        <button type = 'submit'>Login</button>
       </form>
     </div>
   )
