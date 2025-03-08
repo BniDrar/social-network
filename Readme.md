@@ -2,6 +2,7 @@
 // Docs: https://dbml.dbdiagram.io/docs
 //link: https://dbdiagram.io/d/67a6742f263d6cf9a06e3470
 // creating a web hood and now testing
+// /some not change
 Table follows {
   following_user_id integer [ref: > user.id] // Reference to user id
   followed_user_id integer [ref: > user.id] // Reference to user id
