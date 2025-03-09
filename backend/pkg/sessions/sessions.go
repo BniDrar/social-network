@@ -230,6 +230,3 @@ func (sw *sessionResponseWriter) WriteHeader(code int) {
 	sw.ResponseWriter.WriteHeader(code)
 }
 
-func (sw *sessionResponseWriter) Unwrap() http.ResponseWriter {
-	return sw.ResponseWriter
-}
