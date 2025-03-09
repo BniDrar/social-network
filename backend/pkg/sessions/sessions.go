@@ -3,13 +3,10 @@ package scs
 import (
 	"context"
 	"log"
-	"socialNetwork/pkg/sessions/memstore"
 	"net/http"
+	"socialNetwork/pkg/sessions/memstore"
 	"time"
 )
-
-// Deprecated: Session is a backwards-compatible alias for SessionManager.
-type Session = SessionManager
 
 // SessionManager holds the configuration settings for your sessions.
 type SessionManager struct {
@@ -122,7 +119,6 @@ func New() *SessionManager {
 // the client in a cookie.
 func (s *SessionManager) LoadAndSave(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Add("Vary", "Cookie")
 
 		var token string
 		cookie, err := r.Cookie(s.Cookie.Name)
@@ -132,7 +128,7 @@ func (s *SessionManager) LoadAndSave(next http.Handler) http.Handler {
 		// Load retrieves the session data for the given token from the session store,
 		// and returns a new context.Context containing the session data. If no matching
 		// token is found then this will create a new session.
-		ctx, err := s.Load(r.Context(), token)
+		ctx, err := s.Load(r.Context(), token) // adds session data to context
 		if err != nil {
 			s.ErrorFunc(w, r, err)
 			return
@@ -195,7 +191,7 @@ func (s *SessionManager) WriteSessionCookie(ctx context.Context, w http.Response
 	if expiry.IsZero() {
 		cookie.Expires = time.Unix(1, 0)
 		cookie.MaxAge = -1
-	} else if s.Cookie.Persist || s.GetBool(ctx, "__rememberMe") {
+	} else if s.Cookie.Persist {
 		cookie.Expires = time.Unix(expiry.Unix()+1, 0)        // Round up to the nearest second.
 		cookie.MaxAge = int(time.Until(expiry).Seconds() + 1) // Round up to the nearest second.
 	}

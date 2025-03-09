@@ -51,17 +51,17 @@ func newSessionData(lifetime time.Duration) *sessionData {
 // use this method.
 func (s *SessionManager) Load(ctx context.Context, token string) (context.Context, error) {
 	if _, ok := ctx.Value(s.contextKey).(*sessionData); ok {
-		return ctx, nil // if session exist skip
+		return ctx, nil // if session exist in the context skip
 	}
 
-	if token == "" {
+	if token == "" { // there is notthig to retrieve from database
 		return s.addSessionDataToContext(ctx, newSessionData(s.Lifetime)), nil //  handle messing session
 	}
-
+	// find the session from the database
 	b, found, err := s.doStoreFind(token)
 	if err != nil {
 		return nil, err
-	} else if !found {
+	} else if !found { // create a new session 
 		return s.addSessionDataToContext(ctx, newSessionData(s.Lifetime)), nil
 	}
 
