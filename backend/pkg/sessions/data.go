@@ -158,7 +158,6 @@ func (s *SessionManager) Status(ctx context.Context) Status {
 	return sd.status
 }
 
-
 type contextKey string
 
 func generateToken() string {
@@ -185,24 +184,6 @@ func (s *SessionManager) doStoreDelete(ctx context.Context, token string) (err e
 		return c.DeleteCtx(ctx, token)
 	}
 	return s.Store.Delete(token)
-}
-
-// Remove deletes the given key and corresponding value from the session data.
-// The session data status will be set to Modified. If the key is not present
-// this operation is a no-op.
-func (s *SessionManager) Remove(ctx context.Context, key string) {
-	sd := s.getSessionDataFromContext(ctx)
-
-	sd.mu.Lock()
-	defer sd.mu.Unlock()
-
-	_, exists := sd.values[key]
-	if !exists {
-		return
-	}
-
-	delete(sd.values, key)
-	sd.status = Modified
 }
 
 // Exists returns true if the given key is present in the session data.
