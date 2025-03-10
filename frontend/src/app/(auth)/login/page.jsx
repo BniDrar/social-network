@@ -7,8 +7,9 @@ export default function page() {
     <div>
       <h1>zellcode</h1>
       <form>
-        <input id='username' required placeholder='enter email or username'> </input>
-        <input type='password' required placeholder='enter your password' />
+        <input id='username' placeholder='enter email or username' required/>
+        <input type='password' placeholder='enter your password' required/> 
+        <button type = 'submit'>Login</button>
       </form>
     </div>
   )

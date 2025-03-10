@@ -5,10 +5,11 @@ import (
 	"encoding/json"
 	"net/http"
 
+	scs "socialNetwork/pkg/sessions"
+
 	"socialNetwork/entity"
 	"socialNetwork/pkg/config"
 	"socialNetwork/pkg/loger"
-	scs "socialNetwork/pkg/sessions"
 	"socialNetwork/pkg/websocket"
 )
 
@@ -91,7 +92,29 @@ func (u *user) Register(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(status)
 }
 
-func (u *user) Logout(w http.ResponseWriter, r *http.Request) {}
+func (u *user) Logout(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		// app.clientError(w, http.StatusMethodNotAllowed)
+		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	// Use the RenewToken() method on the current session to change the session
+	// ID again. for  session fixation attacks
+	// err := u.SessionManger.RenewToken(r.Context())
+	// if err != nil {
+	// 	http.Error(w, "Method Not Allowed", http.StatusInternalServerError)
+	// 	// app.serverError(w, err)
+	// 	return
+	// }
+	// Remove the authenticatedUserID from the session data so that the user is
+	// 'logged out'.
+	u.sessionManager.Remove(r.Context(), "authenticatedUserID")
+	// Add a flash message to the session to confirm to the user that they've been
+	// logged out.
+	u.sessionManager.Put(r.Context(), "flash", "You've been logged out successfully!")
+	// Redirect the user to the application home page.
+	// http.Redirect(w, r, "/", http.StatusSeeOther)
+}
 
 func (u *user) Profile(w http.ResponseWriter, r *http.Request) {}
 
