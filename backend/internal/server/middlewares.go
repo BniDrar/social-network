@@ -5,11 +5,9 @@ import (
 	"fmt"
 	"net/http"
 	"runtime/debug"
+
+	"socialNetwork/entity"
 )
-
-type contextKey string
-
-const isAuthenticatedContextKey = contextKey("isAuthenticated")
 
 func secureHeaders(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -100,7 +98,7 @@ func (app *App) authenticate(next http.Handler) http.Handler {
 		// create a new copy of the request (with an isAuthenticatedContextKey
 		// value of true in the request context) and assign it to r.
 		if exists {
-			ctx := context.WithValue(r.Context(), isAuthenticatedContextKey, true)
+			ctx := context.WithValue(r.Context(), entity.IsAuthenticatedContextKey, true)
 			r = r.WithContext(ctx)
 		}
 		// Call the next handler in the chain.
@@ -115,7 +113,7 @@ func (app *App) authenticate(next http.Handler) http.Handler {
 //		return app.sessionManager.Exists(r.Context(), "authenticatedUserID")
 //	}
 func (app *App) isAuthenticated(r *http.Request) bool {
-	isAuthenticated, ok := r.Context().Value(isAuthenticatedContextKey).(bool)
+	isAuthenticated, ok := r.Context().Value(entity.IsAuthenticatedContextKey).(bool)
 	if !ok {
 		return false
 	}
