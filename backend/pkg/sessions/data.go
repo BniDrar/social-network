@@ -51,17 +51,17 @@ func newSessionData(lifetime time.Duration) *sessionData {
 // use this method.
 func (s *SessionManager) Load(ctx context.Context, token string) (context.Context, error) {
 	if _, ok := ctx.Value(s.contextKey).(*sessionData); ok {
-		return ctx, nil // if session exist skip
+		return ctx, nil // if session exist in the context skip
 	}
 
-	if token == "" {
+	if token == "" { // there is notthig to retrieve from database
 		return s.addSessionDataToContext(ctx, newSessionData(s.Lifetime)), nil //  handle messing session
 	}
-
+	// find the session from the database
 	b, found, err := s.doStoreFind(token)
 	if err != nil {
 		return nil, err
-	} else if !found {
+	} else if !found { // create a new session
 		return s.addSessionDataToContext(ctx, newSessionData(s.Lifetime)), nil
 	}
 
@@ -158,31 +158,6 @@ func (s *SessionManager) Status(ctx context.Context) Status {
 	return sd.status
 }
 
-// GetBool returns the bool value for a given key from the session data. The
-// zero value for a bool (false) is returned if the key does not exist or the
-// value could not be type asserted to a bool.
-func (s *SessionManager) GetBool(ctx context.Context, key string) bool {
-	val := s.Get(ctx, key)
-	b, ok := val.(bool)
-	if !ok {
-		return false
-	}
-	return b
-}
-
-// PopString returns the string value for a given key and then deletes it from the
-// session data. The session data status will be set to Modified. The zero
-// value for a string ("") is returned if the key does not exist or the value
-// could not be type asserted to a string.
-func (s *SessionManager) PopString(ctx context.Context, key string) string {
-	val := s.Pop(ctx, key)
-	str, ok := val.(string)
-	if !ok {
-		return ""
-	}
-	return str
-}
-
 type contextKey string
 
 func generateToken() string {
@@ -209,55 +184,6 @@ func (s *SessionManager) doStoreDelete(ctx context.Context, token string) (err e
 		return c.DeleteCtx(ctx, token)
 	}
 	return s.Store.Delete(token)
-}
-
-// RenewToken updates the session data to have a new session token while
-// retaining the current session data. The session lifetime is also reset and
-// the session data status will be set to Modified.
-//
-// The old session token and accompanying data are deleted from the session store.
-//
-// To mitigate the risk of session fixation attacks, it's important that you call
-// RenewToken before making any changes to privilege levels (e.g. login and
-// logout operations). See https://github.com/OWASP/CheatSheetSeries/blob/master/cheatsheets/Session_Management_Cheat_Sheet.md#renew-the-session-id-after-any-privilege-level-change
-// for additional information.
-func (s *SessionManager) RenewToken(ctx context.Context) error {
-	sd := s.getSessionDataFromContext(ctx)
-
-	sd.mu.Lock()
-	defer sd.mu.Unlock()
-
-	if sd.token != "" {
-		err := s.doStoreDelete(ctx, sd.token)
-		if err != nil {
-			return err
-		}
-	}
-
-	newToken := generateToken()
-	sd.token = newToken
-	sd.deadline = time.Now().Add(s.Lifetime).UTC()
-	sd.status = Modified
-
-	return nil
-}
-
-// Remove deletes the given key and corresponding value from the session data.
-// The session data status will be set to Modified. If the key is not present
-// this operation is a no-op.
-func (s *SessionManager) Remove(ctx context.Context, key string) {
-	sd := s.getSessionDataFromContext(ctx)
-
-	sd.mu.Lock()
-	defer sd.mu.Unlock()
-
-	_, exists := sd.values[key]
-	if !exists {
-		return
-	}
-
-	delete(sd.values, key)
-	sd.status = Modified
 }
 
 // Exists returns true if the given key is present in the session data.
