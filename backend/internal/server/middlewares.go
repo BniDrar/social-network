@@ -99,6 +99,7 @@ func (app *App) authenticate(next http.Handler) http.Handler {
 		// value of true in the request context) and assign it to r.
 		if exists {
 			ctx := context.WithValue(r.Context(), entity.IsAuthenticatedContextKey, true)
+			ctx = context.WithValue(ctx, entity.ContextID, id)
 			r = r.WithContext(ctx)
 		}
 		// Call the next handler in the chain.
