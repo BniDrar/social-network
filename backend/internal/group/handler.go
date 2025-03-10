@@ -3,6 +3,10 @@ package group
 import (
 	"database/sql"
 	"net/http"
+
+	"socialNetwork/pkg/config"
+	"socialNetwork/pkg/loger"
+	"socialNetwork/pkg/websocket"
 )
 
 type Group interface {
@@ -10,13 +14,13 @@ type Group interface {
 }
 
 type group struct {
-	Service *Service
+	Hub   *websocket.Hub
+	db    *sql.DB
+	loger loger.CstmLogger
 }
 
-func NewGroup(db *sql.DB) Group {
-	repo := NewRepo(db)
-	serv := NewService(repo)
-	return &group{Service: serv}
+func NewGroup(dep *config.Dependencies) Group {
+	return &group{db: dep.DB, loger: *dep.Loger, Hub: dep.Hub}
 }
 
 func (g *group) Group(w http.ResponseWriter, r *http.Request) {}

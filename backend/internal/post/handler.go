@@ -3,6 +3,10 @@ package post
 import (
 	"database/sql"
 	"net/http"
+
+	"socialNetwork/pkg/config"
+	"socialNetwork/pkg/loger"
+	"socialNetwork/pkg/websocket"
 )
 
 type Post interface {
@@ -12,15 +16,14 @@ type Post interface {
 }
 
 type post struct {
-	serv *Service
+	Hub   *websocket.Hub
+	db    *sql.DB
+	loger loger.CstmLogger
 }
 
-func Newpost(db *sql.DB) Post {
-	repo:= NewRepo(db)
-	serv:= NewService(repo)
-	return &post{serv: serv}
+func Newpost(dep *config.Dependencies) Post {
+	return &post{db: dep.DB, loger: *dep.Loger, Hub: dep.Hub}
 }
-
 
 func (u *post) GetPosts(w http.ResponseWriter, r *http.Request) {}
 

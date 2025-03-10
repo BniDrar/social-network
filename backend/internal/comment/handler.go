@@ -3,11 +3,16 @@ package comment
 import (
 	"database/sql"
 	"net/http"
+
+	"socialNetwork/pkg/config"
+	"socialNetwork/pkg/loger"
 	"socialNetwork/pkg/websocket"
 )
 
 type comment struct {
-	serv *Service
+	Hub   *websocket.Hub
+	db    *sql.DB
+	loger loger.CstmLogger
 }
 
 type Comment interface {
@@ -16,10 +21,9 @@ type Comment interface {
 	Vote(w http.ResponseWriter, r *http.Request)
 }
 
-func NewComment(db *sql.DB, hub *websocket.Hub) Comment {
-	repo:= NewRepo(db)
-	serv:= NewService(repo, hub)
-	return &comment{serv: serv}
+/*               app     */
+func NewComment(dep *config.Dependencies) Comment {
+	return &comment{db: dep.DB, loger: *dep.Loger, Hub: dep.Hub}
 }
 
 func (c *comment) Post(w http.ResponseWriter, r *http.Request) {}

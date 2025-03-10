@@ -1,10 +1,13 @@
 package config
 
 import (
+	"database/sql"
 	"encoding/json"
 	"os"
 
+	"socialNetwork/pkg/loger"
 	scs "socialNetwork/pkg/sessions"
+	"socialNetwork/pkg/websocket"
 )
 
 type (
@@ -22,6 +25,13 @@ type (
 		Driver    string `json:"driver"`
 		FileName  string `json:"fileName"`
 		SchemeDir string `json:"schemeDir"`
+	}
+
+	Dependencies struct {
+		Loger          *loger.CstmLogger
+		DB             *sql.DB
+		SessionManager *scs.SessionManager
+		Hub            *websocket.Hub
 	}
 )
 

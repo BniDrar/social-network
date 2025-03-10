@@ -6,7 +6,18 @@ import (
 	"net/http"
 
 	"socialNetwork/entity"
+	"socialNetwork/pkg/config"
+	"socialNetwork/pkg/loger"
+	scs "socialNetwork/pkg/sessions"
+	"socialNetwork/pkg/websocket"
 )
+
+type user struct {
+	db             *sql.DB
+	hub            *websocket.Hub
+	loger          *loger.CstmLogger
+	sessionManager *scs.SessionManager
+}
 
 type User interface {
 	Login(w http.ResponseWriter, r *http.Request)
@@ -18,14 +29,13 @@ type User interface {
 	Exists(id uint) (bool, error)
 }
 
-type user struct {
-	serv *Service
-}
-
-func NewUser(db *sql.DB) User {
-	repo := NewRepo(db)
-	serv := NewService(repo)
-	return &user{serv: serv}
+func NewUser(dep *config.Dependencies) User {
+	return &user{
+		db:             dep.DB,
+		hub:            dep.Hub,
+		loger:          dep.Loger,
+		sessionManager: dep.SessionManager,
+	}
 }
 
 func (u *user) Login(w http.ResponseWriter, r *http.Request) {
@@ -43,7 +53,7 @@ func (u *user) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// call service
-	token, err, status := u.serv.Login(User)
+	token, err, status := u.LoginService(User)
 	if err != nil {
 		w.WriteHeader(status)
 		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
@@ -71,7 +81,7 @@ func (u *user) Register(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
 		return
 	}
-	err, status := u.serv.Register(User)
+	err, status := u.RegisterService(User)
 	if err != nil {
 		w.WriteHeader(status)
 		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})

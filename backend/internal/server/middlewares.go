@@ -27,7 +27,7 @@ func secureHeaders(next http.Handler) http.Handler {
 
 func (app *App) logRequest(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		app.infoLog.Printf("%s - %s %s %s", r.RemoteAddr, r.Proto, r.Method, r.URL.RequestURI())
+		app.Loger.Info.Printf("%s - %s %s %s", r.RemoteAddr, r.Proto, r.Method, r.URL.RequestURI())
 		next.ServeHTTP(w, r)
 	})
 }
@@ -80,7 +80,7 @@ func (app *App) authenticate(next http.Handler) http.Handler {
 		// GetInt() method. This will return the zero value for an int (0) if no
 		// "authenticatedUserID" value is in the session -- in which case we
 		// call the next handler in the chain as normal and return.
-		id := app.sessionManager.GetInt(r.Context(), "authenticatedUserID")
+		id := app.SessionManager.GetInt(r.Context(), "authenticatedUserID")
 		fmt.Println(id)
 		if id == 0 {
 			next.ServeHTTP(w, r)
@@ -126,7 +126,7 @@ func (app *App) isAuthenticated(r *http.Request) bool {
 // then sends a generic 500 Internal Server Error response to the user.
 func (app *App) serverError(w http.ResponseWriter, err error) {
 	trace := fmt.Sprintf("%s\n%s", err.Error(), debug.Stack())
-	app.errorLog.Output(2, trace)
+	app.Loger.Error.Output(2, trace)
 
 	http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 }
