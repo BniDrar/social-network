@@ -1,1 +1,1 @@
-DROP TABLE engagement;
+DROP TABLE reaction;

@@ -1,7 +1,7 @@
-CREATE TABLE IF NOT EXISTS group_members (
+CREATE TABLE IF NOT EXISTS chat_members (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     member_id INTEGER,
-    group_id INTEGER,
-    FOREIGN KEY (member_id) REFERENCES user(id) ON DELETE CASCADE,
-    FOREIGN KEY (group_id) REFERENCES "group"(id) ON DELETE CASCADE
+    chat_id INTEGER,
+    FOREIGN KEY (member_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (chat_id) REFERENCES chat(id) ON DELETE CASCADE
 );

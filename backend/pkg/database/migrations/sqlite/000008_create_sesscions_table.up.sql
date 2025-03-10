@@ -4,5 +4,5 @@ CREATE TABLE IF NOT EXISTS sessions (
     token TEXT NOT NULL,
     data TEXT,
     expiry TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );

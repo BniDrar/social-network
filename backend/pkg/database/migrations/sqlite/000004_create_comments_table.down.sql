@@ -1,1 +1,1 @@
-DROP TABLE comment;
+DROP TABLE comments;

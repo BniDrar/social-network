@@ -1,1 +1,1 @@
-DROP TABLE group_members;
+DROP TABLE chat_members;

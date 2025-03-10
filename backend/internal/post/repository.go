@@ -1,7 +1,8 @@
 package post
 
-import "database/sql"
-
+import (
+	"database/sql"
+)
 
 type Repository struct {
 	db *sql.DB
@@ -9,4 +10,7 @@ type Repository struct {
 
 func NewRepo(db *sql.DB) *Repository {
 	return &Repository{db: db}
+}
+
+func (repo *Repository) CreatePost(post) {
 }
