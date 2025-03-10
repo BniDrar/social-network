@@ -34,6 +34,7 @@ func Run(cfg *config.Conf) {
 		log.Printf("cannot create log file: %v", err)
 	}
 	defer file.Close()
+
 	logWriter := io.MultiWriter(file, os.Stdout)
 	log.SetOutput(logWriter)
 
@@ -51,6 +52,7 @@ func Run(cfg *config.Conf) {
 			log.Println("db closed")
 		}
 	}()
+
 	// Use the scs.New() function to initialize a new session manager. Then we
 	// configure it to use our MySQL database as the session store, and set a
 	// lifetime of 12 hours (so that sessions automatically expire 12 hours
@@ -59,20 +61,20 @@ func Run(cfg *config.Conf) {
 	sessionManager.Store = store.New(db)
 	sessionManager.Lifetime = 12 * time.Hour
 
-	app := NewApp(db)
+	app := NewApp(db, sessionManager)
 	app.sessionManager = sessionManager
 	server := new(Server)
 	// Start listening server
 	log.Fatalf("error occured while listening server: %s", server.Run(&cfg.API, app.InitRoutes(cfg)))
 }
 
-func NewApp(db *sql.DB) *App {
+func NewApp(db *sql.DB, s *scs.SessionManager) *App {
 	hub := websocket.NewHub()
 	return &App{
 		Comment:  comment.NewComment(db, hub),
 		Chat:     chat.NewChat(db, hub),
 		Group:    group.NewGroup(db /* we need to add the hub to group*/),
-		User:     user.NewUser(db /* we need to add the hub*/),
+		User:     user.NewUser(db /* we need to add the hub*/, s),
 		infoLog:  log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime),
 		errorLog: log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile),
 	}

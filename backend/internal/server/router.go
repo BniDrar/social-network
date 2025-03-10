@@ -45,6 +45,11 @@ func (app *App) createRoutes() []Route {
 			handler: app.Login,
 			Role:    Auth,
 		},
+		{
+			Path:    "/api/logout",
+			handler: app.Logout,
+			Role:    User,
+		},
 	}
 }
 
