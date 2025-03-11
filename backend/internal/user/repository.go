@@ -13,7 +13,7 @@ import (
 
 // this function is used to get user by username
 func (r *user) GetUserByUsername(username string) (entity.User, error) {
-	query := `SELECT * FROM user WHERE Nickname = $1 OR Email = $1`
+	query := `SELECT * FROM users WHERE nickname = $1 OR email = $1`
 	var user entity.User
 	stmt, err := r.db.Prepare(query)
 	if err != nil {
@@ -42,7 +42,7 @@ func (r *user) GetUserByUsername(username string) (entity.User, error) {
 
 func (u *user) CheckIfExist(Field string, value any) bool {
 	Exist := false
-	Query := fmt.Sprintf("SELECT COUNT(1) FROM user WHERE %s = %s", Field, value)
+	Query := fmt.Sprintf("SELECT COUNT(1) FROM users WHERE %s = %s", Field, value)
 	u.db.QueryRow(Query).Scan(&Exist)
 	return Exist
 }
@@ -50,18 +50,18 @@ func (u *user) CheckIfExist(Field string, value any) bool {
 // this function is used to create new user
 func (u *user) CreateUser(user entity.User) error {
 	// ok, err := u.IsExistsService(int(user.ID))
-	ok := u.CheckIfExist("Nickname", user.Nickname)
+	ok := u.CheckIfExist("nickname", user.Nickname)
 	if ok {
 		return config.ErrUserAlreadyExists
 	}
-	query := `INSERT INTO user(
+	query := `INSERT INTO users(
 						Email,
 						Password,
-						First,
-						Last,
-						Date_Of_Birth,
+						first_name,
+						last_name,
+						birthday,
 						Nickname,
-						About_Me,
+						about_me,
 						Avatar)
 						VALUES($1, $2, $3, $4, $5, $6, $7, $8)`
 	stmt, err := u.db.Prepare(query)
@@ -88,11 +88,11 @@ func (r *user) UpdateUser(user entity.User) error {
 	query := `UPDATE users SET
 						Email = $1,
 						Password = $2,
-						First = $3,
-						Last = $4,
-						Date_Of_Birth = $5,
-						Nickname = $6,
-						About_Me = $7
+						first_name = $3,
+						last_name = $4,
+						birthday = $5,
+						nick_name = $6,
+						about_me = $7
 						WHERE id = $8`
 	stmt, err := r.db.Prepare(query)
 	if err != nil {
