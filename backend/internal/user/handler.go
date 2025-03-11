@@ -3,6 +3,7 @@ package user
 import (
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"net/http"
 
 	scs "socialNetwork/pkg/sessions"
@@ -53,20 +54,40 @@ func (u *user) Login(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
 		return
 	}
-	// call service
-	token, err, status := u.LoginService(User)
+
+	id, err := u.Authenticate(User.Username, User.Password)
 	if err != nil {
-		w.WriteHeader(status)
-		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
+		if errors.Is(err, config.ErrInvalidCredentials) {
+			// w.Write([]byte("Invalid Credentials"))
+			http.Error(w, "Invalid Credentials", http.StatusBadRequest)
+			return
+		} else {
+			// app.serverError(w, err)
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		}
 		return
 	}
-	// send response and set token in cookie
-	http.SetCookie(w, &http.Cookie{
-		Name:  "token",
-		Value: token,
-	})
+	err = u.sessionManager.RenewToken(r.Context())
+	if err != nil {
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+	}
+	u.sessionManager.Put(r.Context(), string(entity.ContextID), id)
+
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(status)
+	w.Write([]byte("user is logged in succesfully"))
+	// call service
+	// token, err, status := u.LoginService(User)
+	// if err != nil {
+	// 	w.WriteHeader(status)
+	// 	json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
+	// 	return
+	// }
+	// // send response and set token in cookie
+	// http.SetCookie(w, &http.Cookie{
+	// 	Name:  "token",
+	// 	Value: token,
+	// })
+	// w.WriteHeader(status)
 }
 
 func (u *user) Register(w http.ResponseWriter, r *http.Request) {

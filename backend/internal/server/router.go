@@ -26,8 +26,7 @@ func (app *App) InitRoutes(conf *config.Conf) http.Handler {
 			fmt.Println("require login")
 			mux.Handle(route.Path, app.SessionManager.LoadAndSave(app.authenticate(app.requireAuthentication(http.HandlerFunc(route.handler)))))
 		} else {
-			fmt.Println("doesnt' require logging")
-			mux.Handle(route.Path, route.handler)
+			mux.Handle(route.Path, app.SessionManager.LoadAndSave(app.authenticate(http.HandlerFunc(route.handler))))
 		}
 	}
 	return mux
@@ -38,7 +37,7 @@ func (app *App) createRoutes() []Route {
 		{
 			Path:    "/api/register",
 			handler: app.User.Register,
-			Role:    User,
+			Role:    Auth,
 		},
 		{
 			Path:    "/api/login",
