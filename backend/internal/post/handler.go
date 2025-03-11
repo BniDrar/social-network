@@ -65,6 +65,7 @@ func (u *post) GetPosts(w http.ResponseWriter, r *http.Request) {
 	w.Write(data)
 }
 
+/*             NextJs                */
 func (u *post) React(w http.ResponseWriter, r *http.Request) {
 	id := r.Context().Value(entity.ContextID).(int)
 	prep, err := u.db.PrepareContext(r.Context(), ``)
