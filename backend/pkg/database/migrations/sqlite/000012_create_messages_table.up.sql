@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS messages (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    chat_id INTEGER,
+    -- chat_id INTEGER,
     sender_id INTEGER,
     group_id INTEGER,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
