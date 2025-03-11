@@ -52,17 +52,14 @@ func (app *App) recoverPanic(next http.Handler) http.Handler {
 
 func (app *App) requireAuthentication(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		fmt.Println("in middleware")
 		// If the user is not authenticated, redirect them to the login page and
 		// return from the middleware chain so that no subsequent handlers in
 		// the chain are executed.
 		if !app.isAuthenticated(r) {
-			fmt.Println("use is not authenticated")
 			w.WriteHeader(http.StatusForbidden)
 			//			http.Redirect(w, r, "api/login", http.StatusSeeOther)
 			return
 		}
-		fmt.Println("use is authenticated ")
 		// Otherwise set the "Cache-Control: no-store" header so that pages
 		// require authentication are not stored in the users browser cache (or
 		// other intermediary cache).
@@ -79,7 +76,6 @@ func (app *App) authenticate(next http.Handler) http.Handler {
 		// "authenticatedUserID" value is in the session -- in which case we
 		// call the next handler in the chain as normal and return.
 		id := app.SessionManager.GetInt(r.Context(), "authenticatedUserID")
-		fmt.Println(id)
 		if id == 0 {
 			next.ServeHTTP(w, r)
 			return
@@ -87,7 +83,6 @@ func (app *App) authenticate(next http.Handler) http.Handler {
 		// Otherwise, we check to see if a user with that ID exists in our
 		// database.
 		exists, err := app.User.Exists(uint(id))
-		fmt.Println(exists)
 		if err != nil {
 			fmt.Println("err1")
 			app.serverError(w, err)

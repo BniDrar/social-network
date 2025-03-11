@@ -11,38 +11,32 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 
 	"socialNetwork/pkg/config"
-	"socialNetwork/pkg/loger"
 )
 
 // init database
 func InitDB(dbConf config.Database) (*sql.DB, error) {
-	fmt.Println(dbConf.FileName)
 	db, err := sql.Open(dbConf.Driver, dbConf.FileName)
 	if err != nil {
 		return nil, fmt.Errorf("could not open database: %w", err)
 	}
 	//  run migrations
-	if err := RunMigrations(dbConf); err != nil {
+	if err := RunMigrations(dbConf, db); err != nil {
 		return nil, fmt.Errorf("could not run migrations: %w", err)
 	}
-	loger.NewLogger().Info.Println("Database connected")
 	return db, nil
 }
 
 // MigrateDB migrates the database to the latest version
-func RunMigrations(Database config.Database) error {
+func RunMigrations(Database config.Database, db *sql.DB) error {
 	workDir, err := os.Getwd()
-	loger.NewLogger().Info.Println("Working directory: ", workDir)
 	if err != nil {
 		return fmt.Errorf("failed to get working directory: %w", err)
 	}
 	sourceURL := fmt.Sprintf("file://%s/%s", workDir, Database.SchemeDir)
 	// Open the database connection
-	db, err := sql.Open(Database.Driver, Database.FileName)
 	if err != nil {
 		return fmt.Errorf("could not open database: %w", err)
 	}
-	defer db.Close()
 
 	// Create the SQLite driver instance
 	driver, err := sqlite3.WithInstance(db, &sqlite3.Config{})

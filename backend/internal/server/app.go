@@ -1,7 +1,6 @@
 package server
 
 import (
-	"testing"
 	"time"
 
 	"socialNetwork/internal/chat"
@@ -35,7 +34,7 @@ func NewApp(dep *config.Dependencies) *App {
 	}
 }
 
-func NewTestApplication(t *testing.T) (*App, *config.Conf) {
+func NewTestApplication() (*App, *config.Conf) {
 	loger := loger.NewLogger()
 	// And a form decoder.
 	// formDecoder := form.NewDecoder()
@@ -51,13 +50,11 @@ func NewTestApplication(t *testing.T) (*App, *config.Conf) {
 	if err != nil {
 		loger.Error.Panicln("error while reading config file\n", err)
 	}
-	loger.Info.Println(cfg.TestDatabase)
 	db, err := database.InitDB(cfg.TestDatabase)
 	if err != nil {
 		loger.Error.Panicf("error occured while connecting database: %s", err.Error())
 	}
-	loger.Info.Println("data base opened")
-	defer db.Close()
+	// defer db.Close()
 
 	dep := &config.Dependencies{
 		SessionManager: sessionManager,

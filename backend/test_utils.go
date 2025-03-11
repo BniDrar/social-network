@@ -75,3 +75,23 @@ func (ts *testServer) postForm(t *testing.T, urlPath string, form url.Values) (i
 	// Return the response status, headers and body.
 	return rs.StatusCode, rs.Header, string(body)
 }
+
+func (ts *testServer) postJSON(t *testing.T, urlPath string, body []byte) (int, http.Header, string) {
+	req, err := http.NewRequest(http.MethodPost, ts.URL+urlPath, bytes.NewBuffer(body))
+	if err != nil {
+		t.Fatal(err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	rs, err := ts.Client().Do(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer rs.Body.Close()
+
+	bodyBytes, err := io.ReadAll(rs.Body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return rs.StatusCode, rs.Header, string(bodyBytes)
+}
