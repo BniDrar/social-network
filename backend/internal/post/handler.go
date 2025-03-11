@@ -71,7 +71,12 @@ func (u *post) React(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		return
 	}
-	_, err = prep.Exec(id)
+	react := entity.PostReaction{}
+	err = json.NewDecoder(r.Body).Decode(&react)
+	if err != nil {
+		return
+	}
+	_, err = prep.Exec(id, react.ID, react.Status)
 	if err != nil {
 		return
 	}
