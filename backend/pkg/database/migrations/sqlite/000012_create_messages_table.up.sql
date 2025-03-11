@@ -1,13 +1,11 @@
-CREATE TABLE IF NOT EXISTS message (
+CREATE TABLE IF NOT EXISTS messages (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     chat_id INTEGER,
-    receiver_id INTEGER,
     sender_id INTEGER,
-    "group" INTEGER,
+    group_id INTEGER,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     content TEXT,
-    FOREIGN KEY (chat_id) REFERENCES chat(id) ON DELETE CASCADE,
-    FOREIGN KEY (receiver_id) REFERENCES user(id) ON DELETE CASCADE,
-    FOREIGN KEY (sender_id) REFERENCES user(id) ON DELETE CASCADE,
-    FOREIGN KEY ("group") REFERENCES "group"(id) ON DELETE CASCADE
+    -- FOREIGN KEY (chat_id) REFERENCES chat(id) ON DELETE CASCADE,
+    FOREIGN KEY (sender_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (group_id) REFERENCES groups(id) ON DELETE CASCADE
 );

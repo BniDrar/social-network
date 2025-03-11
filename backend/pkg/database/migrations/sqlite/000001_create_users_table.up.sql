@@ -1,12 +1,12 @@
-CREATE TABLE IF NOT EXISTS user (
+CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    Email TEXT NOT NULL UNIQUE,
-    Password TEXT NOT NULL,
-    First TEXT,
-    Last TEXT,
-    Date_Of_Birth DATETIME,
-    Avatar BLOB,
-    Nickname TEXT UNIQUE,
-    About_Me TEXT,
+    email TEXT NOT NULL UNIQUE,
+    password TEXT NOT NULL,
+    first_name TEXT,
+    last_name TEXT,
+    birthday DATETIME,
+    avatar BLOB,
+    nickname TEXT UNIQUE,
+    about_me TEXT,
     status INTEGER DEFAULT 0  -- 0: private, 1: global
 );

@@ -34,10 +34,6 @@ func InitDB(dbConf config.Database) (*sql.DB, error) {
 
 // MigrateDB migrates the database to the latest version
 func RunMigrations() error {
-    config, err := config.NewConfig()
-    if err != nil {
-        log.Fatal(err)
-    }
     
     workDir, err := os.Getwd()
 	loger.NewLogger().Info.Println("Working directory: ", workDir)
