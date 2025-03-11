@@ -51,11 +51,12 @@ func NewTestApplication(t *testing.T) (*App, *config.Conf) {
 	if err != nil {
 		loger.Error.Panicln("error while reading config file\n", err)
 	}
-
-	db, err := database.InitDB(cfg.Database)
+	loger.Info.Println(cfg.TestDatabase)
+	db, err := database.InitDB(cfg.TestDatabase)
 	if err != nil {
 		loger.Error.Panicf("error occured while connecting database: %s", err.Error())
 	}
+	loger.Info.Println("data base opened")
 	defer db.Close()
 
 	dep := &config.Dependencies{

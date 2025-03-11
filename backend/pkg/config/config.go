@@ -25,6 +25,7 @@ type (
 	Conf struct {
 		API            API      `json:"api"`
 		Database       Database `json:"database"`
+		TestDatabase   Database `json:"testdatabase"`
 		SessionManager *scs.SessionManager
 	}
 
@@ -38,6 +39,11 @@ type (
 		SchemeDir string `json:"schemeDir"`
 	}
 
+	TestDB struct {
+		Driver    string `json:"driver"`
+		FileName  string `json:"fileName"`
+		SchemeDir string `json:"schemeDir"`
+	}
 	Dependencies struct {
 		Loger          *loger.CstmLogger
 		DB             *sql.DB
