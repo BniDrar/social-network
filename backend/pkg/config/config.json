@@ -7,5 +7,10 @@
     "driver": "sqlite3",
     "fileName": "socialNetwork.db",
     "schemeDir": "pkg/database/migrations/sqlite"
+  },
+  "testdatabase": {
+    "driver": "sqlite3",
+    "fileName": "test.db",
+    "schemeDir": "pkg/database/migrations/sqlite"
   }
 }

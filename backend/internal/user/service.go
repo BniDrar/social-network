@@ -3,6 +3,7 @@ package user
 import (
 	"database/sql"
 	"errors"
+	"log"
 	"net/http"
 
 	"socialNetwork/entity"
@@ -35,27 +36,35 @@ func (s *user) LoginService(user entity.Credentials) (string, error, int) {
 func (s *user) RegisterService(user entity.User) (error, int) {
 	// check credentials
 	if err := utils.ValidateRegisterCredentials(user); err != nil {
+		log.Println("err 1")
 		return err, http.StatusBadRequest
 	}
 	// hash password
 	hashedPassword, err := utils.HashPassword(user.Password)
 	if err != nil {
+		log.Println("err 2")
 		return err, http.StatusInternalServerError
 	}
 	user.Password = hashedPassword
 	// chek if user Email already exists
 	_, err = s.GetUserByUsername(user.Email)
-	if err == nil {
+	if err != nil {
+		log.Println("err 3")
 		return errors.New("email already exists"), http.StatusBadRequest
 	}
 	// check if user Nickname already exists
 	_, err = s.GetUserByUsername(user.Nickname)
-	if err == nil {
+	if err != nil {
+		log.Println("err 4")
 		return errors.New("nickname already exists"), http.StatusBadRequest
 	}
 	// save user to db
 	err = s.CreateUser(user)
 	if err != nil {
+		if errors.Is(err, config.ErrUserAlreadyExists) {
+			return err, http.StatusBadRequest
+		}
+		log.Println("err 5", err)
 		return err, http.StatusInternalServerError
 	}
 	return nil, http.StatusCreated

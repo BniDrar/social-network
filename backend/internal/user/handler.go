@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"fmt"
+	"log"
 	"net/http"
 
 	scs "socialNetwork/pkg/sessions"
@@ -91,6 +93,7 @@ func (u *user) Login(w http.ResponseWriter, r *http.Request) {
 }
 
 func (u *user) Register(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("the user %q", r.Method)
 	if r.Method != http.MethodPost {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Method not allowed"})
@@ -99,12 +102,16 @@ func (u *user) Register(w http.ResponseWriter, r *http.Request) {
 	User := entity.User{}
 	err := json.NewDecoder(r.Body).Decode(&User)
 	if err != nil {
+		u.loger.Info.Println("error here ", err)
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
 		return
 	}
+	fmt.Println("--------------->", r.Context())
+	log.Printf("the user %q", User)
 	err, status := u.RegisterService(User)
 	if err != nil {
+		log.Println("here is the error", err)
 		w.WriteHeader(status)
 		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
 		return

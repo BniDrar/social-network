@@ -1,7 +1,12 @@
 package user
 
 import (
+	"database/sql"
+	"fmt"
+	"log"
+
 	"socialNetwork/entity"
+	"socialNetwork/pkg/config"
 )
 
 /*___________ THOS FUNCTIONS FOR AUTHENTICATION ___________*/
@@ -12,6 +17,7 @@ func (r *user) GetUserByUsername(username string) (entity.User, error) {
 	var user entity.User
 	stmt, err := r.db.Prepare(query)
 	if err != nil {
+		log.Println("err 21", err)
 		return user, err
 	}
 	err = stmt.QueryRow(username).Scan(
@@ -26,13 +32,28 @@ func (r *user) GetUserByUsername(username string) (entity.User, error) {
 		&user.AboutMe,
 		&user.Status)
 	if err != nil {
-		return user, err
+		if err != sql.ErrNoRows {
+			log.Println("err 22", err)
+			return user, err
+		}
 	}
 	return user, nil
 }
 
+func (u *user) CheckIfExist(Field string, value any) bool {
+	Exist := false
+	Query := fmt.Sprintf("SELECT COUNT(1) FROM user WHERE %s = %s", Field, value)
+	u.db.QueryRow(Query).Scan(&Exist)
+	return Exist
+}
+
 // this function is used to create new user
-func (r *user) CreateUser(user entity.User) error {
+func (u *user) CreateUser(user entity.User) error {
+	// ok, err := u.IsExistsService(int(user.ID))
+	ok := u.CheckIfExist("Nickname", user.Nickname)
+	if ok {
+		return config.ErrUserAlreadyExists
+	}
 	query := `INSERT INTO user(
 						Email,
 						Password,
@@ -43,7 +64,7 @@ func (r *user) CreateUser(user entity.User) error {
 						About_Me,
 						Avatar)
 						VALUES($1, $2, $3, $4, $5, $6, $7, $8)`
-	stmt, err := r.db.Prepare(query)
+	stmt, err := u.db.Prepare(query)
 	if err != nil {
 		return err
 	}
