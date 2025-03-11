@@ -49,6 +49,11 @@ func (app *App) createRoutes() []Route {
 			handler: app.Logout,
 			Role:    User,
 		},
+		{
+			Path:    "/ping",
+			handler: ping,
+			Role:    Auth,
+		},
 	}
 }
 
