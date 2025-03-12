@@ -41,56 +41,6 @@ func NewUser(dep *config.Dependencies) User {
 	}
 }
 
-func (u *user) Login(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
-	// get user data from request
-	var User entity.Credentials
-	err := json.NewDecoder(r.Body).Decode(&User)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
-		return
-	}
-
-	id, err := u.Authenticate(User.Username, User.Password)
-	if err != nil {
-		if errors.Is(err, config.ErrInvalidCredentials) {
-			// w.Write([]byte("Invalid Credentials"))
-			http.Error(w, "Invalid Credentials", http.StatusBadRequest)
-			return
-		} else {
-			// app.serverError(w, err)
-			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-		}
-		return
-	}
-	err = u.sessionManager.RenewToken(r.Context())
-	if err != nil {
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-	}
-	u.sessionManager.Put(r.Context(), string(entity.ContextID), id)
-
-	w.Header().Set("Content-Type", "application/json")
-	w.Write([]byte("user is logged in succesfully"))
-	// call service
-	// token, err, status := u.LoginService(User)
-	// if err != nil {
-	// 	w.WriteHeader(status)
-	// 	json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
-	// 	return
-	// }
-	// // send response and set token in cookie
-	// http.SetCookie(w, &http.Cookie{
-	// 	Name:  "token",
-	// 	Value: token,
-	// })
-	// w.WriteHeader(status)
-}
-
 func (u *user) Register(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		w.WriteHeader(http.StatusMethodNotAllowed)
@@ -113,6 +63,59 @@ func (u *user) Register(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
+}
+
+func (u *user) Login(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// get user data from request
+	var User entity.Credentials
+	err := json.NewDecoder(r.Body).Decode(&User)
+	if err != nil {
+		u.loger.Error.Println(err)
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
+		return
+	}
+
+	id, err := u.Authenticate(User.Username, User.Password)
+	if err != nil {
+		u.loger.Error.Println(err)
+		if errors.Is(err, config.ErrInvalidCredentials) {
+			// w.Write([]byte("Invalid Credentials"))
+			http.Error(w, "Invalid Credentials", http.StatusBadRequest)
+			return
+		} else {
+			// app.serverError(w, err)
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		}
+		return
+	}
+	err = u.sessionManager.RenewToken(r.Context())
+	if err != nil {
+		u.loger.Error.Println(err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+	}
+	u.sessionManager.Put(r.Context(), string(entity.ContextID), id)
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write([]byte("user is logged in succesfully"))
+	// call service
+	// token, err, status := u.LoginService(User)
+	// if err != nil {
+	// 	w.WriteHeader(status)
+	// 	json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
+	// 	return
+	// }
+	// // send response and set token in cookie
+	// http.SetCookie(w, &http.Cookie{
+	// 	Name:  "token",
+	// 	Value: token,
+	// })
+	// w.WriteHeader(status)
 }
 
 func (u *user) Logout(w http.ResponseWriter, r *http.Request) {

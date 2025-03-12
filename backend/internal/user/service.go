@@ -69,12 +69,14 @@ func (s *user) RegisterService(user entity.User) (int, error) {
 // the provided email address and password. This will return the relevant
 // user ID if they do.
 func (u *user) Authenticate(email, password string) (int, error) {
+	// u.loger.Info.Println("email:", email)
+	// u.loger.Info.Println("password:", password)
 	// Retrieve the id and hashed password associated with the given email. If
 	// no matching email exists we return the ErrInvalidCredentials error.
 	var id int
 	var hashedPassword []byte
-	stmt := "SELECT id, hashed_password FROM users WHERE email = ? OR username = ?"
-	err := u.db.QueryRow(stmt, email).Scan(&id, &hashedPassword)
+	stmt := "SELECT id, password FROM users WHERE email = ? OR nickname  = ?"
+	err := u.db.QueryRow(stmt, email, email).Scan(&id, &hashedPassword)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return 0, config.ErrInvalidCredentials
