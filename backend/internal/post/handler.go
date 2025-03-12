@@ -3,6 +3,7 @@ package post
 import (
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"socialNetwork/entity"
@@ -13,8 +14,8 @@ import (
 
 type Post interface {
 	Post(w http.ResponseWriter, r *http.Request)
-	GetPosts(w http.ResponseWriter, r *http.Request)
-	React(w http.ResponseWriter, r *http.Request)
+	// GetPosts(w http.ResponseWriter, r *http.Request)
+	// React(w http.ResponseWriter, r *http.Request)
 }
 
 type post struct {
@@ -40,78 +41,111 @@ func Newpost(dep *config.Dependencies) Post {
 }
 
 func (u *post) GetPosts(w http.ResponseWriter, r *http.Request) {
-	id := r.Context().Value(entity.ContextID).(int)
-	prep, err := u.db.PrepareContext(r.Context(), ``)
-	if err != nil {
-		return
-	}
-	posts := []entity.Post{}
-	res, err := prep.QueryContext(r.Context(), id)
-	if err != nil {
-		return
-	}
-	for res.Next() {
-		post := entity.Post{}
-		err := res.Scan(&post.ID, &post.UserID, &post.Title, &post.Content, &post.Image, &post.GroupID)
-		if err != nil {
-			continue
-		}
-		posts = append(posts, post)
-	}
-	data, err := json.Marshal(posts)
-	if err != nil {
-		return
-	}
-	w.Write(data)
+	// id := r.Context().Value(entity.ContextID).(int)
+	// prep, err := u.db.PrepareContext(r.Context(), ``)
+	// if err != nil {
+	// 	return
+	// }
+	// posts := []entity.Post{}
+	// res, err := prep.QueryContext(r.Context(), id)
+	// if err != nil {
+	// 	return
+	// }
+	// for res.Next() {
+	// 	post := entity.Post{}
+	// 	err := res.Scan(&post.ID, &post.UserID, &post.Title, &post.Content, &post.Image, &post.GroupID)
+	// 	if err != nil {
+	// 		continue
+	// 	}
+	// 	posts = append(posts, post)
+	// }
+	// data, err := json.Marshal(posts)
+	// if err != nil {
+	// 	return
+	// }
+	// w.Write(data)
 }
 
 /*             NextJs                */
 func (u *post) React(w http.ResponseWriter, r *http.Request) {
-	id := r.Context().Value(entity.ContextID).(int)
-	prep, err := u.db.PrepareContext(r.Context(), ``)
-	if err != nil {
-		return
-	}
-	react := entity.PostReaction{}
-	err = json.NewDecoder(r.Body).Decode(&react)
-	if err != nil {
-		return
-	}
-	_, err = prep.Exec(id, react.ID, react.Status)
-	if err != nil {
-		return
-	}
-	w.Write([]byte(`{
-		result: "done"
-	}`))
+	// id := r.Context().Value(entity.ContextID).(int)
+	// prep, err := u.db.PrepareContext(r.Context(), ``)
+	// if err != nil {
+	// 	return
+	// }
+	// react := entity.PostReaction{}
+	// err = json.NewDecoder(r.Body).Decode(&react)
+	// if err != nil {
+	// 	return
+	// }
+	// _, err = prep.Exec(id, react.ID, react.Status)
+	// if err != nil {
+	// 	return
+	// }
+	// w.Write([]byte(`{
+	// 	result: "done"
+	// }`))
 }
 
 func (u *post) Post(w http.ResponseWriter, r *http.Request) {
-	switch r.Method {
-	case "POST":
-		u.CreatePost(w, r)
-	case "GET":
-		u.GetPost(w, r)
-	default:
-		w.WriteHeader(http.StatusMethodNotAllowed)
-	}
+	// switch r.Method {
+	// case "POST":
+	// 	u.CreatePost(w, r)
+	// case "GET":
+	// 	u.GetPost(w, r)
+	// default:
+	// 	w.WriteHeader(http.StatusMethodNotAllowed)
+	// }
 }
 
-func (u *post) CreatePost(w http.ResponseWriter, r *http.Request) {
-	id := r.Context().Value(entity.ContextID).(int)
-	prep, err := u.db.PrepareContext(r.Context(), ``)
-	if err != nil {
+// func (u *post) CreatePost(w http.ResponseWriter, r *http.Request) {
+// 	id := r.Context().Value(entity.ContextID).(int)
+// 	prep, err := u.db.PrepareContext(r.Context(), ``)
+// 	if err != nil {
+// 		return
+// 	}
+// 	post := entity.Post{}
+// 	json.NewDecoder(r.Body).Decode(&post)
+// 	_, err = prep.Exec(id, post.Title, post.Content, post.Image, post.GroupID, post.Status)
+// 	if err != nil {
+// 		return
+// 	}
+// 	w.Write([]byte(`{
+// 		result: "done"
+// 	}`))
+// }
+
+func (p *post) Create(w http.ResponseWriter, r *http.Request) {
+	user_id, exist := r.Context().Value(entity.ContextID).(int)
+	if !exist {
+		p.loger.Error.Println("user doesn't exists")
+		w.WriteHeader(http.StatusForbidden) 
 		return
 	}
+
 	post := entity.Post{}
-	json.NewDecoder(r.Body).Decode(&post)
-	_, err = prep.Exec(id, post.Title, post.Content, post.Image, post.GroupID, post.Status)
-	if err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&post); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	w.Write([]byte(`{
-		result: "done"
-	}`))
+
+	post_id, status, err := p.CreatePostService(post, user_id)
+	if err != nil {
+		w. WriteHeader(status)
+		return
+	}
+
+	w.WriteHeader(status)
+	w.Write([]byte(fmt.Sprintf("{id: %v}", post_id)))
+}
+
+func (p *post) GetPostById (w http.ResponseWriter, r *http.Request) {
+	// UserID, exist:= r.Context().Value(entity.ContextID).(int)
+	// if !exist {
+	// 	w.WriteHeader(http.StatusForbidden)
+	// 	return
+	// }
+
 }
 
 func (u *post) GetPost(w http.ResponseWriter, r *http.Request) {

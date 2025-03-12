@@ -1,13 +1,13 @@
-CREATE TABLE IF NOT EXISTS post (
+CREATE TABLE IF NOT EXISTS posts (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     title TEXT,
     image BLOB,
     content TEXT,
     user_id INTEGER,
     status INTEGER DEFAULT 0, -- 0: private, 1: friends, 2: global
-    "group" INTEGER,
+    group_id INTEGER,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE,
-    FOREIGN KEY ("group") REFERENCES "group"(id) ON DELETE CASCADE
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (group_id) REFERENCES groups(id) ON DELETE CASCADE
 );

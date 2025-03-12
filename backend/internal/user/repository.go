@@ -12,7 +12,7 @@ import (
 
 // this function is used to get user by username
 func (r *user) GetUserByUsername(username string) (entity.User, error) {
-	query := `SELECT * FROM user WHERE Nickname = $1 OR Email = $1`
+	query := `SELECT * FROM users WHERE nickname = $1 OR email = $1`
 	var user entity.User
 	stmt, err := r.db.Prepare(query)
 	if err != nil {
@@ -49,14 +49,14 @@ func (u *user) CreateUser(user entity.User) error {
 	if ok {
 		return config.ErrUserAlreadyExists
 	}
-	query := `INSERT INTO user(
+	query := `INSERT INTO users(
 						Email,
 						Password,
-						First,
-						Last,
-						Date_Of_Birth,
+						first_name,
+						last_name,
+						birthday,
 						Nickname,
-						About_Me,
+						about_me,
 						Avatar)
 						VALUES($1, $2, $3, $4, $5, $6, $7, $8)`
 	stmt, err := u.db.Prepare(query)
@@ -83,11 +83,11 @@ func (r *user) UpdateUser(user entity.User) error {
 	query := `UPDATE users SET
 						Email = $1,
 						Password = $2,
-						First = $3,
-						Last = $4,
-						Date_Of_Birth = $5,
-						Nickname = $6,
-						About_Me = $7
+						first_name = $3,
+						last_name = $4,
+						birthday = $5,
+						nick_name = $6,
+						about_me = $7
 						WHERE id = $8`
 	stmt, err := r.db.Prepare(query)
 	if err != nil {
@@ -130,7 +130,7 @@ func (u *user) DeleteUserByNickName(nickName string) error {
 	if !ok {
 		return nil
 	}
-	query := `DELETE FROM user WHERE Nickname = $1`
+	query := `DELETE FROM users WHERE Nickname = $1`
 	stmt, err := u.db.Prepare(query)
 	if err != nil {
 		return err
@@ -161,7 +161,7 @@ func (r *user) CheckUserByEmail(email string) (bool, error) {
 
 // this function checks by username if the user exists
 func (r *user) CheckUserByUsername(username string) (bool, error) {
-	query := `SELECT EXISTS(SELECT 1 FROM user WHERE Nickname = $1)`
+	query := `SELECT EXISTS(SELECT 1 FROM users WHERE Nickname = $1)`
 	var exists bool
 	stmt, err := r.db.Prepare(query)
 	if err != nil {

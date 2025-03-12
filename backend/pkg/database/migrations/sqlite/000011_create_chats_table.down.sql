@@ -1,1 +1,1 @@
-DROP TABLE chat;
+-- DROP TABLE chat;
