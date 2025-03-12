@@ -262,10 +262,46 @@ func TestLogin(t *testing.T) {
 		wantCode int
 	}{
 		{
-			name:     "Valid submission",
+			name:     "Valid login with nickname",
 			nickname: existNeckName,
 			password: validPassword,
 			wantCode: http.StatusOK,
+		},
+		{
+			name:     "valid login with email",
+			nickname: existEmail,
+			password: validPassword,
+			wantCode: http.StatusOK,
+		},
+		{
+			name:     "Empty Nickname",
+			nickname: "",
+			password: validPassword,
+			wantCode: http.StatusBadRequest,
+		},
+		{
+			name:     "Empty Password",
+			nickname: existNeckName,
+			password: "",
+			wantCode: http.StatusBadRequest,
+		},
+		{
+			name:     "Empty Neck Name And Password",
+			nickname: "",
+			password: "",
+			wantCode: http.StatusBadRequest,
+		},
+		{
+			name:     "Wrgong nickname",
+			nickname: "MadeUpNeckname",
+			password: validPassword,
+			wantCode: http.StatusBadRequest,
+		},
+		{
+			name:     "Wrong Password",
+			nickname: existNeckName,
+			password: "MadeUpPassword",
+			wantCode: http.StatusBadRequest,
 		},
 	}
 	for _, tt := range tests {
@@ -289,6 +325,7 @@ func TestLogin(t *testing.T) {
 	}
 }
 
+// Helper functions
 // func TestPosts(t *testing.T) {
 // 	// Create a new instance of our application struct which uses the mocked
 // 	// dependencies.
