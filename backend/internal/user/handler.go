@@ -145,7 +145,23 @@ func (u *user) Logout(w http.ResponseWriter, r *http.Request) {
 	// http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
-func (u *user) Profile(w http.ResponseWriter, r *http.Request) {}
+func (u *user) Profile(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		w.WriteHeader(http.StatusMethodNotAllowed) 
+		return
+	}
+
+	nickname := r.URL.Query().Get("nickname")
+	status, user, err:= u.UserProfile(r.Context(), nickname)
+	if err != nil {
+		http.Error(w, err.Error(), status)
+	}
+
+	if err := json.NewEncoder(w).Encode(user); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+}
 
 func (u *user) Follow(w http.ResponseWriter, r *http.Request) {}
 

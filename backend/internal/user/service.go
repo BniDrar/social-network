@@ -1,6 +1,7 @@
 package user
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"log"
@@ -109,33 +110,37 @@ func (u *user) IsExistsService(id int) (bool, error) {
 	return exists, err
 }
 
-func (s *user) LogoutService(user entity.User) error {
+func (u *user) LogoutService(user entity.User) error {
 	// do something
 	return nil
 }
 
-func (s *user) ProfileService(user entity.User) error {
+func (u *user) UserProfile(ctx context.Context, nickname string) (int, user, error) {
+	u.CheckUserByUsername(nickname)
+	return 0, user{}, nil
+}
+
+func (u *user) FollowService(user entity.User) error {
 	// do something
 	return nil
 }
 
-func (s *user) FollowService(user entity.User) error {
+func (u *user) FollowersService(user entity.User) error {
 	// do something
 	return nil
 }
 
-func (s *user) FollowersService(user entity.User) error {
-	// do something
-	return nil
-}
-
-// func (s *user) IsExistsService(user uint) bool {
+// func (s *user) FollowersService(user entity.User) error {
 // 	// do something
-// 	return false
+// 	return nil
 // }
 
-func (s *user) DeleteUserService(user entity.User) error {
-	
-	return nil
-}
+// // func (s *user) IsExistsService(user uint) bool {
+// // 	// do something
+// // 	return false
+// // }
 
+// func (s *user) DeleteUserService(user entity.User) error {
+
+// 	return nil
+// }
