@@ -29,7 +29,7 @@ type User struct {
 }
 
 type Credentials struct {
-	Username string `json:"username"`
+	Username string `json:"nickname"`
 	Password string `json:"password"`
 }
 

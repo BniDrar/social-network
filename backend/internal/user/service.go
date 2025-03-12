@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 
 	"socialNetwork/entity"
@@ -15,73 +14,70 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func (s *user) LoginService(user entity.Credentials) (string, error, int) {
+func (s *user) LoginService(user entity.Credentials) (string, int, error) {
 	//  check credentials
 	if err := utils.ValidateLoginCredentials(user); err != nil {
-		return "", err, http.StatusBadRequest
+		return "", http.StatusBadRequest, err
 	}
 	// get user from db
 	u, err := s.GetUserByUsername(user.Username)
 	if err != nil {
-		return "", errors.New("invalid username or password"), http.StatusBadRequest
+		return "", http.StatusBadRequest, errors.New("invalid username or password")
 	}
 	// compare password
 	utils.ComparePasswords(u.Password, user.Password)
 	// generate token
 	token, err := utils.GenerateToken()
 	if err != nil {
-		return "", errors.New("internal server error"), http.StatusInternalServerError
+		return "", http.StatusInternalServerError, errors.New("internal server error")
 	}
-	return token, nil, http.StatusOK
+	return token, http.StatusOK, nil
 }
 
-func (s *user) RegisterService(user entity.User) (error, int) {
+func (s *user) RegisterService(user entity.User) (int, error) {
 	// check credentials
 	if err := utils.ValidateRegisterCredentials(user); err != nil {
-		log.Println("err 1")
-		return err, http.StatusBadRequest
+		return http.StatusBadRequest, err
 	}
 	// hash password
 	hashedPassword, err := utils.HashPassword(user.Password)
 	if err != nil {
-		log.Println("err 2")
-		return err, http.StatusInternalServerError
+		return http.StatusInternalServerError, err
 	}
 	user.Password = hashedPassword
 	// chek if user Email already exists
 	_, err = s.GetUserByUsername(user.Email)
 	if err != nil {
-		log.Println("err 3")
-		return errors.New("email already exists"), http.StatusBadRequest
+		return http.StatusBadRequest, errors.New("email already exists")
 	}
 	// check if user Nickname already exists
 	_, err = s.GetUserByUsername(user.Nickname)
 	if err != nil {
-		log.Println("err 4")
-		return errors.New("nickname already exists"), http.StatusBadRequest
+		return http.StatusBadRequest, errors.New("nickname already exists")
 	}
 	// save user to db
 	err = s.CreateUser(user)
 	if err != nil {
 		if errors.Is(err, config.ErrUserAlreadyExists) {
-			return err, http.StatusBadRequest
+			return http.StatusBadRequest, err
 		}
-		log.Println("err 5", err)
-		return err, http.StatusInternalServerError
+		return http.StatusInternalServerError, err
 	}
-	return nil, http.StatusCreated
+	return http.StatusCreated, nil
 }
 
 // We'll use the Authenticate method to verify whether a user exists with
 // the provided email address and password. This will return the relevant
 // user ID if they do.
 func (u *user) Authenticate(email, password string) (int, error) {
+	// u.loger.Info.Println("email:", email)
+	// u.loger.Info.Println("password:", password)
 	// Retrieve the id and hashed password associated with the given email. If
 	// no matching email exists we return the ErrInvalidCredentials error.
 	var id int
 	var hashedPassword []byte
-	stmt := "SELECT id, hashed_password FROM users WHERE email = ? OR username = ?"
-	err := u.db.QueryRow(stmt, email).Scan(&id, &hashedPassword)
+	stmt := "SELECT id, password FROM users WHERE email = ? OR nickname  = ?"
+	err := u.db.QueryRow(stmt, email, email).Scan(&id, &hashedPassword)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return 0, config.ErrInvalidCredentials
@@ -127,7 +123,7 @@ func (u *user) UserProfile(ctx context.Context, nickname string) (int, entity.Us
 	}
 	userId := ctx.Value(entity.ContextID).(int)
 	exists, err := u.isFollowedBy(userId, int(user.ID))
-	if err != nil && exists &&  userId == int(user.ID)  {
+	if err != nil && exists && userId == int(user.ID) {
 		return http.StatusInternalServerError, user, err
 	}
 	return http.StatusOK, user, nil
@@ -143,3 +139,16 @@ func (u *user) FollowersService(user entity.User) error {
 	return nil
 }
 
+// func (s *user) FollowersService(user entity.User) error {
+// 	// do something
+// 	return nil
+// }
+
+// func (s *user) IsExistsService(user uint) bool {
+// 	// do something
+// 	return false
+// }
+
+// func (s *user) DeleteUserService(user entity.User) error {
+// 	return nil
+// }

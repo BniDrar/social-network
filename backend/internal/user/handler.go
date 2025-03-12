@@ -4,8 +4,6 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
-	"fmt"
-	"log"
 	"net/http"
 
 	scs "socialNetwork/pkg/sessions"
@@ -30,6 +28,7 @@ type User interface {
 	Profile(w http.ResponseWriter, r *http.Request)
 	Follow(w http.ResponseWriter, r *http.Request)
 	Followers(w http.ResponseWriter, r *http.Request)
+	DeleteUserByNickName(Nickname string) error
 	Exists(id uint) (bool, error)
 }
 
@@ -42,6 +41,30 @@ func NewUser(dep *config.Dependencies) User {
 	}
 }
 
+func (u *user) Register(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Method not allowed"})
+		return
+	}
+	User := entity.User{}
+	err := json.NewDecoder(r.Body).Decode(&User)
+	if err != nil {
+		u.loger.Info.Println("error here ", err)
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
+		return
+	}
+	status, err := u.RegisterService(User)
+	if err != nil {
+		w.WriteHeader(status)
+		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+}
+
 func (u *user) Login(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -52,6 +75,7 @@ func (u *user) Login(w http.ResponseWriter, r *http.Request) {
 	var User entity.Credentials
 	err := json.NewDecoder(r.Body).Decode(&User)
 	if err != nil {
+		u.loger.Error.Println(err)
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
 		return
@@ -59,6 +83,7 @@ func (u *user) Login(w http.ResponseWriter, r *http.Request) {
 
 	id, err := u.Authenticate(User.Username, User.Password)
 	if err != nil {
+		u.loger.Error.Println(err)
 		if errors.Is(err, config.ErrInvalidCredentials) {
 			// w.Write([]byte("Invalid Credentials"))
 			http.Error(w, "Invalid Credentials", http.StatusBadRequest)
@@ -71,6 +96,7 @@ func (u *user) Login(w http.ResponseWriter, r *http.Request) {
 	}
 	err = u.sessionManager.RenewToken(r.Context())
 	if err != nil {
+		u.loger.Error.Println(err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 	}
 	u.sessionManager.Put(r.Context(), string(entity.ContextID), id)
@@ -90,34 +116,6 @@ func (u *user) Login(w http.ResponseWriter, r *http.Request) {
 	// 	Value: token,
 	// })
 	// w.WriteHeader(status)
-}
-
-func (u *user) Register(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("the user %q", r.Method)
-	if r.Method != http.MethodPost {
-		w.WriteHeader(http.StatusMethodNotAllowed)
-		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Method not allowed"})
-		return
-	}
-	User := entity.User{}
-	err := json.NewDecoder(r.Body).Decode(&User)
-	if err != nil {
-		u.loger.Info.Println("error here ", err)
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
-		return
-	}
-	fmt.Println("--------------->", r.Context())
-	log.Printf("the user %q", User)
-	err, status := u.RegisterService(User)
-	if err != nil {
-		log.Println("here is the error", err)
-		w.WriteHeader(status)
-		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
-		return
-	}
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(status)
 }
 
 func (u *user) Logout(w http.ResponseWriter, r *http.Request) {
@@ -146,12 +144,12 @@ func (u *user) Logout(w http.ResponseWriter, r *http.Request) {
 
 func (u *user) Profile(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
-		w.WriteHeader(http.StatusMethodNotAllowed) 
+		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
 
 	nickname := r.URL.Query().Get("nickname")
-	status, user, err:= u.UserProfile(r.Context(), nickname)
+	status, user, err := u.UserProfile(r.Context(), nickname)
 	if err != nil {
 		http.Error(w, err.Error(), status)
 	}
