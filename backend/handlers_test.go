@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"testing"
@@ -102,6 +101,7 @@ func TestRegister(t *testing.T) {
 		validName        = "chiwahed"
 		validPassword    = "validPa$$word1"
 		validEmail       = "hadak@example.com"
+		InvalidEmail     = "BadEmail"
 	)
 
 	tests := []struct {
@@ -124,53 +124,105 @@ func TestRegister(t *testing.T) {
 			dateOfBirth: validDateOfBirth,
 			wantCode:    http.StatusCreated,
 		},
+		{
+			name:        "Empty First Name",
+			nickname:    validNeckName,
+			email:       validEmail,
+			password:    validPassword,
+			first:       "",
+			last:        validLast,
+			dateOfBirth: validDateOfBirth,
+			wantCode:    http.StatusBadRequest,
+		},
+		{
+			name:        "Empty LastName",
+			nickname:    validNeckName,
+			email:       validEmail,
+			password:    validPassword,
+			first:       validFirst,
+			last:        "",
+			dateOfBirth: validDateOfBirth,
+			wantCode:    http.StatusBadRequest,
+		},
+		{
+			name:        "Empty NickName",
+			nickname:    "",
+			email:       validEmail,
+			password:    validPassword,
+			first:       validFirst,
+			last:        validLast,
+			dateOfBirth: validDateOfBirth,
+			wantCode:    http.StatusBadRequest,
+		},
+		{
+			name:        "Empty email",
+			nickname:    validNeckName,
+			email:       "",
+			password:    validPassword,
+			first:       validFirst,
+			last:        validLast,
+			dateOfBirth: validDateOfBirth,
+			wantCode:    http.StatusBadRequest,
+		},
+		{
+			name:        "Empty password",
+			nickname:    validNeckName,
+			email:       validEmail,
+			password:    "",
+			first:       validFirst,
+			last:        validLast,
+			dateOfBirth: validDateOfBirth,
+			wantCode:    http.StatusBadRequest,
+		},
+		{
+			name:        "Invalid email",
+			nickname:    validNeckName,
+			email:       InvalidEmail,
+			password:    validPassword,
+			first:       validFirst,
+			last:        validLast,
+			dateOfBirth: validDateOfBirth,
+			wantCode:    http.StatusBadRequest,
+		},
+		{
+			name:        "Short password",
+			nickname:    validNeckName,
+			email:       validEmail,
+			password:    "short",
+			first:       validFirst,
+			last:        validLast,
+			dateOfBirth: validDateOfBirth,
+			wantCode:    http.StatusBadRequest,
+		},
+		{
+			name:        "password With No Digit",
+			nickname:    validNeckName,
+			email:       validEmail,
+			password:    "passwordWithNoDigit",
+			first:       validFirst,
+			last:        validLast,
+			dateOfBirth: validDateOfBirth,
+			wantCode:    http.StatusBadRequest,
+		},
+		{
+			name:        "password_with_no_upper_case1",
+			nickname:    validNeckName,
+			email:       validEmail,
+			password:    validPassword,
+			first:       validFirst,
+			last:        validLast,
+			dateOfBirth: validDateOfBirth,
+			wantCode:    http.StatusBadRequest,
+		},
 		// {
-		// 	name:         "Empty name",
-		// 	userName:     "",
-		// 	userEmail:    validEmail,
-		// 	userPassword: validPassword,
-		// 	wantCode:     http.StatusUnprocessableEntity,
-		// 	wantFormTag:  formTag,
-		// },
-		// {
-		// 	name:         "Empty email",
-		// 	userName:     validName,
-		// 	userEmail:    "",
-		// 	userPassword: validPassword,
-		// 	wantCode:     http.StatusUnprocessableEntity,
-		// 	wantFormTag:  formTag,
-		// },
-		// {
-		// 	name:         "Empty password",
-		// 	userName:     validName,
-		// 	userEmail:    validEmail,
-		// 	userPassword: "",
-		// 	wantCode:     http.StatusUnprocessableEntity,
-		// 	wantFormTag:  formTag,
-		// },
-		// {
-		// 	name:         "Invalid email",
-		// 	userName:     validName,
-		// 	userEmail:    "bob@example.",
-		// 	userPassword: validPassword,
-		// 	wantCode:     http.StatusUnprocessableEntity,
-		// 	wantFormTag:  formTag,
-		// },
-		// {
-		// 	name:         "Short password",
-		// 	userName:     validName,
-		// 	userEmail:    validEmail,
-		// 	userPassword: "pa$$",
-		// 	wantCode:     http.StatusUnprocessableEntity,
-		// 	wantFormTag:  formTag,
-		// },
-		// {
-		// 	name:         "Duplicate email",
-		// 	userName:     validName,
-		// 	userEmail:    "dupe@example.com",
-		// 	userPassword: validPassword,
-		// 	wantCode:     http.StatusUnprocessableEntity,
-		// 	wantFormTag:  formTag,
+		// 	name:        "Duplicate email",
+		// 	nickname:    validNeckName,
+		// 	email:       ExistEmail,
+		// 	password:    validPassword,
+		// 	first:       validFirst,
+		// 	last:        validLast,
+		// 	dateOfBirth: validDateOfBirth,
+		// 	wantCode:    http.StatusBadRequest,
 		// },
 	}
 	for _, tt := range tests {
@@ -196,13 +248,12 @@ func TestRegister(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			code, _, body := ts.postJSON(t, "/api/register", jsonBody)
+			code, _, _ := ts.postJSON(t, "/api/register", jsonBody)
 
 			assert.Equal(t, code, tt.wantCode)
 			// if tt.wantFormTag != "" {
 			// 	assert.StringContains(t, body, tt.wantFormTag)
 			// }
-			fmt.Println("the response body:", body)
 			err = app.User.DeleteUserByNickName(tt.nickname)
 			if err != nil {
 				log.Println(err)

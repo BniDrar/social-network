@@ -2,7 +2,9 @@
 # run:
 # 	export ADDR=":9999" && go run ./cmd/web/ -addr=$$ADDR
 test:
-	go test -v 
+	# go test -v 
+	go test -v -failfast=false
+
 test-all:
 	go test -race 
 test-perf:
