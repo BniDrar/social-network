@@ -4,8 +4,6 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
-	"fmt"
-	"log"
 	"net/http"
 
 	scs "socialNetwork/pkg/sessions"
@@ -94,7 +92,6 @@ func (u *user) Login(w http.ResponseWriter, r *http.Request) {
 }
 
 func (u *user) Register(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("the user %q", r.Method)
 	if r.Method != http.MethodPost {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Method not allowed"})
@@ -108,11 +105,8 @@ func (u *user) Register(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
 		return
 	}
-	fmt.Println("--------------->", r.Context())
-	log.Printf("the user %q", User)
-	err, status := u.RegisterService(User)
+	status, err := u.RegisterService(User)
 	if err != nil {
-		log.Println("here is the error", err)
 		w.WriteHeader(status)
 		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
 		return
@@ -147,12 +141,12 @@ func (u *user) Logout(w http.ResponseWriter, r *http.Request) {
 
 func (u *user) Profile(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
-		w.WriteHeader(http.StatusMethodNotAllowed) 
+		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
 
 	nickname := r.URL.Query().Get("nickname")
-	status, user, err:= u.UserProfile(r.Context(), nickname)
+	status, user, err := u.UserProfile(r.Context(), nickname)
 	if err != nil {
 		http.Error(w, err.Error(), status)
 	}

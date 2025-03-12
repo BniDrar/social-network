@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"log"
 	"net/http"
 
 	"socialNetwork/entity"
@@ -14,61 +13,56 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func (s *user) LoginService(user entity.Credentials) (string, error, int) {
+func (s *user) LoginService(user entity.Credentials) (string, int, error) {
 	//  check credentials
 	if err := utils.ValidateLoginCredentials(user); err != nil {
-		return "", err, http.StatusBadRequest
+		return "", http.StatusBadRequest, err
 	}
 	// get user from db
 	u, err := s.GetUserByUsername(user.Username)
 	if err != nil {
-		return "", errors.New("invalid username or password"), http.StatusBadRequest
+		return "", http.StatusBadRequest, errors.New("invalid username or password")
 	}
 	// compare password
 	utils.ComparePasswords(u.Password, user.Password)
 	// generate token
 	token, err := utils.GenerateToken()
 	if err != nil {
-		return "", errors.New("internal server error"), http.StatusInternalServerError
+		return "", http.StatusInternalServerError, errors.New("internal server error")
 	}
-	return token, nil, http.StatusOK
+	return token, http.StatusOK, nil
 }
 
-func (s *user) RegisterService(user entity.User) (error, int) {
+func (s *user) RegisterService(user entity.User) (int, error) {
 	// check credentials
 	if err := utils.ValidateRegisterCredentials(user); err != nil {
-		log.Println("err 1")
-		return err, http.StatusBadRequest
+		return http.StatusBadRequest, err
 	}
 	// hash password
 	hashedPassword, err := utils.HashPassword(user.Password)
 	if err != nil {
-		log.Println("err 2")
-		return err, http.StatusInternalServerError
+		return http.StatusInternalServerError, err
 	}
 	user.Password = hashedPassword
 	// chek if user Email already exists
 	_, err = s.GetUserByUsername(user.Email)
 	if err != nil {
-		log.Println("err 3")
-		return errors.New("email already exists"), http.StatusBadRequest
+		return http.StatusBadRequest, errors.New("email already exists")
 	}
 	// check if user Nickname already exists
 	_, err = s.GetUserByUsername(user.Nickname)
 	if err != nil {
-		log.Println("err 4")
-		return errors.New("nickname already exists"), http.StatusBadRequest
+		return http.StatusBadRequest, errors.New("nickname already exists")
 	}
 	// save user to db
 	err = s.CreateUser(user)
 	if err != nil {
 		if errors.Is(err, config.ErrUserAlreadyExists) {
-			return err, http.StatusBadRequest
+			return http.StatusBadRequest, err
 		}
-		log.Println("err 5", err)
-		return err, http.StatusInternalServerError
+		return http.StatusInternalServerError, err
 	}
-	return nil, http.StatusCreated
+	return http.StatusCreated, nil
 }
 
 // We'll use the Authenticate method to verify whether a user exists with
