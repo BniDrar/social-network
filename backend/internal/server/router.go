@@ -52,6 +52,11 @@ func (app *App) createRoutes() []Route {
 			handler: ping,
 			Role:    Auth,
 		},
+		{
+			Path: "/profile",
+			handler: app.Profile,
+			Role: User,
+		},
 	}
 }
 

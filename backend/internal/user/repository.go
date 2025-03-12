@@ -13,7 +13,15 @@ import (
 
 // this function is used to get user by username
 func (r *user) GetUserByUsername(username string) (entity.User, error) {
-	query := `SELECT * FROM users WHERE nickname = $1 OR email = $1`
+	// SQL query that includes the counts and following state
+	query := `
+		SELECT u.id, u.email, u.password, u.first_name, u.last_name, u.birthday, u.avatar, u.nickname, u.about_me, u.status,
+		       (SELECT COUNT(*) FROM follows WHERE followed_id = u.id) AS followers_count,
+		       (SELECT COUNT(*) FROM follows WHERE follower_id = u.id) AS following_count,
+		FROM users u
+		LEFT JOIN follows f ON f.follower_id = u.id OR f.followed_id = u.id
+		WHERE u.nickname = $1 OR u.email = $1
+	`
 	var user entity.User
 	stmt, err := r.db.Prepare(query)
 	if err != nil {
@@ -30,15 +38,18 @@ func (r *user) GetUserByUsername(username string) (entity.User, error) {
 		&user.Avatar,
 		&user.Nickname,
 		&user.AboutMe,
-		&user.Status)
+		&user.Status,
+		&user.FollowersCount,
+		&user.FollowingCount,
+	)
 	if err != nil {
 		if err != sql.ErrNoRows {
-			log.Println("err 22", err)
 			return user, err
 		}
 	}
 	return user, nil
 }
+
 
 func (u *user) CheckIfExist(Field string, value any) bool {
 	Exist := false
@@ -153,10 +164,48 @@ func (r *user) CheckUserByUsername(username string) (bool, error) {
 	}
 	err = stmt.QueryRow(username).Scan(&exists)
 	if err != nil {
-		return exists, err
+		return exists, fmt.Errorf("error executing query: %w", err)
 	}
 	return exists, nil
 }
+
+func (u *user) isFollowedBy(follower, followed int) (bool, error) {
+	query:= `SELECT EXISTS(SELECT 1 FROM follows WHERE folowwer_id = $1 AND followed_id = $2)`
+	var exists bool
+	stmt, err := u.db.Prepare(query)
+	if err != nil {
+		return exists, err
+	}
+	defer stmt.Close()
+	err = stmt.QueryRow(follower, followed).Scan(&exists)
+	if err != nil {
+		return exists, fmt.Errorf("error executing query: %w", err)
+	}
+
+	return exists, nil
+}
+
+func (u *user) isFollowingEither(follower, followed int) (bool, error) {
+    query := `SELECT EXISTS(
+                SELECT 1 FROM follows WHERE (follower_id = $1 AND followed_id = $2) 
+                OR (follower_id = $2 AND followed_id = $1)
+              )`
+    
+    stmt, err := u.db.Prepare(query)
+    if err != nil {
+        return false, fmt.Errorf("error preparing query: %w", err)
+    }
+    defer stmt.Close()
+    
+    var exists bool
+    err = stmt.QueryRow(follower, followed).Scan(&exists)
+    if err != nil {
+        return false, fmt.Errorf("error executing query: %w", err)
+    }
+
+    return exists, nil
+}
+
 
 /* ___________ THOS FUNC USED FOR FOLLOWERS ___________ */
 

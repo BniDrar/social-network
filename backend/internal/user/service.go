@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
 
@@ -115,9 +116,21 @@ func (u *user) LogoutService(user entity.User) error {
 	return nil
 }
 
-func (u *user) UserProfile(ctx context.Context, nickname string) (int, user, error) {
-	u.CheckUserByUsername(nickname)
-	return 0, user{}, nil
+func (u *user) UserProfile(ctx context.Context, nickname string) (int, entity.User, error) {
+	user, err := u.GetUserByUsername(nickname)
+	if err != nil {
+		return http.StatusInternalServerError, user, errors.New(fmt.Sprintf("erro while getting the profile from the database, err: %v", err))
+	}
+	user.Password = ""
+	if user.Status == entity.PublicUser {
+		return http.StatusOK, user, nil
+	}
+	userId := ctx.Value(entity.ContextID).(int)
+	exists, err := u.isFollowedBy(userId, int(user.ID))
+	if err != nil && exists &&  userId == int(user.ID)  {
+		return http.StatusInternalServerError, user, err
+	}
+	return http.StatusOK, user, nil
 }
 
 func (u *user) FollowService(user entity.User) error {
