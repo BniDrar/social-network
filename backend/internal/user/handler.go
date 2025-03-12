@@ -120,6 +120,7 @@ func (u *user) Login(w http.ResponseWriter, r *http.Request) {
 
 func (u *user) Logout(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
+		u.loger.Error.Println("Method Not allowed")
 		// app.clientError(w, http.StatusMethodNotAllowed)
 		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
 		return
@@ -140,10 +141,13 @@ func (u *user) Logout(w http.ResponseWriter, r *http.Request) {
 	u.sessionManager.Put(r.Context(), "flash", "You've been logged out successfully!")
 	// Redirect the user to the application home page.
 	// http.Redirect(w, r, "/", http.StatusSeeOther)
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("Logged out successfully"))
 }
 
 func (u *user) Profile(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
+		u.loger.Error.Println("the method used is not allowed")
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
@@ -151,10 +155,12 @@ func (u *user) Profile(w http.ResponseWriter, r *http.Request) {
 	nickname := r.URL.Query().Get("nickname")
 	status, user, err := u.UserProfile(r.Context(), nickname)
 	if err != nil {
+		u.loger.Error.Println(err)
 		http.Error(w, err.Error(), status)
 	}
 
 	if err := json.NewEncoder(w).Encode(user); err != nil {
+		u.loger.Error.Println(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

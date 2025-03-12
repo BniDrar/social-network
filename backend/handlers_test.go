@@ -325,6 +325,75 @@ func TestLogin(t *testing.T) {
 	}
 }
 
+func TestLogout(t *testing.T) {
+	// Create the application struct containing our mocked dependencies and set
+	// up the test server for running an end-to-end test.
+	// app, cfg := server.NewTestApplication()
+	// ts := newTestServer(t, app.InitRoutes(cfg))
+	// defer ts.Close()
+
+	// Make a GET /user/signup request and then extract the CSRF token from the
+	// response body.
+	_, _, _ = ts.get(t, "/api/login")
+
+	// csrfToken := extractCSRFToken(t, body)
+	// Log the CSRF token value in our test output using the t.Logf() function.
+	// The t.Logf() function works in the same way as fmt.Printf(), but writes
+	// the provided message to the test output.
+
+	tests := []struct {
+		name     string
+		nickname string
+		password string
+		wantCode int
+	}{
+		{
+			name:     "Logout Test",
+			nickname: existNeckName,
+			password: validPassword,
+			wantCode: http.StatusInternalServerError,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			reqBody := struct {
+				Nickname string `json:"nickname"`
+				Password string `json:"password"`
+			}{
+				Nickname: tt.nickname,
+				Password: tt.password,
+			}
+
+			jsonBody, err := json.Marshal(reqBody)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			code, header, _ := ts.postJSON(t, "/api/login", jsonBody)
+			assert.Equal(t, code, tt.wantCode)
+
+			// --- Logout Phase ---
+			// Get session cookie from login response
+			cookie := extractSessionCookie(header)
+			if cookie == nil {
+				t.Fatal("No session cookie found in login response")
+			}
+			// --- Logout Phase ---
+			logoutReq, _ := http.NewRequest(http.MethodPost, ts.URL+"/api/logout", nil) // ✅ Fix: use full URL
+			logoutReq.AddCookie(cookie)                                                 // Attach session cookie
+			logoutResp, err := ts.Client().Do(logoutReq)
+			log.Println("logout request", logoutReq)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			// --- Validate Logout Response ---
+			log.Println("Logout Response Code:", logoutResp.StatusCode)
+			assert.Equal(t, logoutResp.StatusCode, tt.wantCode)
+		})
+	}
+}
+
 // Helper functions
 // func TestPosts(t *testing.T) {
 // 	// Create a new instance of our application struct which uses the mocked

@@ -4,8 +4,9 @@ import (
 	"context"
 	"log"
 	"net/http"
-	"socialNetwork/pkg/sessions/memstore"
 	"time"
+
+	"socialNetwork/pkg/sessions/memstore"
 )
 
 // SessionManager holds the configuration settings for your sessions.
@@ -14,7 +15,7 @@ type SessionManager struct {
 	// before it expires. For example, some applications may wish to set this so
 	// there is a timeout after 20 minutes of inactivity. By default IdleTimeout
 	// is not set and there is no inactivity timeout.
-	//IdleTimeout time.Duration
+	// IdleTimeout time.Duration
 
 	// Lifetime controls the maximum length of time that a session is valid for
 	// before it expires. The lifetime is an 'absolute expiry' which is set when
@@ -119,10 +120,10 @@ func New() *SessionManager {
 // the client in a cookie.
 func (s *SessionManager) LoadAndSave(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-
 		var token string
 		cookie, err := r.Cookie(s.Cookie.Name)
 		if err == nil { // if cookie found
+			log.Println("cookie was found in load and save")
 			token = cookie.Value
 		}
 		// Load retrieves the session data for the given token from the session store,
@@ -229,4 +230,3 @@ func (sw *sessionResponseWriter) WriteHeader(code int) {
 
 	sw.ResponseWriter.WriteHeader(code)
 }
-
