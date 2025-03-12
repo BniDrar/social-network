@@ -30,6 +30,7 @@ type User interface {
 	Profile(w http.ResponseWriter, r *http.Request)
 	Follow(w http.ResponseWriter, r *http.Request)
 	Followers(w http.ResponseWriter, r *http.Request)
+	DeleteUserByNickName(Nickname string) error
 	Exists(id uint) (bool, error)
 }
 

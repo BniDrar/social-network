@@ -2,13 +2,11 @@ package main
 
 import (
 	"bytes"
-	"fmt"
 	"io"
 	"net/http"
 	"net/http/cookiejar"
 	"net/http/httptest"
 	"net/url"
-	"os"
 	"testing"
 	// New import
 )
@@ -96,10 +94,4 @@ func (ts *testServer) postJSON(t *testing.T, urlPath string, body []byte) (int, 
 		t.Fatal(err)
 	}
 	return rs.StatusCode, rs.Header, string(bodyBytes)
-}
-
-func DropTestDB() error {
-	err := os.Remove("./test.db")
-	fmt.Println(err)
-	return err
 }

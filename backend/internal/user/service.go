@@ -133,3 +133,9 @@ func (s *user) FollowersService(user entity.User) error {
 // 	// do something
 // 	return false
 // }
+
+func (s *user) DeleteUserService(user entity.User) error {
+	
+	return nil
+}
+

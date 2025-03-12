@@ -79,7 +79,6 @@ func TestPing(t *testing.T) {
 // }
 
 func TestRegister(t *testing.T) {
-	defer DropTestDB()
 	// Create the application struct containing our mocked dependencies and set
 	// up the test server for running an end-to-end test.
 	app, cfg := server.NewTestApplication()
@@ -203,6 +202,7 @@ func TestRegister(t *testing.T) {
 			// 	assert.StringContains(t, body, tt.wantFormTag)
 			// }
 			fmt.Println("the response body:", body)
+			app.User.DeleteUserByNickName(reqBody.Nickname)
 		})
 	}
 }

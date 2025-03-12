@@ -2,7 +2,6 @@ package user
 
 import (
 	"database/sql"
-	"fmt"
 	"log"
 
 	"socialNetwork/entity"
@@ -40,17 +39,13 @@ func (r *user) GetUserByUsername(username string) (entity.User, error) {
 	return user, nil
 }
 
-func (u *user) CheckIfExist(Field string, value any) bool {
-	Exist := false
-	Query := fmt.Sprintf("SELECT COUNT(1) FROM user WHERE %s = %s", Field, value)
-	u.db.QueryRow(Query).Scan(&Exist)
-	return Exist
-}
-
 // this function is used to create new user
 func (u *user) CreateUser(user entity.User) error {
 	// ok, err := u.IsExistsService(int(user.ID))
-	ok := u.CheckIfExist("Nickname", user.Nickname)
+	ok, err := u.CheckUserByUsername(user.Nickname)
+	if err != nil {
+		return err
+	}
 	if ok {
 		return config.ErrUserAlreadyExists
 	}
@@ -126,6 +121,27 @@ func (r *user) DeleteUser(id uint) error {
 	return nil
 }
 
+// this function is used to delete user by id
+func (u *user) DeleteUserByNickName(nickName string) error {
+	ok, err := u.CheckUserByUsername(nickName)
+	if err != nil {
+		return err
+	}
+	if !ok {
+		return nil
+	}
+	query := `DELETE FROM user WHERE Nickname = $1`
+	stmt, err := u.db.Prepare(query)
+	if err != nil {
+		return err
+	}
+	_, err = stmt.Exec(stmt)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 /* ___________ THOS FUNC USED FOR CHECK USER CREDENTIALS ___________ */
 
 // this function checks by email if the user exists
@@ -145,7 +161,7 @@ func (r *user) CheckUserByEmail(email string) (bool, error) {
 
 // this function checks by username if the user exists
 func (r *user) CheckUserByUsername(username string) (bool, error) {
-	query := `SELECT EXISTS(SELECT 1 FROM users WHERE username = $1)`
+	query := `SELECT EXISTS(SELECT 1 FROM user WHERE Nickname = $1)`
 	var exists bool
 	stmt, err := r.db.Prepare(query)
 	if err != nil {
