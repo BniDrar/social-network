@@ -14,14 +14,8 @@ import (
 // this function is used to get user by username
 func (r *user) GetUserByUsername(username string) (entity.User, error) {
 	// SQL query that includes the counts and following state
-	query := `
-		SELECT u.id, u.email, u.password, u.first_name, u.last_name, u.birthday, u.avatar, u.nickname, u.about_me, u.status,
-		       (SELECT COUNT(*) FROM follows WHERE followed_id = u.id) AS followers_count,
-		       (SELECT COUNT(*) FROM follows WHERE follower_id = u.id) AS following_count,
-		FROM users u
-		LEFT JOIN follows f ON f.follower_id = u.id OR f.followed_id = u.id
-		WHERE u.nickname = $1 OR u.email = $1
-	`
+	query := `SELECT * FROM users WHERE nickname = $1 OR email = $1`
+
 	var user entity.User
 	stmt, err := r.db.Prepare(query)
 	if err != nil {
