@@ -1,12 +1,14 @@
--- DROP INDEX IF EXISTS idx_follows_following;
--- DROP INDEX IF EXISTS idx_follows_followed;
--- DROP INDEX IF EXISTS idx_post_user;
--- DROP INDEX IF EXISTS idx_comment_post;
--- DROP INDEX IF EXISTS idx_comment_user;
--- DROP INDEX IF EXISTS idx_message_chat;
--- DROP INDEX IF EXISTS idx_message_sender;
--- DROP INDEX IF EXISTS idx_message_receiver;
-
--- -- Consider dropping these performance-improving indexes if they were created:
--- -- DROP INDEX IF EXISTS idx_post_created_at;
--- -- DROP INDEX IF EXISTS idx_message_created_at;
+DROP INDEX IF EXISTS idx_follows_following;
+DROP INDEX IF EXISTS idx_follows_followed;
+DROP INDEX IF EXISTS idx_post_user;
+DROP INDEX IF EXISTS idx_comment_post;
+DROP INDEX IF EXISTS idx_comment_user;
+DROP INDEX IF EXISTS idx_message_chat;
+DROP INDEX IF EXISTS idx_message_sender;
+DROP INDEX IF EXISTS idx_sessions_expiry;
+DROP INDEX IF EXISTS idx_post_created_at;
+DROP INDEX IF EXISTS idx_message_created_at;
+DROP INDEX IF EXISTS idx_group_members_group;
+DROP INDEX IF EXISTS idx_group_members_user;
+DROP INDEX IF EXISTS idx_notification_receiver;
+DROP INDEX IF EXISTS idx_engagement_user;

@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS engagements (
+CREATE TABLE IF NOT EXISTS engagement (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     comment_id INTEGER,
     post_id INTEGER,
