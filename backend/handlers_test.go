@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"testing"
 
@@ -202,7 +203,10 @@ func TestRegister(t *testing.T) {
 			// 	assert.StringContains(t, body, tt.wantFormTag)
 			// }
 			fmt.Println("the response body:", body)
-			app.User.DeleteUserByNickName(reqBody.Nickname)
+			err = app.User.DeleteUserByNickName(tt.nickname)
+			if err != nil {
+				log.Println(err)
+			}
 		})
 	}
 }

@@ -135,7 +135,7 @@ func (u *user) DeleteUserByNickName(nickName string) error {
 	if err != nil {
 		return err
 	}
-	_, err = stmt.Exec(stmt)
+	_, err = stmt.Exec(nickName)
 	if err != nil {
 		return err
 	}
