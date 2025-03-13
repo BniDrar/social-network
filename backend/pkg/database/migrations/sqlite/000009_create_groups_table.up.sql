@@ -3,5 +3,7 @@ CREATE TABLE IF NOT EXISTS groups (
     name TEXT NOT NULL,
     type INTEGER NOT NULL, -- 0: real group, 1: fake, 2: messages group
     admin INTEGER,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (admin) REFERENCES users(id) ON DELETE SET NULL
 );

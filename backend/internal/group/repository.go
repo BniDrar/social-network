@@ -8,7 +8,7 @@ import (
 
 func (g *group) GetGroupsByUserID(ctx context.Context,userID int, limit int, offset int) (entity.Groups, error) {
 	query := `
-	SELECT g.id, g.name, g.type, g.admin, COUNT(DISTINCT gm.user_id) AS member_count, COUNT(DISTINCT p.id) AS post_count
+	SELECT g.id, g.name, g.type, g.admin,g.created_at,g.updated_at COUNT(DISTINCT gm.user_id) AS member_count, COUNT(DISTINCT p.id) AS post_count
 	FROM groups g
 	JOIN group_members gm ON g.id = gm.group_id
 	LEFT JOIN posts p ON g.id = p.group_id
@@ -58,6 +58,8 @@ func (g *group) GetGroupByIdRepository(ctx context.Context, userID, groupID int)
 			g.name,
 			g.type,
 			g.admin,
+			g.created_at,
+			g.updated_at,
 			COUNT(DISTINCT gm.user_id) AS member_count,
 			COUNT(DISTINCT p.id) AS post_count
 			FROM groups g
@@ -82,6 +84,8 @@ func (g *group) GetGroupByIdRepository(ctx context.Context, userID, groupID int)
 		&group.Admin,
 		&group.MemberCount,
 		&group.PostCount,
+		&group.CreatedAt,
+		&group.UpdatedAt,
 	)
 	if err != nil {
 		return entity.Group{}, err
@@ -91,15 +95,15 @@ func (g *group) GetGroupByIdRepository(ctx context.Context, userID, groupID int)
 
 func (g *group) CreateGroupRepository(ctx context.Context, group entity.Group) (entity.Group, error) {
 	query := `
-		INSERT INTO groups (name, type, admin)
-		VALUES (?, ?, ?)
+		INSERT INTO groups (name, type, admin,created_at, updated_at)
+		VALUES (?, ?, ?, NOW(), NOW())
 	`
 	stmt, err := g.db.PrepareContext(ctx, query)
 	if err != nil {
 		return entity.Group{}, err
 	}
 	defer stmt.Close()
-	result, err := stmt.ExecContext(ctx, group.Name, group.Type, group.Admin)
+	result, err := stmt.ExecContext(ctx, group.Name, group.Type, group.Admin, group.CreatedAt, group.UpdatedAt)
 	if err != nil {
 		return entity.Group{}, err
 	}
