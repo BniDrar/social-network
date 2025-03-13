@@ -27,7 +27,7 @@ func (app *App) InitRoutes(conf *config.Conf) http.Handler {
 			mux.Handle(route.Path, app.SessionManager.LoadAndSave(app.authenticate(http.HandlerFunc(route.handler))))
 		}
 	}
-	return mux
+	return app.recoverPanic(app.logRequest(secureHeaders(mux)))
 }
 
 func (app *App) createRoutes() []Route {
@@ -51,6 +51,11 @@ func (app *App) createRoutes() []Route {
 			Path:    "/ping",
 			handler: ping,
 			Role:    Auth,
+		},
+		{
+			Path:    "/ping/user",
+			handler: ping,
+			Role:    User,
 		},
 	}
 }

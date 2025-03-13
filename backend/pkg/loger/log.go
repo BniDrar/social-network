@@ -19,7 +19,7 @@ func NewLogger() *CstmLogger {
 	}
 	out := io.MultiWriter(file, os.Stdout)
 	return &CstmLogger{
-		Info:  log.New(out, "INFO: ", log.Ldate|log.Ltime|log.Lshortfile),
-		Error: log.New(out, "ERROR: ", log.Ldate|log.Ltime|log.Lshortfile),
+		Info:  log.New(out, "INFO\t: ", log.Ldate|log.Ltime|log.Lshortfile),
+		Error: log.New(out, "ERROR\t: ", log.Ldate|log.Ltime|log.Lshortfile),
 	}
 }
