@@ -3,6 +3,7 @@ package scs
 import (
 	"context"
 	"fmt"
+	"log"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -50,15 +51,19 @@ func newSessionData(lifetime time.Duration) *sessionData {
 // Most applications will use the LoadAndSave() middleware and will not need to
 // use this method.
 func (s *SessionManager) Load(ctx context.Context, token string) (context.Context, error) {
+	log.Println("in the load 0")
 	if _, ok := ctx.Value(s.contextKey).(*sessionData); ok {
+		log.Println("in Load, session already exist in the contex")
 		return ctx, nil // if session exist in the context skip
 	}
-
+	log.Println("in load 1")
 	if token == "" { // there is notthig to retrieve from database
 		return s.addSessionDataToContext(ctx, newSessionData(s.Lifetime)), nil //  handle messing session
 	}
+	log.Println("in the load 3")
 	// find the session from the database
 	b, found, err := s.doStoreFind(token)
+	log.Println("in Load, session found: ", found)
 	if err != nil {
 		return nil, err
 	} else if !found { // create a new session
@@ -131,6 +136,7 @@ func (s *SessionManager) Remove(ctx context.Context, key string) {
 // Most applications will use the LoadAndSave() middleware and will not need to
 // use this method.
 func (s *SessionManager) Commit(ctx context.Context) (string, time.Time, error) {
+	log.Println("commiting")
 	sd := s.getSessionDataFromContext(ctx)
 
 	sd.mu.Lock()
@@ -268,7 +274,7 @@ func (s *SessionManager) doStoreFind(token string) (b []byte, found bool, err er
 }
 
 func (s *SessionManager) doStoreCommit(ctx context.Context, token string, b []byte, expiry time.Time) (err error) {
-	fmt.Println("now we save to the session")
+	fmt.Println("store commiting secret")
 	return s.Store.Commit(token, b, expiry)
 }
 

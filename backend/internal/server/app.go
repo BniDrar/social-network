@@ -35,7 +35,8 @@ func NewApp(dep *config.Dependencies) *App {
 }
 
 func NewTestApplication() (*App, *config.Conf) {
-	loger := loger.NewTestLogger()
+	// loger := loger.NewTestLogger()
+	loger := loger.NewLogger()
 	// And a form decoder.
 	// formDecoder := form.NewDecoder()
 	// And a session manager instance. Note that we use the same settings as

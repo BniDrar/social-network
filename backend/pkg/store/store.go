@@ -2,6 +2,7 @@ package store
 
 import (
 	"database/sql"
+	"log"
 	"time"
 )
 
@@ -73,6 +74,7 @@ func (s *SessionStore) Find(token string) ([]byte, bool, error) {
 
 // Commit adds or updates the session data for the given token with expiry
 func (s *SessionStore) Commit(token string, data []byte, expiry time.Time) error { // edit
+	log.Println("the store is commiting")
 	_, err := s.db.Exec(`
         INSERT OR REPLACE INTO sessions (token, data, expiry)
         VALUES (?, ?, ?)
