@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"log"
 	"net/http"
 
 	scs "socialNetwork/pkg/sessions"
@@ -101,6 +102,7 @@ func (u *user) Login(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
 	}
+	log.Println("user id: ", id)
 	u.sessionManager.Put(r.Context(), string(entity.ContextID), id)
 	
 	w.Header().Set("Content-Type", "application/json")
