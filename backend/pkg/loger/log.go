@@ -23,3 +23,10 @@ func NewLogger() *CstmLogger {
 		Error: log.New(out, "ERROR\t: ", log.Ldate|log.Ltime|log.Lshortfile),
 	}
 }
+
+func NewTestLogger() *CstmLogger {
+	return &CstmLogger{
+		Info:  log.New(io.Discard, "", 0),
+		Error: log.New(io.Discard, "", 0),
+	}
+}
