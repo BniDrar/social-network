@@ -48,13 +48,18 @@ func (app *App) createRoutes() []Route {
 			Role:    User,
 		},
 		{
-			Path:    "/ping",
+			Path:    "/api/ping",
 			handler: ping,
 			Role:    Auth,
 		},
 		{
-			Path: "/profile",
+			Path: "/api/profile",
 			handler: app.Profile,
+			Role: User,
+		},
+		{
+			Path: "/api/groups",
+			handler: app.GetGroups,
 			Role: User,
 		},
 	}

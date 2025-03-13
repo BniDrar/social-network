@@ -1,17 +1,5 @@
 package entity
 
-/*
-id INTEGER PRIMARY KEY AUTOINCREMENT,
-Email TEXT NOT NULL UNIQUE,
-Password TEXT NOT NULL,
-First TEXT,
-Last TEXT,
-Date_Of_Birth DATETIME,
-Avatar BLOB,
-Nickname TEXT UNIQUE,
-About_Me TEXT,
-status INTEGER DEFAULT 0  -- 0: private, 1: public
-*/
 type User struct {
 	ID             uint   `json:"id,omitempty"`
 	Nickname       string `json:"nickname,omitempty"`
@@ -29,7 +17,7 @@ type User struct {
 }
 
 type Credentials struct {
-	Username string `json:"nickname"`
+	Username string `json:"username"`
 	Password string `json:"password"`
 }
 

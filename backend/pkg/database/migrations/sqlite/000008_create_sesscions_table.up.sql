@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS sessions (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id INTEGER,
+    user_id INTEGER NOT NULL,
     token TEXT NOT NULL,
     data TEXT,
     expiry TIMESTAMP,

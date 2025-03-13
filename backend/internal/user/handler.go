@@ -67,7 +67,8 @@ func (u *user) Register(w http.ResponseWriter, r *http.Request) {
 
 func (u *user) Login(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Method not allowed"})
 		return
 	}
 
@@ -85,24 +86,25 @@ func (u *user) Login(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		u.loger.Error.Println(err)
 		if errors.Is(err, config.ErrInvalidCredentials) {
-			// w.Write([]byte("Invalid Credentials"))
-			http.Error(w, "Invalid Credentials", http.StatusBadRequest)
+			w.WriteHeader(http.StatusUnauthorized)
+			json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
 			return
 		} else {
-			// app.serverError(w, err)
-			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			w.WriteHeader(http.StatusInternalServerError)
+			json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
 		}
 		return
 	}
 	err = u.sessionManager.RenewToken(r.Context())
 	if err != nil {
 		u.loger.Error.Println(err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
 	}
 	u.sessionManager.Put(r.Context(), string(entity.ContextID), id)
-
+	
 	w.Header().Set("Content-Type", "application/json")
-	w.Write([]byte("user is logged in succesfully"))
+	w.WriteHeader(http.StatusOK)
 	// call service
 	// token, err, status := u.LoginService(User)
 	// if err != nil {

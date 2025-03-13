@@ -5,7 +5,3 @@ CREATE TABLE IF NOT EXISTS groups (
     admin INTEGER,
     FOREIGN KEY (admin) REFERENCES users(id) ON DELETE SET NULL
 );
-
--- ggroup => 
---members => 
---messages
