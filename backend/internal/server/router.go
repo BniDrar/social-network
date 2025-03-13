@@ -62,10 +62,14 @@ func (app *App) createRoutes() []Route {
 			handler: app.GetGroups,
 			Role: User,
 		},
-		// get group by id
 		{
 			Path: "/api/group/{id}",
 			handler: app.GetGroupById,
+			Role: User,
+		},
+		{
+			Path: "/api/group/create",
+			handler: app.CreateGroup,
 			Role: User,
 		},
 	}

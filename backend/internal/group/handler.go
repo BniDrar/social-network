@@ -15,6 +15,7 @@ import (
 type Group interface {
 	GetGroups(w http.ResponseWriter, r *http.Request)
 	GetGroupById(w http.ResponseWriter, r *http.Request)
+	CreateGroup(w http.ResponseWriter, r *http.Request)
 }
 
 type group struct {
@@ -81,6 +82,28 @@ func (g *group) GetGroupById(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(group)
+}
+
+func (g *group) CreateGroup(w http.ResponseWriter, r *http.Request) {
+	// get the group data from the request body
+	var group entity.Group
+	err := json.NewDecoder(r.Body).Decode(&group)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Invalid request body"})
+		return
+	}
+	// create the group in the database
+	createdGroup, err := g.CreateGroupService(r.Context(), group)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
+		return
+	}
+	// send the created group to the client
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(createdGroup)
 }
 
 

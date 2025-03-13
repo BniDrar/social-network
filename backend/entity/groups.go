@@ -12,4 +12,6 @@ type Group struct {
 	PostCount   int    `json:"post_count"`
 	Members     []int  `json:"members"`
 	Posts       []Post `json:"posts"`
+	CreatedAt   string `json:"created_at"`
+	UpdatedAt   string `json:"updated_at"`
 }
