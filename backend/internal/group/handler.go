@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"net/http"
+	"strconv"
 
 	"socialNetwork/entity"
 	"socialNetwork/pkg/config"
@@ -13,6 +14,7 @@ import (
 
 type Group interface {
 	GetGroups(w http.ResponseWriter, r *http.Request)
+	GetGroupById(w http.ResponseWriter, r *http.Request)
 }
 
 type group struct {
@@ -24,13 +26,8 @@ type group struct {
 func NewGroup(dep *config.Dependencies) Group {
 	return &group{db: dep.DB, loger: *dep.Loger, Hub: dep.Hub}
 }
-
+// this handler is used to get all groups 
 func (g *group) GetGroups(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		w.WriteHeader(http.StatusMethodNotAllowed)
-		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Method not allowed"})
-		return
-	}
 	// get the limit and offset from the request body
 	var requestBody struct {
 		Limit  int `json:"limit"`
@@ -51,7 +48,7 @@ func (g *group) GetGroups(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	groups, err := g.GetGroupsByUser(r.Context(), limit, offset)
+	groups, err := g.GetGroupsByUserService(r.Context(), limit, offset)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
@@ -61,3 +58,29 @@ func (g *group) GetGroups(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(groups)
 }
+
+// this handler is used to get the group by id
+func (g *group) GetGroupById(w http.ResponseWriter, r *http.Request) {
+	// get the group id from the request URL parameters /{id}
+	groupID, err := strconv.Atoi(r.URL.Query().Get("id"))
+	if err != nil || groupID <= 0 {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Invalid group ID"})
+		return
+	}
+
+	g.loger.Info.Println("group id: ", groupID)
+
+	group, err := g.GetGroupByIdService(r.Context(), groupID)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(group)
+}
+
+
