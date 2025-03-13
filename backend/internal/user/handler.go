@@ -127,12 +127,12 @@ func (u *user) Logout(w http.ResponseWriter, r *http.Request) {
 	}
 	// Use the RenewToken() method on the current session to change the session
 	// ID again. for  session fixation attacks
-	// err := u.SessionManger.RenewToken(r.Context())
-	// if err != nil {
-	// 	http.Error(w, "Method Not Allowed", http.StatusInternalServerError)
-	// 	// app.serverError(w, err)
-	// 	return
-	// }
+	err := u.sessionManager.RenewToken(r.Context())
+	if err != nil {
+		http.Error(w, "Method Not Allowed", http.StatusInternalServerError)
+		// app.serverError(w, err)
+		return
+	}
 	// Remove the authenticatedUserID from the session data so that the user is
 	// 'logged out'.
 	u.sessionManager.Remove(r.Context(), "authenticatedUserID")
