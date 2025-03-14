@@ -123,14 +123,12 @@ func (s *SessionManager) LoadAndSave(next http.Handler) http.Handler {
 		var token string
 		cookie, err := r.Cookie(s.Cookie.Name)
 		if err == nil { // if cookie found
-			log.Println("cookie was found in load and save")
 			token = cookie.Value
 		}
 		// Load retrieves the session data for the given token from the session store,
 		// and returns a new context.Context containing the session data. If no matching
 		// token is found then this will create a new session.
 		ctx, err := s.Load(r.Context(), token) // adds session data to context
-		log.Println("this is the contex in LoadAndSave", ctx)
 		if err != nil {
 			s.ErrorFunc(w, r, err)
 			return
@@ -143,9 +141,7 @@ func (s *SessionManager) LoadAndSave(next http.Handler) http.Handler {
 			request:        sr,
 			sessionManager: s,
 		}
-		log.Println("Is the session written befor next.serve:", sw.written)
 		next.ServeHTTP(sw, sr)
-		log.Println("Is the session written after next.serve:", sw.written)
 		if !sw.written {
 			s.commitAndWriteSessionCookie(w, sr)
 		}
@@ -157,7 +153,6 @@ func (s *SessionManager) commitAndWriteSessionCookie(w http.ResponseWriter, r *h
 
 	switch s.Status(ctx) {
 	case Modified:
-		log.Println("the session modified")
 		token, expiry, err := s.Commit(ctx)
 		if err != nil {
 			s.ErrorFunc(w, r, err)
@@ -166,7 +161,6 @@ func (s *SessionManager) commitAndWriteSessionCookie(w http.ResponseWriter, r *h
 
 		s.WriteSessionCookie(ctx, w, token, expiry)
 	case Destroyed:
-		log.Println("the session distroyed")
 		s.WriteSessionCookie(ctx, w, "", time.Time{})
 	}
 }
