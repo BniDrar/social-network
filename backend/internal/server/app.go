@@ -72,5 +72,8 @@ func NewTestApplication() (*App, *config.Conf) {
 		SessionManager: sessionManager,
 		Loger:          loger,
 		User:           user.NewUser(dep /* we need to add the hub*/),
+		Comment:        comment.NewComment(dep),
+		Chat:           chat.NewChat(dep),
+		Group:          group.NewGroup(dep /* we need to add the hub to group*/),
 	}, cfg
 }

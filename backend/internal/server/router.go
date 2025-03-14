@@ -62,26 +62,26 @@ func (app *App) createRoutes() []Route {
 			handler: app.Profile,
 			Role:    User,
 		},
-		// {
-		// 	Path:    "/api/groups",
-		// 	handler: app.GetGroups,
-		// 	Role:    User,
-		// },
-		// {
-		// 	Path:    "/api/group/{id}",
-		// 	handler: app.GetGroupById,
-		// 	Role:    User,
-		// },
-		// {
-		// 	Path:    "/api/group/create",
-		// 	handler: app.CreateGroup,
-		// 	Role:    User,
-		// },
-		// {
-		// 	Path:    "/api/group/update/{id}",
-		// 	handler: app.UpdateGroup,
-		// 	Role:    User,
-		// },
+		{
+			Path:    "/api/groups",
+			handler: app.GetGroups,
+			Role:    User,
+		},
+		{
+			Path:    "/api/group/{id}",
+			handler: app.GetGroupById,
+			Role:    User,
+		},
+		{
+			Path:    "/api/group/create",
+			handler: app.CreateGroup,
+			Role:    User,
+		},
+		{
+			Path:    "/api/group/update/{id}",
+			handler: app.UpdateGroup,
+			Role:    User,
+		},
 	}
 }
 
