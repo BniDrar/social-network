@@ -86,7 +86,7 @@ func (c *comment) Vote(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		return
 	}
-	react := entity.CommentReaction{}
+	react := entity.Reaction{}
 	err = json.NewDecoder(r.Body).Decode(&react)
 	if err != nil {
 		return
