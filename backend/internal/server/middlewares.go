@@ -3,7 +3,6 @@ package server
 import (
 	"context"
 	"fmt"
-	"log"
 	"net/http"
 	"runtime/debug"
 
@@ -76,14 +75,12 @@ func (app *App) requireAuthentication(next http.Handler) http.Handler {
 
 func (app *App) authenticate(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		log.Println("in the authentication meddle ware")
 		// Retrieve the authenticatedUserID value from the session using the
 		// GetInt() method. This will return the zero value for an int (0) if no
 		// "authenticatedUserID" value is in the session -- in which case we
 		// call the next handler in the chain as normal and return.
 		//id := app.SessionManager.GetInt(r.Context(), "authenticatedUserID")
 		id := app.SessionManager.GetInt(r.Context(), "authenticatedUserID")
-		log.Println("authenticated user id:", id)
 		if id == 0 {
 			next.ServeHTTP(w, r)
 			return
@@ -91,7 +88,6 @@ func (app *App) authenticate(next http.Handler) http.Handler {
 		// Otherwise, we check to see if a user with that ID exists in our
 		// database.
 		exists, err := app.User.Exists(uint(id))
-		log.Println("user exist?:", exists)
 		if err != nil {
 			app.serverError(w, err)
 			return
