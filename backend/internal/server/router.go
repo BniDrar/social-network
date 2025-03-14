@@ -77,6 +77,11 @@ func (app *App) createRoutes() []Route {
 			handler: app.CreateGroup,
 			Role:    User,
 		},
+		{
+			Path:    "/api/group/update/{id}",
+			handler: app.UpdateGroup,
+			Role:    User,
+		},
 	}
 }
 
