@@ -11,13 +11,13 @@ type User struct {
 	DateOfBirth    string `json:"date_of_birth,omitempty"`
 	AboutMe        string `json:"about_me,omitempty"`
 	Status         uint   `json:"status,omitempty"`
-	FollowingState uint   `json:"following,omitempty"` // 1 follower, 2 following, 0 none 
+	FollowingState uint   `json:"following,omitempty"` // 1 follower, 2 following, 0 none
 	FollowersCount uint   `json:"followers_count,omitempty"`
 	FollowingCount uint   `json:"following_count,omitempty"`
 }
 
 type Credentials struct {
-	Username string `json:"username"`
+	Username string `json:"nickname"`
 	Password string `json:"password"`
 }
 

@@ -28,8 +28,10 @@ type group struct {
 func NewGroup(dep *config.Dependencies) Group {
 	return &group{db: dep.DB, loger: *dep.Loger, Hub: dep.Hub}
 }
-// this handler is used to get all groups 
+
+// this handler is used to get all groups
 func (g *group) GetGroups(w http.ResponseWriter, r *http.Request) {
+	g.loger.Info.Println("In Get Groups")
 	// get the limit and offset from the request body
 	var requestBody struct {
 		Limit  int `json:"limit"`
@@ -107,23 +109,22 @@ func (g *group) CreateGroup(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(createdGroup)
 }
 
-func (g *group) UpdateGroup(w http.ResponseWriter, r *http.Request){
-		var group entity.Group
+func (g *group) UpdateGroup(w http.ResponseWriter, r *http.Request) {
+	var group entity.Group
 	err := json.NewDecoder(r.Body).Decode(&group)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Invalid request body"})
 		return
 	}
-		createdGroup, err := g.UpdateGroupService(r.Context(), group)
+	createdGroup, err := g.UpdateGroupService(r.Context(), group)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
 		return
 	}
 
-		w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(createdGroup)
 }
-

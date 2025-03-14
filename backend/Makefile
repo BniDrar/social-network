@@ -2,6 +2,8 @@
 # run:
 # 	export ADDR=":9999" && go run ./cmd/web/ -addr=$$ADDR
 test:
+	### you can see exactly which tests are being run by using the -v flag to
+	### get the verbose output:
 	# go test -v 
 	go test -v -failfast=false
 

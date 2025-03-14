@@ -33,6 +33,16 @@ func (app *App) InitRoutes(conf *config.Conf) http.Handler {
 func (app *App) createRoutes() []Route {
 	return []Route{
 		{
+			Path:    "/ping",
+			handler: ping,
+			Role:    Auth,
+		},
+		{
+			Path:    "/ping/user",
+			handler: ping,
+			Role:    User,
+		},
+		{
 			Path:    "/api/register",
 			handler: app.User.Register,
 			Role:    Auth,
@@ -48,40 +58,30 @@ func (app *App) createRoutes() []Route {
 			Role:    User,
 		},
 		{
-			Path:    "/api/ping",
-			handler: ping,
-			Role:    Auth,
-		},
-		{
-			Path:    "/ping/user",
-			handler: ping,
-			Role:    User,
-		},
-		{
 			Path:    "/api/profile",
 			handler: app.Profile,
 			Role:    User,
 		},
-		{
-			Path:    "/api/groups",
-			handler: app.GetGroups,
-			Role:    User,
-		},
-		{
-			Path:    "/api/group/{id}",
-			handler: app.GetGroupById,
-			Role:    User,
-		},
-		{
-			Path:    "/api/group/create",
-			handler: app.CreateGroup,
-			Role:    User,
-		},
-		{
-			Path:    "/api/group/update/{id}",
-			handler: app.UpdateGroup,
-			Role:    User,
-		},
+		// {
+		// 	Path:    "/api/groups",
+		// 	handler: app.GetGroups,
+		// 	Role:    User,
+		// },
+		// {
+		// 	Path:    "/api/group/{id}",
+		// 	handler: app.GetGroupById,
+		// 	Role:    User,
+		// },
+		// {
+		// 	Path:    "/api/group/create",
+		// 	handler: app.CreateGroup,
+		// 	Role:    User,
+		// },
+		// {
+		// 	Path:    "/api/group/update/{id}",
+		// 	handler: app.UpdateGroup,
+		// 	Role:    User,
+		// },
 	}
 }
 
