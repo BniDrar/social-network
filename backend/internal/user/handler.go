@@ -101,8 +101,8 @@ func (u *user) Login(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
 	}
-	u.sessionManager.Put(r.Context(), string(entity.ContextID), id)
-	
+	u.sessionManager.Put(r.Context(), "authenticatedUserID", id)
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	// call service
@@ -122,18 +122,19 @@ func (u *user) Login(w http.ResponseWriter, r *http.Request) {
 
 func (u *user) Logout(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
+		u.loger.Error.Println("Method Not allowed")
 		// app.clientError(w, http.StatusMethodNotAllowed)
 		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
 		return
 	}
 	// Use the RenewToken() method on the current session to change the session
 	// ID again. for  session fixation attacks
-	// err := u.SessionManger.RenewToken(r.Context())
-	// if err != nil {
-	// 	http.Error(w, "Method Not Allowed", http.StatusInternalServerError)
-	// 	// app.serverError(w, err)
-	// 	return
-	// }
+	err := u.sessionManager.RenewToken(r.Context())
+	if err != nil {
+		http.Error(w, "Method Not Allowed", http.StatusInternalServerError)
+		// app.serverError(w, err)
+		return
+	}
 	// Remove the authenticatedUserID from the session data so that the user is
 	// 'logged out'.
 	u.sessionManager.Remove(r.Context(), "authenticatedUserID")
@@ -142,10 +143,13 @@ func (u *user) Logout(w http.ResponseWriter, r *http.Request) {
 	u.sessionManager.Put(r.Context(), "flash", "You've been logged out successfully!")
 	// Redirect the user to the application home page.
 	// http.Redirect(w, r, "/", http.StatusSeeOther)
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("Logged out successfully"))
 }
 
 func (u *user) Profile(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
+		u.loger.Error.Println("the method used is not allowed")
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
@@ -153,10 +157,12 @@ func (u *user) Profile(w http.ResponseWriter, r *http.Request) {
 	nickname := r.URL.Query().Get("nickname")
 	status, user, err := u.UserProfile(r.Context(), nickname)
 	if err != nil {
+		u.loger.Error.Println(err)
 		http.Error(w, err.Error(), status)
 	}
 
 	if err := json.NewEncoder(w).Encode(user); err != nil {
+		u.loger.Error.Println(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -166,7 +172,10 @@ func (u *user) Follow(w http.ResponseWriter, r *http.Request) {}
 
 func (u *user) Followers(w http.ResponseWriter, r *http.Request) {}
 
-func (s *user) Exists(id uint) (bool, error) {
-	// do something
-	return false, nil
+// We'll use the Exists method to check if a user exists with a specific ID.
+func (u *user) Exists(id uint) (bool, error) {
+	var exists bool
+	stmt := "SELECT EXISTS(SELECT true FROM users WHERE id = ?)"
+	err := u.db.QueryRow(stmt, id).Scan(&exists)
+	return exists, err
 }

@@ -60,6 +60,8 @@ func (app *App) requireAuthentication(next http.Handler) http.Handler {
 			//			http.Redirect(w, r, "api/login", http.StatusSeeOther)
 			return
 		}
+
+
 		// Otherwise set the "Cache-Control: no-store" header so that pages
 		// require authentication are not stored in the users browser cache (or
 		// other intermediary cache).
@@ -75,6 +77,7 @@ func (app *App) authenticate(next http.Handler) http.Handler {
 		// GetInt() method. This will return the zero value for an int (0) if no
 		// "authenticatedUserID" value is in the session -- in which case we
 		// call the next handler in the chain as normal and return.
+		//id := app.SessionManager.GetInt(r.Context(), "authenticatedUserID")
 		id := app.SessionManager.GetInt(r.Context(), "authenticatedUserID")
 		if id == 0 {
 			next.ServeHTTP(w, r)
@@ -101,12 +104,6 @@ func (app *App) authenticate(next http.Handler) http.Handler {
 	})
 }
 
-// // Return true if the current request is from an authenticated user, otherwise
-// // return false.
-//
-//	func (app *application) isAuthenticated(r *http.Request) bool {
-//		return app.sessionManager.Exists(r.Context(), "authenticatedUserID")
-//	}
 func (app *App) isAuthenticated(r *http.Request) bool {
 	isAuthenticated, ok := r.Context().Value(entity.IsAuthenticatedContextKey).(bool)
 	if !ok {

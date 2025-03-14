@@ -262,10 +262,46 @@ func TestLogin(t *testing.T) {
 		wantCode int
 	}{
 		{
-			name:     "Valid submission",
+			name:     "Valid login with nickname",
 			nickname: existNeckName,
 			password: validPassword,
 			wantCode: http.StatusOK,
+		},
+		{
+			name:     "valid login with email",
+			nickname: existEmail,
+			password: validPassword,
+			wantCode: http.StatusOK,
+		},
+		{
+			name:     "Empty Nickname",
+			nickname: "",
+			password: validPassword,
+			wantCode: http.StatusBadRequest,
+		},
+		{
+			name:     "Empty Password",
+			nickname: existNeckName,
+			password: "",
+			wantCode: http.StatusBadRequest,
+		},
+		{
+			name:     "Empty Neck Name And Password",
+			nickname: "",
+			password: "",
+			wantCode: http.StatusBadRequest,
+		},
+		{
+			name:     "Wrgong nickname",
+			nickname: "MadeUpNeckname",
+			password: validPassword,
+			wantCode: http.StatusBadRequest,
+		},
+		{
+			name:     "Wrong Password",
+			nickname: existNeckName,
+			password: "MadeUpPassword",
+			wantCode: http.StatusBadRequest,
 		},
 	}
 	for _, tt := range tests {
@@ -289,6 +325,132 @@ func TestLogin(t *testing.T) {
 	}
 }
 
+func TestUserPing(t *testing.T) {
+	// Create the application struct containing our mocked dependencies and set
+	// up the test server for running an end-to-end test.
+	// app, cfg := server.NewTestApplication()
+	// ts := newTestServer(t, app.InitRoutes(cfg))
+	// defer ts.Close()
+
+	// Make a GET /user/signup request and then extract the CSRF token from the
+	// response body.
+	_, _, _ = ts.get(t, "/api/login")
+
+	// csrfToken := extractCSRFToken(t, body)
+	// Log the CSRF token value in our test output using the t.Logf() function.
+	// The t.Logf() function works in the same way as fmt.Printf(), but writes
+	// the provided message to the test output.
+
+	tests := []struct {
+		name     string
+		nickname string
+		password string
+		wantCode int
+	}{
+		{
+			name:     "Logout User Ping",
+			nickname: existNeckName,
+			password: validPassword,
+			wantCode: http.StatusOK,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			reqBody := struct {
+				Nickname string `json:"nickname"`
+				Password string `json:"password"`
+			}{
+				Nickname: tt.nickname,
+				Password: tt.password,
+			}
+
+			jsonBody, err := json.Marshal(reqBody)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			code, header, _ := ts.postJSON(t, "/api/login", jsonBody)
+			assert.Equal(t, code, tt.wantCode)
+
+			// --- User Phase ---
+			// Get session cookie from login response
+			cookie := extractSessionCookie(header)
+			if cookie == nil {
+				t.Fatal("No session cookie found in login response")
+			}
+
+			Req, _ := http.NewRequest(http.MethodGet, ts.URL+"/ping/user", nil) // Use GET instead of POST
+			Req.AddCookie(cookie)                                               // Attach session cookie
+
+			Resp, err := ts.Client().Do(Req) // Send request
+
+			if err != nil {
+				t.Fatal(err) // Handle errors
+			}
+
+			// --- Validate Logout Response ---
+			assert.Equal(t, Resp.StatusCode, tt.wantCode)
+		})
+	}
+}
+func TestUserLogout(t *testing.T) {
+	tests := []struct {
+		name     string
+		nickname string
+		password string
+		wantCode int
+	}{
+		{
+			name:     "Successful Logout",
+			nickname: existNeckName,
+			password: validPassword,
+			wantCode: http.StatusOK, // Expect successful login
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// --- Login Phase ---
+			loginBody := struct {
+				Nickname string `json:"nickname"`
+				Password string `json:"password"`
+			}{
+				Nickname: tt.nickname,
+				Password: tt.password,
+			}
+
+			jsonBody, _ := json.Marshal(loginBody)
+			loginCode, loginHeader, _ := ts.postJSON(t, "/api/login", jsonBody)
+			assert.Equal(t, loginCode, tt.wantCode) // Ensure login succeeds
+
+			// --- Extract Session Cookie ---
+			cookie := extractSessionCookie(loginHeader)
+			if cookie == nil {
+				t.Fatal("No session cookie found")
+			}
+			// --- Logout Phase ---
+			logoutReq, _ := http.NewRequest(http.MethodPost, ts.URL+"/api/logout", nil)
+			logoutReq.AddCookie(cookie)
+			logoutResp, err := ts.Client().Do(logoutReq)
+			if err != nil {
+				t.Fatal(err)
+			}
+			assert.Equal(t, logoutResp.StatusCode, tt.wantCode) // Check logout succeeded
+
+			// --- Validate Session Invalidation ---
+			// Try accessing a protected route (e.g., /ping/user) after logout
+			protectedReq, _ := http.NewRequest(http.MethodGet, ts.URL+"/ping/user", nil)
+			protectedReq.AddCookie(cookie) // Use the same (now invalid) cookie
+			protectedResp, err := ts.Client().Do(protectedReq)
+			if err != nil {
+				t.Fatal(err)
+			}
+			assert.Equal(t, protectedResp.StatusCode, http.StatusForbidden) // Expect 401
+		})
+	}
+}
+
+// Helper functions
 // func TestPosts(t *testing.T) {
 // 	// Create a new instance of our application struct which uses the mocked
 // 	// dependencies.
