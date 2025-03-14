@@ -56,13 +56,11 @@ func (app *App) requireAuthentication(next http.Handler) http.Handler {
 		// return from the middleware chain so that no subsequent handlers in
 		// the chain are executed.
 		if !app.isAuthenticated(r) {
-			app.Loger.Error.Println("user is not authenticated")
 			w.WriteHeader(http.StatusForbidden)
 			//			http.Redirect(w, r, "api/login", http.StatusSeeOther)
 			return
 		}
 
-		app.Loger.Error.Println("user is authenticated")
 
 		// Otherwise set the "Cache-Control: no-store" header so that pages
 		// require authentication are not stored in the users browser cache (or
