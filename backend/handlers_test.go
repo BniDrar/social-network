@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"testing"
@@ -56,342 +57,342 @@ func TestMain(m *testing.M) {
 	os.Exit(exitCode)
 }
 
-// func TestPing(t *testing.T) {
-// 	// app, cfg := server.NewTestApplication()
-// 	// ts := newTestServer(t, app.InitRoutes(cfg)) // http.Server{}
-// 	// defer ts.Close()
-// 	code, _, body := ts.get(t, "/ping")
-// 	assert.Equal(t, code, http.StatusOK)
-// 	assert.Equal(t, body, "OK")
-// }
+func TestPing(t *testing.T) {
+	// app, cfg := server.NewTestApplication()
+	// ts := newTestServer(t, app.InitRoutes(cfg)) // http.Server{}
+	// defer ts.Close()
+	code, _, body := ts.get(t, "/ping")
+	assert.Equal(t, code, http.StatusOK)
+	assert.Equal(t, body, "OK")
+}
 
-// func TestRegister(t *testing.T) {
-// 	// Create the application struct containing our mocked dependencies and set
-// 	// up the test server for running an end-to-end test.
-// 	// app, cfg := server.NewTestApplication()
-// 	// ts := newTestServer(t, app.InitRoutes(cfg))
-// 	// defer ts.Close()
+func TestRegister(t *testing.T) {
+	// Create the application struct containing our mocked dependencies and set
+	// up the test server for running an end-to-end test.
+	// app, cfg := server.NewTestApplication()
+	// ts := newTestServer(t, app.InitRoutes(cfg))
+	// defer ts.Close()
 
-// 	// Make a GET /user/signup request and then extract the CSRF token from the
-// 	// response body.
-// 	_, _, _ = ts.get(t, "/api/register")
+	// Make a GET /user/signup request and then extract the CSRF token from the
+	// response body.
+	_, _, _ = ts.get(t, "/api/register")
 
-// 	// csrfToken := extractCSRFToken(t, body)
-// 	// Log the CSRF token value in our test output using the t.Logf() function.
-// 	// The t.Logf() function works in the same way as fmt.Printf(), but writes
-// 	// the provided message to the test output.
+	// csrfToken := extractCSRFToken(t, body)
+	// Log the CSRF token value in our test output using the t.Logf() function.
+	// The t.Logf() function works in the same way as fmt.Printf(), but writes
+	// the provided message to the test output.
 
-// 	tests := []struct {
-// 		name        string
-// 		nickname    string
-// 		email       string
-// 		password    string
-// 		first       string
-// 		last        string
-// 		dateOfBirth string
-// 		wantCode    int
-// 	}{
-// 		{
-// 			name:        "Valid submission",
-// 			nickname:    validNeckName,
-// 			email:       validEmail,
-// 			password:    validPassword,
-// 			first:       validFirst,
-// 			last:        validLast,
-// 			dateOfBirth: validDateOfBirth,
-// 			wantCode:    http.StatusCreated,
-// 		},
-// 		{
-// 			name:        "Empty First Name",
-// 			nickname:    validNeckName,
-// 			email:       validEmail,
-// 			password:    validPassword,
-// 			first:       "",
-// 			last:        validLast,
-// 			dateOfBirth: validDateOfBirth,
-// 			wantCode:    http.StatusBadRequest,
-// 		},
-// 		{
-// 			name:        "Empty LastName",
-// 			nickname:    validNeckName,
-// 			email:       validEmail,
-// 			password:    validPassword,
-// 			first:       validFirst,
-// 			last:        "",
-// 			dateOfBirth: validDateOfBirth,
-// 			wantCode:    http.StatusBadRequest,
-// 		},
-// 		{
-// 			name:        "Empty NickName",
-// 			nickname:    "",
-// 			email:       validEmail,
-// 			password:    validPassword,
-// 			first:       validFirst,
-// 			last:        validLast,
-// 			dateOfBirth: validDateOfBirth,
-// 			wantCode:    http.StatusBadRequest,
-// 		},
-// 		{
-// 			name:        "Empty email",
-// 			nickname:    validNeckName,
-// 			email:       "",
-// 			password:    validPassword,
-// 			first:       validFirst,
-// 			last:        validLast,
-// 			dateOfBirth: validDateOfBirth,
-// 			wantCode:    http.StatusBadRequest,
-// 		},
-// 		{
-// 			name:        "Empty password",
-// 			nickname:    validNeckName,
-// 			email:       validEmail,
-// 			password:    "",
-// 			first:       validFirst,
-// 			last:        validLast,
-// 			dateOfBirth: validDateOfBirth,
-// 			wantCode:    http.StatusBadRequest,
-// 		},
-// 		{
-// 			name:        "Invalid email",
-// 			nickname:    validNeckName,
-// 			email:       InvalidEmail,
-// 			password:    validPassword,
-// 			first:       validFirst,
-// 			last:        validLast,
-// 			dateOfBirth: validDateOfBirth,
-// 			wantCode:    http.StatusBadRequest,
-// 		},
-// 		{
-// 			name:        "Short password",
-// 			nickname:    validNeckName,
-// 			email:       validEmail,
-// 			password:    "short",
-// 			first:       validFirst,
-// 			last:        validLast,
-// 			dateOfBirth: validDateOfBirth,
-// 			wantCode:    http.StatusBadRequest,
-// 		},
-// 		{
-// 			name:        "password With No Digit",
-// 			nickname:    validNeckName,
-// 			email:       validEmail,
-// 			password:    "passwordWithNoDigit",
-// 			first:       validFirst,
-// 			last:        validLast,
-// 			dateOfBirth: validDateOfBirth,
-// 			wantCode:    http.StatusBadRequest,
-// 		},
-// 		{
-// 			name:        "password_with_no_upper_case1",
-// 			nickname:    validNeckName,
-// 			email:       validEmail,
-// 			password:    validPassword,
-// 			first:       validFirst,
-// 			last:        validLast,
-// 			dateOfBirth: validDateOfBirth,
-// 			wantCode:    http.StatusBadRequest,
-// 		},
-// 		{
-// 			name:        "Duplicate email",
-// 			nickname:    existNeckName,
-// 			email:       existEmail,
-// 			password:    validPassword,
-// 			first:       existFirst,
-// 			last:        existLast,
-// 			dateOfBirth: validDateOfBirth,
-// 			wantCode:    http.StatusBadRequest,
-// 		},
-// 	}
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			reqBody := struct {
-// 				Nickname    string `json:"nickname"`
-// 				Email       string `json:"email"`
-// 				Password    string `json:"password"`
-// 				First       string `json:"first"`
-// 				Last        string `json:"last"`
-// 				DateOfBirth string `json:"date_of_birth"`
-// 			}{
-// 				Nickname:    tt.nickname,
-// 				Email:       tt.email,
-// 				Password:    tt.password,
-// 				First:       tt.first,
-// 				Last:        tt.last,
-// 				DateOfBirth: tt.dateOfBirth,
-// 			}
+	tests := []struct {
+		name        string
+		nickname    string
+		email       string
+		password    string
+		first       string
+		last        string
+		dateOfBirth string
+		wantCode    int
+	}{
+		{
+			name:        "Valid submission",
+			nickname:    validNeckName,
+			email:       validEmail,
+			password:    validPassword,
+			first:       validFirst,
+			last:        validLast,
+			dateOfBirth: validDateOfBirth,
+			wantCode:    http.StatusCreated,
+		},
+		{
+			name:        "Empty First Name",
+			nickname:    validNeckName,
+			email:       validEmail,
+			password:    validPassword,
+			first:       "",
+			last:        validLast,
+			dateOfBirth: validDateOfBirth,
+			wantCode:    http.StatusBadRequest,
+		},
+		{
+			name:        "Empty LastName",
+			nickname:    validNeckName,
+			email:       validEmail,
+			password:    validPassword,
+			first:       validFirst,
+			last:        "",
+			dateOfBirth: validDateOfBirth,
+			wantCode:    http.StatusBadRequest,
+		},
+		{
+			name:        "Empty NickName",
+			nickname:    "",
+			email:       validEmail,
+			password:    validPassword,
+			first:       validFirst,
+			last:        validLast,
+			dateOfBirth: validDateOfBirth,
+			wantCode:    http.StatusBadRequest,
+		},
+		{
+			name:        "Empty email",
+			nickname:    validNeckName,
+			email:       "",
+			password:    validPassword,
+			first:       validFirst,
+			last:        validLast,
+			dateOfBirth: validDateOfBirth,
+			wantCode:    http.StatusBadRequest,
+		},
+		{
+			name:        "Empty password",
+			nickname:    validNeckName,
+			email:       validEmail,
+			password:    "",
+			first:       validFirst,
+			last:        validLast,
+			dateOfBirth: validDateOfBirth,
+			wantCode:    http.StatusBadRequest,
+		},
+		{
+			name:        "Invalid email",
+			nickname:    validNeckName,
+			email:       InvalidEmail,
+			password:    validPassword,
+			first:       validFirst,
+			last:        validLast,
+			dateOfBirth: validDateOfBirth,
+			wantCode:    http.StatusBadRequest,
+		},
+		{
+			name:        "Short password",
+			nickname:    validNeckName,
+			email:       validEmail,
+			password:    "short",
+			first:       validFirst,
+			last:        validLast,
+			dateOfBirth: validDateOfBirth,
+			wantCode:    http.StatusBadRequest,
+		},
+		{
+			name:        "password With No Digit",
+			nickname:    validNeckName,
+			email:       validEmail,
+			password:    "passwordWithNoDigit",
+			first:       validFirst,
+			last:        validLast,
+			dateOfBirth: validDateOfBirth,
+			wantCode:    http.StatusBadRequest,
+		},
+		{
+			name:        "password_with_no_upper_case1",
+			nickname:    validNeckName,
+			email:       validEmail,
+			password:    validPassword,
+			first:       validFirst,
+			last:        validLast,
+			dateOfBirth: validDateOfBirth,
+			wantCode:    http.StatusBadRequest,
+		},
+		{
+			name:        "Duplicate email",
+			nickname:    existNeckName,
+			email:       existEmail,
+			password:    validPassword,
+			first:       existFirst,
+			last:        existLast,
+			dateOfBirth: validDateOfBirth,
+			wantCode:    http.StatusBadRequest,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			reqBody := struct {
+				Nickname    string `json:"nickname"`
+				Email       string `json:"email"`
+				Password    string `json:"password"`
+				First       string `json:"first"`
+				Last        string `json:"last"`
+				DateOfBirth string `json:"date_of_birth"`
+			}{
+				Nickname:    tt.nickname,
+				Email:       tt.email,
+				Password:    tt.password,
+				First:       tt.first,
+				Last:        tt.last,
+				DateOfBirth: tt.dateOfBirth,
+			}
 
-// 			jsonBody, err := json.Marshal(reqBody)
-// 			if err != nil {
-// 				t.Fatal(err)
-// 			}
+			jsonBody, err := json.Marshal(reqBody)
+			if err != nil {
+				t.Fatal(err)
+			}
 
-// 			code, _, _ := ts.postJSON(t, "/api/register", jsonBody)
+			code, _, _ := ts.postJSON(t, "/api/register", jsonBody)
 
-// 			assert.Equal(t, code, tt.wantCode)
-// 			if tt.nickname != existNeckName {
-// 				err = app.User.DeleteUserByNickName(tt.nickname)
-// 				if err != nil {
-// 					log.Println(err)
-// 				}
-// 			}
-// 		})
-// 	}
-// }
+			assert.Equal(t, code, tt.wantCode)
+			if tt.nickname != existNeckName {
+				err = app.User.DeleteUserByNickName(tt.nickname)
+				if err != nil {
+					log.Println(err)
+				}
+			}
+		})
+	}
+}
 
-// func TestLogin(t *testing.T) {
-// 	// Create the application struct containing our mocked dependencies and set
-// 	// up the test server for running an end-to-end test.
-// 	// app, cfg := server.NewTestApplication()
-// 	// ts := newTestServer(t, app.InitRoutes(cfg))
-// 	// defer ts.Close()
+func TestLogin(t *testing.T) {
+	// Create the application struct containing our mocked dependencies and set
+	// up the test server for running an end-to-end test.
+	// app, cfg := server.NewTestApplication()
+	// ts := newTestServer(t, app.InitRoutes(cfg))
+	// defer ts.Close()
 
-// 	// Make a GET /user/signup request and then extract the CSRF token from the
-// 	// response body.
-// 	_, _, _ = ts.get(t, "/api/login")
+	// Make a GET /user/signup request and then extract the CSRF token from the
+	// response body.
+	_, _, _ = ts.get(t, "/api/login")
 
-// 	// csrfToken := extractCSRFToken(t, body)
-// 	// Log the CSRF token value in our test output using the t.Logf() function.
-// 	// The t.Logf() function works in the same way as fmt.Printf(), but writes
-// 	// the provided message to the test output.
+	// csrfToken := extractCSRFToken(t, body)
+	// Log the CSRF token value in our test output using the t.Logf() function.
+	// The t.Logf() function works in the same way as fmt.Printf(), but writes
+	// the provided message to the test output.
 
-// 	tests := []struct {
-// 		name     string
-// 		nickname string
-// 		password string
-// 		wantCode int
-// 	}{
-// 		{
-// 			name:     "Valid login with nickname",
-// 			nickname: existNeckName,
-// 			password: validPassword,
-// 			wantCode: http.StatusOK,
-// 		},
-// 		{
-// 			name:     "valid login with email",
-// 			nickname: existEmail,
-// 			password: validPassword,
-// 			wantCode: http.StatusOK,
-// 		},
-// 		{
-// 			name:     "Empty Nickname",
-// 			nickname: "",
-// 			password: validPassword,
-// 			wantCode: http.StatusBadRequest,
-// 		},
-// 		{
-// 			name:     "Empty Password",
-// 			nickname: existNeckName,
-// 			password: "",
-// 			wantCode: http.StatusBadRequest,
-// 		},
-// 		{
-// 			name:     "Empty Neck Name And Password",
-// 			nickname: "",
-// 			password: "",
-// 			wantCode: http.StatusBadRequest,
-// 		},
-// 		{
-// 			name:     "Wrgong nickname",
-// 			nickname: "MadeUpNeckname",
-// 			password: validPassword,
-// 			wantCode: http.StatusBadRequest,
-// 		},
-// 		{
-// 			name:     "Wrong Password",
-// 			nickname: existNeckName,
-// 			password: "MadeUpPassword",
-// 			wantCode: http.StatusBadRequest,
-// 		},
-// 	}
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			reqBody := struct {
-// 				Nickname string `json:"nickname"`
-// 				Password string `json:"password"`
-// 			}{
-// 				Nickname: tt.nickname,
-// 				Password: tt.password,
-// 			}
+	tests := []struct {
+		name     string
+		nickname string
+		password string
+		wantCode int
+	}{
+		{
+			name:     "Valid login with nickname",
+			nickname: existNeckName,
+			password: validPassword,
+			wantCode: http.StatusOK,
+		},
+		{
+			name:     "valid login with email",
+			nickname: existEmail,
+			password: validPassword,
+			wantCode: http.StatusOK,
+		},
+		{
+			name:     "Empty Nickname",
+			nickname: "",
+			password: validPassword,
+			wantCode: http.StatusBadRequest,
+		},
+		{
+			name:     "Empty Password",
+			nickname: existNeckName,
+			password: "",
+			wantCode: http.StatusBadRequest,
+		},
+		{
+			name:     "Empty Neck Name And Password",
+			nickname: "",
+			password: "",
+			wantCode: http.StatusBadRequest,
+		},
+		{
+			name:     "Wrgong nickname",
+			nickname: "MadeUpNeckname",
+			password: validPassword,
+			wantCode: http.StatusBadRequest,
+		},
+		{
+			name:     "Wrong Password",
+			nickname: existNeckName,
+			password: "MadeUpPassword",
+			wantCode: http.StatusBadRequest,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			reqBody := struct {
+				Nickname string `json:"nickname"`
+				Password string `json:"password"`
+			}{
+				Nickname: tt.nickname,
+				Password: tt.password,
+			}
 
-// 			jsonBody, err := json.Marshal(reqBody)
-// 			if err != nil {
-// 				t.Fatal(err)
-// 			}
+			jsonBody, err := json.Marshal(reqBody)
+			if err != nil {
+				t.Fatal(err)
+			}
 
-// 			code, _, _ := ts.postJSON(t, "/api/login", jsonBody)
-// 			assert.Equal(t, code, tt.wantCode)
-// 		})
-// 	}
-// }
+			code, _, _ := ts.postJSON(t, "/api/login", jsonBody)
+			assert.Equal(t, code, tt.wantCode)
+		})
+	}
+}
 
-// func TestUserPing(t *testing.T) {
-// 	// Create the application struct containing our mocked dependencies and set
-// 	// up the test server for running an end-to-end test.
-// 	// app, cfg := server.NewTestApplication()
-// 	// ts := newTestServer(t, app.InitRoutes(cfg))
-// 	// defer ts.Close()
+func TestUserPing(t *testing.T) {
+	// Create the application struct containing our mocked dependencies and set
+	// up the test server for running an end-to-end test.
+	// app, cfg := server.NewTestApplication()
+	// ts := newTestServer(t, app.InitRoutes(cfg))
+	// defer ts.Close()
 
-// 	// Make a GET /user/signup request and then extract the CSRF token from the
-// 	// response body.
-// 	_, _, _ = ts.get(t, "/api/login")
+	// Make a GET /user/signup request and then extract the CSRF token from the
+	// response body.
+	_, _, _ = ts.get(t, "/api/login")
 
-// 	// csrfToken := extractCSRFToken(t, body)
-// 	// Log the CSRF token value in our test output using the t.Logf() function.
-// 	// The t.Logf() function works in the same way as fmt.Printf(), but writes
-// 	// the provided message to the test output.
+	// csrfToken := extractCSRFToken(t, body)
+	// Log the CSRF token value in our test output using the t.Logf() function.
+	// The t.Logf() function works in the same way as fmt.Printf(), but writes
+	// the provided message to the test output.
 
-// 	tests := []struct {
-// 		name     string
-// 		nickname string
-// 		password string
-// 		wantCode int
-// 	}{
-// 		{
-// 			name:     "Logout Test",
-// 			nickname: existNeckName,
-// 			password: validPassword,
-// 			wantCode: http.StatusInternalServerError,
-// 		},
-// 	}
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			reqBody := struct {
-// 				Nickname string `json:"nickname"`
-// 				Password string `json:"password"`
-// 			}{
-// 				Nickname: tt.nickname,
-// 				Password: tt.password,
-// 			}
+	tests := []struct {
+		name     string
+		nickname string
+		password string
+		wantCode int
+	}{
+		{
+			name:     "Logout User Ping",
+			nickname: existNeckName,
+			password: validPassword,
+			wantCode: http.StatusOK,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			reqBody := struct {
+				Nickname string `json:"nickname"`
+				Password string `json:"password"`
+			}{
+				Nickname: tt.nickname,
+				Password: tt.password,
+			}
 
-// 			jsonBody, err := json.Marshal(reqBody)
-// 			if err != nil {
-// 				t.Fatal(err)
-// 			}
+			jsonBody, err := json.Marshal(reqBody)
+			if err != nil {
+				t.Fatal(err)
+			}
 
-// 			code, header, _ := ts.postJSON(t, "/api/login", jsonBody)
-// 			assert.Equal(t, code, tt.wantCode)
+			code, header, _ := ts.postJSON(t, "/api/login", jsonBody)
+			assert.Equal(t, code, tt.wantCode)
 
-// 			// --- Logout Phase ---
-// 			// Get session cookie from login response
-// 			cookie := extractSessionCookie(header)
-// 			if cookie == nil {
-// 				t.Fatal("No session cookie found in login response")
-// 			}
-// 			// --- Logout Phase ---
-// 			logoutReq, _ := http.NewRequest(http.MethodPost, ts.URL+"/ping/user", nil) // ✅ Fix: use full URL
-// 			logoutReq.AddCookie(cookie)                                                // Attach session cookie
-// 			logoutResp, err := ts.Client().Do(logoutReq)
-// 			log.Println("ping request", logoutReq)
-// 			if err != nil {
-// 				t.Fatal(err)
-// 			}
+			// --- User Phase ---
+			// Get session cookie from login response
+			cookie := extractSessionCookie(header)
+			if cookie == nil {
+				t.Fatal("No session cookie found in login response")
+			}
 
-//				// --- Validate Logout Response ---
-//				log.Println("Logout Response Code:", logoutResp.StatusCode)
-//				assert.Equal(t, logoutResp.StatusCode, tt.wantCode)
-//			})
-//		}
-//	}
+			Req, _ := http.NewRequest(http.MethodGet, ts.URL+"/ping/user", nil) // Use GET instead of POST
+			Req.AddCookie(cookie)                                               // Attach session cookie
+
+			Resp, err := ts.Client().Do(Req) // Send request
+
+			if err != nil {
+				t.Fatal(err) // Handle errors
+			}
+
+			// --- Validate Logout Response ---
+			assert.Equal(t, Resp.StatusCode, tt.wantCode)
+		})
+	}
+}
 func TestUserLogout(t *testing.T) {
 	tests := []struct {
 		name     string
