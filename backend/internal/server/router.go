@@ -27,7 +27,7 @@ func (app *App) InitRoutes(conf *config.Conf) http.Handler {
 			mux.Handle(route.Path, app.SessionManager.LoadAndSave(app.authenticate(http.HandlerFunc(route.handler))))
 		}
 	}
-	return mux
+	return app.recoverPanic(app.logRequest(secureHeaders(mux)))
 }
 
 func (app *App) createRoutes() []Route {
@@ -53,29 +53,34 @@ func (app *App) createRoutes() []Route {
 			Role:    Auth,
 		},
 		{
-			Path: "/api/profile",
+			Path:    "/ping/user",
+			handler: ping,
+			Role:    User,
+		},
+		{
+			Path:    "/api/profile",
 			handler: app.Profile,
-			Role: User,
+			Role:    User,
 		},
 		{
-			Path: "/api/groups",
+			Path:    "/api/groups",
 			handler: app.GetGroups,
-			Role: User,
+			Role:    User,
 		},
 		{
-			Path: "/api/group/{id}",
+			Path:    "/api/group/{id}",
 			handler: app.GetGroupById,
-			Role: User,
+			Role:    User,
 		},
 		{
-			Path: "/api/group/create",
+			Path:    "/api/group/create",
 			handler: app.CreateGroup,
-			Role: User,
+			Role:    User,
 		},
 		{
-			Path: "/api/group/update/{id}",
+			Path:    "/api/group/update/{id}",
 			handler: app.UpdateGroup,
-			Role: User,
+			Role:    User,
 		},
 	}
 }

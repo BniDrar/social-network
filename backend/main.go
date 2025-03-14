@@ -38,8 +38,8 @@ func main() {
 
 	Dep := &config.Dependencies{
 		SessionManager: sessionManager,
-		DB:            db,
-		Loger:         loger,
+		DB:             db,
+		Loger:          loger,
 		/*Legislation is the process or result of enrolling, enacting, or promulgating laws by a legislature, parliament, or analogous governing body.*/
 		//hub := websocket.NewHub() // need console legislation
 		Hub: websocket.NewHub(),
@@ -53,6 +53,6 @@ func main() {
 	}
 
 	// Start listening server
-	loger.Info.Printf("\033[32mServer is running...🚀\nLink: 🌐 http://%s:%s", cfg.API.Host, cfg.API.Port)
+	loger.Info.Printf("\033[32mServer is running...🚀\n\tLink: 🌐 http://%s:%s", cfg.API.Host, cfg.API.Port)
 	server.ListenAndServe()
 }

@@ -95,3 +95,14 @@ func (ts *testServer) postJSON(t *testing.T, urlPath string, body []byte) (int, 
 	}
 	return rs.StatusCode, rs.Header, string(bodyBytes)
 }
+
+// Helper functions
+func extractSessionCookie(headers http.Header) *http.Cookie {
+	cookies := (&http.Response{Header: headers}).Cookies()
+	for _, cookie := range cookies {
+		if cookie.Name == "session" {
+			return cookie
+		}
+	}
+	return nil
+}

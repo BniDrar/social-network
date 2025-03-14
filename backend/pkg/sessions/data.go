@@ -53,7 +53,6 @@ func (s *SessionManager) Load(ctx context.Context, token string) (context.Contex
 	if _, ok := ctx.Value(s.contextKey).(*sessionData); ok {
 		return ctx, nil // if session exist in the context skip
 	}
-
 	if token == "" { // there is notthig to retrieve from database
 		return s.addSessionDataToContext(ctx, newSessionData(s.Lifetime)), nil //  handle messing session
 	}
@@ -268,7 +267,6 @@ func (s *SessionManager) doStoreFind(token string) (b []byte, found bool, err er
 }
 
 func (s *SessionManager) doStoreCommit(ctx context.Context, token string, b []byte, expiry time.Time) (err error) {
-	fmt.Println("now we save to the session")
 	return s.Store.Commit(token, b, expiry)
 }
 
