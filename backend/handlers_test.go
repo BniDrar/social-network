@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"testing"
@@ -425,11 +424,9 @@ func TestUserLogout(t *testing.T) {
 
 			// --- Extract Session Cookie ---
 			cookie := extractSessionCookie(loginHeader)
-			log.Println("this is the cookie:", cookie)
 			if cookie == nil {
 				t.Fatal("No session cookie found")
 			}
-			log.Println("------------------------------------------> logout fase")
 			// --- Logout Phase ---
 			logoutReq, _ := http.NewRequest(http.MethodPost, ts.URL+"/api/logout", nil)
 			logoutReq.AddCookie(cookie)
@@ -447,7 +444,6 @@ func TestUserLogout(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			log.Println("Protectd Response: ", protectedReq)
 			assert.Equal(t, protectedResp.StatusCode, http.StatusForbidden) // Expect 401
 		})
 	}
