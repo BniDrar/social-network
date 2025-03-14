@@ -267,7 +267,6 @@ func (s *SessionManager) doStoreFind(token string) (b []byte, found bool, err er
 }
 
 func (s *SessionManager) doStoreCommit(ctx context.Context, token string, b []byte, expiry time.Time) (err error) {
-	fmt.Println("store commiting secret")
 	return s.Store.Commit(token, b, expiry)
 }
 
