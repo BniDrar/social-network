@@ -115,3 +115,19 @@ func (g *group) CreateGroupRepository(ctx context.Context, group entity.Group) (
 	return group, nil
 }
 
+func (g *group) UpdateGroupService(ctx context.Context, group entity.Group) (entity.Group,error){
+	query := `
+	UPDATE groups SET name = ?, type = ?, admin = ?, updated_at = NOW() WHERE id = ?
+	`
+	stmt, err := g.db.PrepareContext(ctx, query)
+	if err != nil {
+		return entity.Group{}, err
+	}
+	defer stmt.Close()
+	_, err = stmt.ExecContext(ctx, group.Name, group.Type, group.Admin, group.ID)
+	if err != nil {
+		return entity.Group{}, err
+	}
+	return group, nil
+}
+
