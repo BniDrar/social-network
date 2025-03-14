@@ -11,6 +11,7 @@ import (
 	"socialNetwork/pkg/database"
 	"socialNetwork/pkg/loger"
 	scs "socialNetwork/pkg/sessions"
+	"socialNetwork/pkg/store"
 	"socialNetwork/pkg/websocket"
 )
 
@@ -37,15 +38,6 @@ func NewApp(dep *config.Dependencies) *App {
 func NewTestApplication() (*App, *config.Conf) {
 	// loger := loger.NewTestLogger()
 	loger := loger.NewLogger()
-	// And a form decoder.
-	// formDecoder := form.NewDecoder()
-	// And a session manager instance. Note that we use the same settings as
-	// production, except that we *don't* set a Store for the session manager.
-	// If no store is set, the SCS package will default to using a transient
-	// in-memory store, which is ideal for testing purposes.
-	sessionManager := scs.New()
-	sessionManager.Lifetime = 12 * time.Hour
-	sessionManager.Cookie.Secure = true
 
 	cfg, err := config.NewConfig()
 	if err != nil {
@@ -56,6 +48,16 @@ func NewTestApplication() (*App, *config.Conf) {
 		loger.Error.Panicf("error occured while connecting database: %s", err.Error())
 	}
 	// defer db.Close()
+
+	// And a form decoder.
+	// formDecoder := form.NewDecoder()
+	// And a session manager instance. Note that we use the same settings as
+	// production, except that we *don't* set a Store for the session manager.
+	// If no store is set, the SCS package will default to using a transient
+	// in-memory store, which is ideal for testing purposes.
+	sessionManager := scs.New()
+	sessionManager.Lifetime = 12 * time.Hour
+	sessionManager.Store = store.New(db)
 
 	dep := &config.Dependencies{
 		SessionManager: sessionManager,

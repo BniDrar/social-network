@@ -81,10 +81,10 @@ func (app *App) authenticate(next http.Handler) http.Handler {
 		// GetInt() method. This will return the zero value for an int (0) if no
 		// "authenticatedUserID" value is in the session -- in which case we
 		// call the next handler in the chain as normal and return.
+		//id := app.SessionManager.GetInt(r.Context(), "authenticatedUserID")
 		id := app.SessionManager.GetInt(r.Context(), "authenticatedUserID")
 		log.Println("authenticated user id:", id)
 		if id == 0 {
-			log.Println("user is not in database")
 			next.ServeHTTP(w, r)
 			return
 		}
@@ -110,12 +110,6 @@ func (app *App) authenticate(next http.Handler) http.Handler {
 	})
 }
 
-// // Return true if the current request is from an authenticated user, otherwise
-// // return false.
-//
-//	func (app *application) isAuthenticated(r *http.Request) bool {
-//		return app.sessionManager.Exists(r.Context(), "authenticatedUserID")
-//	}
 func (app *App) isAuthenticated(r *http.Request) bool {
 	isAuthenticated, ok := r.Context().Value(entity.IsAuthenticatedContextKey).(bool)
 	if !ok {

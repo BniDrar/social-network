@@ -99,7 +99,7 @@ func (u *user) Login(w http.ResponseWriter, r *http.Request) {
 		u.loger.Error.Println(err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 	}
-	u.sessionManager.Put(r.Context(), string(entity.ContextID), id)
+	u.sessionManager.Put(r.Context(), "authenticatedUserID", id)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Write([]byte("user is logged in succesfully"))
@@ -170,7 +170,10 @@ func (u *user) Follow(w http.ResponseWriter, r *http.Request) {}
 
 func (u *user) Followers(w http.ResponseWriter, r *http.Request) {}
 
-func (s *user) Exists(id uint) (bool, error) {
-	// do something
-	return false, nil
+// We'll use the Exists method to check if a user exists with a specific ID.
+func (u *user) Exists(id uint) (bool, error) {
+	var exists bool
+	stmt := "SELECT EXISTS(SELECT true FROM users WHERE id = ?)"
+	err := u.db.QueryRow(stmt, id).Scan(&exists)
+	return exists, err
 }

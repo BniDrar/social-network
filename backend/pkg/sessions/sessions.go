@@ -130,7 +130,7 @@ func (s *SessionManager) LoadAndSave(next http.Handler) http.Handler {
 		// and returns a new context.Context containing the session data. If no matching
 		// token is found then this will create a new session.
 		ctx, err := s.Load(r.Context(), token) // adds session data to context
-		log.Println("this is the contex in load and save", ctx)
+		log.Println("this is the contex in LoadAndSave", ctx)
 		if err != nil {
 			s.ErrorFunc(w, r, err)
 			return
@@ -143,11 +143,10 @@ func (s *SessionManager) LoadAndSave(next http.Handler) http.Handler {
 			request:        sr,
 			sessionManager: s,
 		}
-		log.Println("written 0 ", sw.written)
+		log.Println("Is the session written befor next.serve:", sw.written)
 		next.ServeHTTP(sw, sr)
-		log.Println("i suppose the session is not written yet", sw.written)
+		log.Println("Is the session written after next.serve:", sw.written)
 		if !sw.written {
-			log.Println("now we have to save the session")
 			s.commitAndWriteSessionCookie(w, sr)
 		}
 	})
