@@ -95,8 +95,9 @@ func (u *user) Login(w http.ResponseWriter, r *http.Request) {
 	}
 	err = u.sessionManager.RenewToken(r.Context())
 	if err != nil {
-		u.loger.Error.Println(err)
+		u.loger.Error.Println(err, "something")
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
 	}
 	u.sessionManager.Put(r.Context(), "authenticatedUserID", id)
 
