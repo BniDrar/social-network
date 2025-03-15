@@ -32,6 +32,7 @@ func (app *App) InitRoutes(conf *config.Conf) http.Handler {
 
 func (app *App) createRoutes() []Route {
 	return []Route{
+		/*testing handlers*/
 		{
 			Path:    "/ping",
 			handler: ping,
@@ -42,6 +43,7 @@ func (app *App) createRoutes() []Route {
 			handler: ping,
 			Role:    User,
 		},
+		/*user handlers*/
 		{
 			Path:    "/api/register",
 			handler: app.User.Register,
@@ -58,10 +60,16 @@ func (app *App) createRoutes() []Route {
 			Role:    User,
 		},
 		{
+			Path:    "/api/follow/",
+			handler: app.Follow,
+			Role:    User,
+		},
+		{
 			Path:    "/api/profile",
 			handler: app.Profile,
 			Role:    User,
 		},
+		/*group handlers*/
 		{
 			Path:    "/api/user_groups",
 			handler: app.GetGroups,
@@ -82,16 +90,7 @@ func (app *App) createRoutes() []Route {
 			handler: app.GetAllGroups,
 			Role:    User,
 		},
-		{
-			Path: "/api/follow/",
-			handler: app.Follow,
-			Role:    User,
-		},
-		{
-			Path: "/api/profile/",
-			handler: app.Profile,
-            Role:    User,
-		},
+		/*... handlers*/
 	}
 }
 

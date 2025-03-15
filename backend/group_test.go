@@ -3,31 +3,14 @@ package main
 import (
 	"encoding/json"
 	"net/http"
-	"testing"
-
 	"socialNetwork/pkg/assert"
+	"testing"
 )
 
 func TestGetGroups(t *testing.T) {
 
 	/*_________________THE FIRST STEP IS TO LOGIN_______________*/
-	t.Run("Loging For Group Test", func(t *testing.T) {
-
-		reqBody := struct {
-			Nickname string `json:"nickname"`
-			Password string `json:"password"`
-		}{
-			Nickname: existNeckName,
-			Password: validPassword,
-		}
-
-		jsonBody, err := json.Marshal(reqBody)
-		if err != nil {
-			t.Fatal(err)
-		}
-		code, _, _ := ts.postJSON(t, "/api/login", jsonBody)
-		assert.Equal(t, code, http.StatusOK)
-	})
+	t.Run("Loging For Group Test", ts.login)
 	/*___________MAKE A TEST TABLE OF ALL POSSIBLE CASES_________*/
 	tests := []struct {
 		name     string
@@ -67,23 +50,7 @@ func TestGetGroups(t *testing.T) {
 func TestGetGroupById(t *testing.T) {
 
 	/*_________________THE FIRST STEP IS TO LOGIN_______________*/
-	t.Run("Loging For GetGroup By ID Test", func(t *testing.T) {
-
-		reqBody := struct {
-			Nickname string `json:"nickname"`
-			Password string `json:"password"`
-		}{
-			Nickname: existNeckName,
-			Password: validPassword,
-		}
-
-		jsonBody, err := json.Marshal(reqBody)
-		if err != nil {
-			t.Fatal(err)
-		}
-		code, _, _ := ts.postJSON(t, "/api/login", jsonBody)
-		assert.Equal(t, code, http.StatusOK)
-	})
+	t.Run("Loging For GetGroup By ID Test", ts.login)
 	/*___________MAKE A TEST TABLE OF ALL POSSIBLE CASES_________*/
 	tests := []struct {
 		name     string
@@ -114,23 +81,7 @@ func TestGetGroupById(t *testing.T) {
 func TestCreateGroup(t *testing.T) {
 
 	/*_________________THE FIRST STEP IS TO LOGIN_______________*/
-	t.Run("Loging For GetGroup By ID Test", func(t *testing.T) {
-
-		reqBody := struct {
-			Nickname string `json:"nickname"`
-			Password string `json:"password"`
-		}{
-			Nickname: existNeckName,
-			Password: validPassword,
-		}
-
-		jsonBody, err := json.Marshal(reqBody)
-		if err != nil {
-			t.Fatal(err)
-		}
-		code, _, _ := ts.postJSON(t, "/api/login", jsonBody)
-		assert.Equal(t, code, http.StatusOK)
-	})
+	t.Run("Loging For GetGroup By ID Test", ts.login)
 	/*___________MAKE A TEST TABLE OF ALL POSSIBLE CASES_________*/
 	tests := []struct {
 		name     string
@@ -161,23 +112,7 @@ func TestCreateGroup(t *testing.T) {
 func TestGetAllGroups(t *testing.T) {
 
 	/*_________________THE FIRST STEP IS TO LOGIN_______________*/
-	t.Run("Loging For Get All Groups Test", func(t *testing.T) {
-
-		reqBody := struct {
-			Nickname string `json:"nickname"`
-			Password string `json:"password"`
-		}{
-			Nickname: existNeckName,
-			Password: validPassword,
-		}
-
-		jsonBody, err := json.Marshal(reqBody)
-		if err != nil {
-			t.Fatal(err)
-		}
-		code, _, _ := ts.postJSON(t, "/api/login", jsonBody)
-		assert.Equal(t, code, http.StatusOK)
-	})
+	t.Run("Loging For Get All Groups Test", ts.login)
 	/*___________MAKE A TEST TABLE OF ALL POSSIBLE CASES_________*/
 	tests := []struct {
 		name     string

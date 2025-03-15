@@ -9,22 +9,6 @@ import (
 	"socialNetwork/pkg/assert"
 )
 
-const (
-	existNeckName = "existuser@example.com"
-	existLast     = "user"
-	existFirst    = "exist"
-	existEmail    = "existuser@example.com"
-
-	validNeckName    = "validuser"
-	validFirst       = "valid"
-	validLast        = "user"
-	validDateOfBirth = "01/01/2000"
-	validPassword    = "validPa$$word1"
-	validEmail       = "validuser@example.com"
-
-	InvalidEmail = "BadEmail"
-)
-
 func TestRegister(t *testing.T) {
 	// t.Parallel() // Run sub-tests concurrently
 
@@ -342,3 +326,68 @@ func TestUserLogout(t *testing.T) {
 	}
 }
 
+func TestProfile(t *testing.T) {
+
+	/*_________________THE FIRST STEP IS TO LOGIN_______________*/
+	t.Run("Loging For GetGroup By ID Test", ts.login)
+	/*___________MAKE A TEST TABLE OF ALL POSSIBLE CASES_________*/
+	tests := []struct {
+		name     string
+		wantCode int
+	}{
+		{
+			name:     "Get Profile",
+			wantCode: http.StatusOK,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			code, _, _ := ts.JSONRequest(t, "/api/profile?userid=1", nil, http.MethodGet)
+			assert.Equal(t, code, tt.wantCode)
+		})
+	}
+}
+
+func TestFollow(t *testing.T) {
+
+	/*_________________THE FIRST STEP IS TO LOGIN_______________*/
+	t.Run("Loging For Follow Test", ts.login)
+	/*___________MAKE A TEST TABLE OF ALL POSSIBLE CASES_________*/
+	tests := []struct {
+		name     string
+		wantCode int
+	}{
+		{
+			name:     "Get Follow",
+			wantCode: http.StatusOK,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			code, _, _ := ts.JSONRequest(t, "/api/follow?followed?=2", nil, http.MethodGet)
+			assert.Equal(t, code, tt.wantCode)
+		})
+	}
+}
+
+// func TestFollows(t *testing.T) {
+
+// 	/*_________________THE FIRST STEP IS TO LOGIN_______________*/
+// 	t.Run("Loging For Follow Test", ts.login)
+// 	/*___________MAKE A TEST TABLE OF ALL POSSIBLE CASES_________*/
+// 	tests := []struct {
+// 		name     string
+// 		wantCode int
+// 	}{
+// 		{
+// 			name:     "Get Follow",
+// 			wantCode: http.StatusOK,
+// 		},
+// 	}
+// 	for _, tt := range tests {
+// 		t.Run(tt.name, func(t *testing.T) {
+// 			code, _, _ := ts.JSONRequest(t, "/api/followers", nil, http.MethodGet)
+// 			assert.Equal(t, code, tt.wantCode)
+// 		})
+// 	}
+// }

@@ -2,12 +2,30 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"io"
 	"net/http"
 	"net/http/cookiejar"
 	"net/http/httptest"
+	"socialNetwork/pkg/assert"
 	"testing"
 	// New import
+)
+
+const (
+	existNeckName = "existuser@example.com"
+	existLast     = "user"
+	existFirst    = "exist"
+	existEmail    = "existuser@example.com"
+
+	validNeckName    = "validuser"
+	validFirst       = "valid"
+	validLast        = "user"
+	validDateOfBirth = "01/01/2000"
+	validPassword    = "validPa$$word1"
+	validEmail       = "validuser@example.com"
+
+	InvalidEmail = "BadEmail"
 )
 
 // Define a custom testServer type which embeds a httptest.Server instance.
@@ -94,4 +112,21 @@ func (ts *testServer) JSONRequest(t *testing.T, urlPath string, body []byte, met
 		t.Fatal(err)
 	}
 	return rs.StatusCode, rs.Header, string(bodyBytes)
+}
+
+func (ts *testServer) login(t *testing.T) {
+	reqBody := struct {
+		Nickname string `json:"nickname"`
+		Password string `json:"password"`
+	}{
+		Nickname: existNeckName,
+		Password: validPassword,
+	}
+
+	jsonBody, err := json.Marshal(reqBody)
+	if err != nil {
+		t.Fatal(err)
+	}
+	code, _, _ := ts.postJSON(t, "/api/login", jsonBody)
+	assert.Equal(t, code, http.StatusOK)
 }
