@@ -2,24 +2,33 @@ package group
 
 import (
 	"context"
+	"errors"
+	"fmt"
 
 	"socialNetwork/entity"
 )
 
 func (g *group) GetGroupsByUserID(ctx context.Context,userID int, limit int, offset int) (entity.Groups, error) {
 	query := `
-	SELECT g.id, g.name, g.type, g.admin,g.created_at,g.updated_at COUNT(DISTINCT gm.user_id) AS member_count, COUNT(DISTINCT p.id) AS post_count
+	SELECT 
+    g.id, 
+    g.name, 
+    g.type,
+		g.description,
+    g.admin,
+    COUNT(DISTINCT gm.member_id) AS member_count, 
+    COUNT(DISTINCT p.id) AS post_count
 	FROM groups g
 	JOIN group_members gm ON g.id = gm.group_id
 	LEFT JOIN posts p ON g.id = p.group_id
-	WHERE gm.user_id = ?
+	WHERE gm.member_id = ?
 	GROUP BY g.id
 	ORDER BY g.id DESC
-	LIMIT ? OFFSET ?
+  LIMIT ? OFFSET ?
 	`
 	stmt, err := g.db.PrepareContext(ctx, query)
 	if err !=nil {
-		return nil, err
+		return nil, errors.New(fmt.Sprintf("error preparing query in GetGroupsByUserID function: %v", err))
 	}
 	defer stmt.Close()
 	rows, err := stmt.QueryContext(ctx, userID, limit, offset)
@@ -34,11 +43,10 @@ func (g *group) GetGroupsByUserID(ctx context.Context,userID int, limit int, off
 			&group.ID,
 			&group.Name,
 			&group.Type,
+			&group.Description,
 			&group.Admin,
 			&group.MemberCount,
 			&group.PostCount,
-			&group.CreatedAt,
-			&group.UpdatedAt,
 			)
 		if err != nil {
 			return nil, err
@@ -56,16 +64,15 @@ func (g *group) GetGroupByIdRepository(ctx context.Context, userID, groupID int)
 		SELECT
 			g.id,
 			g.name,
+			g.description,
 			g.type,
 			g.admin,
-			g.created_at,
-			g.updated_at,
-			COUNT(DISTINCT gm.user_id) AS member_count,
+			COUNT(DISTINCT gm.member_id) AS member_count,
 			COUNT(DISTINCT p.id) AS post_count
 			FROM groups g
 			JOIN group_members gm ON g.id = gm.group_id
 			LEFT JOIN posts p ON g.id = p.group_id
-			WHERE g.id = ? AND gm.user_id = ?
+			WHERE g.id = ? AND gm.member_id = ?
 			GROUP BY g.id
 			ORDER BY g.id DESC
 			LIMIT 1
@@ -80,12 +87,11 @@ func (g *group) GetGroupByIdRepository(ctx context.Context, userID, groupID int)
 	err = row.Scan(
 		&group.ID,
 		&group.Name,
+		&group.Description,
 		&group.Type,
 		&group.Admin,
 		&group.MemberCount,
 		&group.PostCount,
-		&group.CreatedAt,
-		&group.UpdatedAt,
 	)
 	if err != nil {
 		return entity.Group{}, err
@@ -95,15 +101,15 @@ func (g *group) GetGroupByIdRepository(ctx context.Context, userID, groupID int)
 
 func (g *group) CreateGroupRepository(ctx context.Context, group entity.Group) (entity.Group, error) {
 	query := `
-		INSERT INTO groups (name, type, admin,created_at, updated_at)
-		VALUES (?, ?, ?, NOW(), NOW())
+		INSERT INTO groups (name,description, type, admin)
+		VALUES (?, ?, ?, ?)
 	`
 	stmt, err := g.db.PrepareContext(ctx, query)
 	if err != nil {
 		return entity.Group{}, err
 	}
 	defer stmt.Close()
-	result, err := stmt.ExecContext(ctx, group.Name, group.Type, group.Admin, group.CreatedAt, group.UpdatedAt)
+	result, err := stmt.ExecContext(ctx, group.Name,group.Description, group.Type, group.Admin)
 	if err != nil {
 		return entity.Group{}, err
 	}
@@ -115,19 +121,53 @@ func (g *group) CreateGroupRepository(ctx context.Context, group entity.Group) (
 	return group, nil
 }
 
-func (g *group) UpdateGroupRepsitory(ctx context.Context, group entity.Group) (entity.Group,error){
+func (g *group) GetAllGroupsRepository(ctx context.Context, limit, offset, typeGroup int) (entity.Groups, error) {
 	query := `
-	UPDATE groups SET name = ?, type = ?, admin = ?, updated_at = NOW() WHERE id = ?
+		SELECT
+			g.id,
+			g.name,
+			g.description,
+			g.type,
+			g.admin,
+			COUNT(DISTINCT gm.member_id) AS member_count,
+			COUNT(DISTINCT p.id) AS post_count
+		FROM groups g
+		JOIN group_members gm ON g.id = gm.group_id
+		LEFT JOIN posts p ON g.id = p.group_id
+		WHERE g.type = ?
+		GROUP BY g.id
+		ORDER BY g.id DESC
+		LIMIT ? OFFSET ?
 	`
 	stmt, err := g.db.PrepareContext(ctx, query)
 	if err != nil {
-		return entity.Group{}, err
+		return nil, err
 	}
 	defer stmt.Close()
-	_, err = stmt.ExecContext(ctx, group.Name, group.Type, group.Admin, group.ID)
+	rows, err := stmt.QueryContext(ctx, typeGroup, limit, offset)
 	if err != nil {
-		return entity.Group{}, err
+		return nil, err
 	}
-	return group, nil
+	defer rows.Close()
+	var groups entity.Groups
+	for rows.Next() {
+		var group entity.Group
+		err := rows.Scan(
+			&group.ID,
+			&group.Name,
+			&group.Description,
+			&group.Type,
+			&group.Admin,
+			&group.MemberCount,
+			&group.PostCount,
+		)
+			if err != nil {
+			return nil, err
+		}
+		groups = append(groups, group)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return groups, nil
 }
-

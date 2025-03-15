@@ -63,12 +63,12 @@ func (app *App) createRoutes() []Route {
 			Role:    User,
 		},
 		{
-			Path:    "/api/groups",
+			Path:    "/api/user_groups",
 			handler: app.GetGroups,
 			Role:    User,
 		},
 		{
-			Path:    "/api/group/{id}",
+			Path:    "/api/group",
 			handler: app.GetGroupById,
 			Role:    User,
 		},
@@ -78,8 +78,8 @@ func (app *App) createRoutes() []Route {
 			Role:    User,
 		},
 		{
-			Path:    "/api/group/update/{id}",
-			handler: app.UpdateGroup,
+			Path:    "/api/groups",
+			handler: app.GetAllGroups,
 			Role:    User,
 		},
 		{

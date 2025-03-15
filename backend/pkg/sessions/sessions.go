@@ -200,7 +200,7 @@ func (s *SessionManager) WriteSessionCookie(ctx context.Context, w http.Response
 
 func defaultErrorFunc(w http.ResponseWriter, r *http.Request, err error) {
 	log.Output(2, err.Error())
-	http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+	w.WriteHeader(http.StatusInternalServerError)
 }
 
 type sessionResponseWriter struct {

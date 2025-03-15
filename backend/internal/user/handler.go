@@ -96,7 +96,7 @@ func (u *user) Login(w http.ResponseWriter, r *http.Request) {
 	err = u.sessionManager.RenewToken(r.Context())
 	if err != nil {
 		u.loger.Error.Println(err) // that's for registering error in log file
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 	u.sessionManager.Put(r.Context(), "authenticatedUserID", id)
@@ -115,7 +115,8 @@ func (u *user) Logout(w http.ResponseWriter, r *http.Request) {
 	// ID again. for  session fixation attacks
 	err := u.sessionManager.RenewToken(r.Context())
 	if err != nil {
-		http.Error(w, "Method Not Allowed", http.StatusInternalServerError)
+		u.loger.Error.Println(err) // that's for registering error in log file
+		w.WriteHeader(http.StatusInternalServerError)
 		// app.serverError(w, err)
 		return
 	}
@@ -152,7 +153,7 @@ func (u *user) Profile(w http.ResponseWriter, r *http.Request) {
 	}
 	if err := json.NewEncoder(w).Encode(user); err != nil {
 		u.loger.Error.Println(err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 }
