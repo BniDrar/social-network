@@ -75,3 +75,23 @@ func (ts *testServer) postJSON(t *testing.T, urlPath string, body []byte) (int, 
 	}
 	return rs.StatusCode, rs.Header, string(bodyBytes)
 }
+
+func (ts *testServer) JSONRequest(t *testing.T, urlPath string, body []byte, method string) (int, http.Header, string) {
+	req, err := http.NewRequest(method, ts.URL+urlPath, bytes.NewBuffer(body))
+	if err != nil {
+		t.Fatal(err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	rs, err := ts.Client().Do(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer rs.Body.Close()
+
+	bodyBytes, err := io.ReadAll(rs.Body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return rs.StatusCode, rs.Header, string(bodyBytes)
+}
