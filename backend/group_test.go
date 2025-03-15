@@ -38,7 +38,7 @@ func TestGetGroups(t *testing.T) {
 		{
 			name:     "User Group",
 			limit:    10,
-			offset:   10,
+			offset:   0,
 			wantCode: http.StatusOK,
 		},
 	}
@@ -49,7 +49,7 @@ func TestGetGroups(t *testing.T) {
 				Offset int `json:"offset"`
 			}{
 				Limit:  10,
-				Offset: 10,
+				Offset: 0,
 			}
 
 			jsonBody, err := json.Marshal(reqBody)
@@ -59,6 +59,100 @@ func TestGetGroups(t *testing.T) {
 
 			//code, _, _ := ts.JSONRequest(t, "/api/user_groups", jsonBody, http.MethodPost)
 			code, _, _ := ts.JSONRequest(t, "/api/user_groups", jsonBody, http.MethodGet)
+			assert.Equal(t, code, tt.wantCode)
+		})
+	}
+}
+
+func TestGetGroupById(t *testing.T) {
+
+	/*_________________THE FIRST STEP IS TO LOGIN_______________*/
+	t.Run("Loging For GetGroup By ID Test", func(t *testing.T) {
+
+		reqBody := struct {
+			Nickname string `json:"nickname"`
+			Password string `json:"password"`
+		}{
+			Nickname: existNeckName,
+			Password: validPassword,
+		}
+
+		jsonBody, err := json.Marshal(reqBody)
+		if err != nil {
+			t.Fatal(err)
+		}
+		code, _, _ := ts.postJSON(t, "/api/login", jsonBody)
+		assert.Equal(t, code, http.StatusOK)
+	})
+	/*___________MAKE A TEST TABLE OF ALL POSSIBLE CASES_________*/
+	tests := []struct {
+		name     string
+		wantCode int
+	}{
+		{
+			name:     "Get Group By ID",
+			wantCode: http.StatusOK,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			reqBody := struct {
+			}{}
+
+			jsonBody, err := json.Marshal(reqBody)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			//code, _, _ := ts.JSONRequest(t, "/api/user_groups", jsonBody, http.MethodPost)
+			code, _, _ := ts.JSONRequest(t, "/api/group?id=1", jsonBody, http.MethodGet)
+			assert.Equal(t, code, tt.wantCode)
+		})
+	}
+}
+
+func TestCreateGroup(t *testing.T) {
+
+	/*_________________THE FIRST STEP IS TO LOGIN_______________*/
+	t.Run("Loging For GetGroup By ID Test", func(t *testing.T) {
+
+		reqBody := struct {
+			Nickname string `json:"nickname"`
+			Password string `json:"password"`
+		}{
+			Nickname: existNeckName,
+			Password: validPassword,
+		}
+
+		jsonBody, err := json.Marshal(reqBody)
+		if err != nil {
+			t.Fatal(err)
+		}
+		code, _, _ := ts.postJSON(t, "/api/login", jsonBody)
+		assert.Equal(t, code, http.StatusOK)
+	})
+	/*___________MAKE A TEST TABLE OF ALL POSSIBLE CASES_________*/
+	tests := []struct {
+		name     string
+		wantCode int
+	}{
+		{
+			name:     "Create Group",
+			wantCode: http.StatusOK,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			reqBody := struct {
+			}{}
+
+			jsonBody, err := json.Marshal(reqBody)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			//code, _, _ := ts.JSONRequest(t, "/api/user_groups", jsonBody, http.MethodPost)
+			code, _, _ := ts.JSONRequest(t, "/api/group/create", jsonBody, http.MethodPost)
 			assert.Equal(t, code, tt.wantCode)
 		})
 	}
