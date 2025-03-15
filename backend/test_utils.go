@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"net/http/cookiejar"
 	"net/http/httptest"
-	"net/url"
 	"testing"
 	// New import
 )
@@ -55,25 +54,6 @@ func newTestServer(t *testing.T, h http.Handler) *testServer {
 		return http.ErrUseLastResponse
 	}
 	return &testServer{ts}
-}
-
-// Create a postForm method for sending POST requests to the test server. The
-// final parameter to this method is a url.Values object which can contain any
-// form data that you want to send in the request body.
-func (ts *testServer) postForm(t *testing.T, urlPath string, form url.Values) (int, http.Header, string) {
-	rs, err := ts.Client().PostForm(ts.URL+urlPath, form)
-	if err != nil {
-		t.Fatal(err)
-	}
-	// Read the response body from the test server.
-	defer rs.Body.Close()
-	body, err := io.ReadAll(rs.Body)
-	if err != nil {
-		t.Fatal(err)
-	}
-	bytes.TrimSpace(body)
-	// Return the response status, headers and body.
-	return rs.StatusCode, rs.Header, string(body)
 }
 
 func (ts *testServer) postJSON(t *testing.T, urlPath string, body []byte) (int, http.Header, string) {
