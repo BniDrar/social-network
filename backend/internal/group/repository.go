@@ -115,7 +115,7 @@ func (g *group) CreateGroupRepository(ctx context.Context, group entity.Group) (
 	return group, nil
 }
 
-func (g *group) UpdateGroupService(ctx context.Context, group entity.Group) (entity.Group,error){
+func (g *group) UpdateGroupRepsitory(ctx context.Context, group entity.Group) (entity.Group,error){
 	query := `
 	UPDATE groups SET name = ?, type = ?, admin = ?, updated_at = NOW() WHERE id = ?
 	`
