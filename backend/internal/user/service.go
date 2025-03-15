@@ -14,26 +14,6 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func (s *user) LoginService(user entity.Credentials) (string, int, error) {
-	//  check credentials
-	if err := utils.ValidateLoginCredentials(user); err != nil {
-		return "", http.StatusBadRequest, err
-	}
-	// get user from db
-	u, err := s.GetUserByUsername(user.Username)
-	if err != nil {
-		return "", http.StatusBadRequest, errors.New("invalid username or password")
-	}
-	// compare password
-	utils.ComparePasswords(u.Password, user.Password)
-	// generate token
-	token, err := utils.GenerateToken()
-	if err != nil {
-		return "", http.StatusInternalServerError, errors.New("internal server error")
-	}
-	return token, http.StatusOK, nil
-}
-
 func (s *user) RegisterService(user entity.User) (int, error) {
 	// check credentials
 	if err := utils.ValidateRegisterCredentials(user); err != nil {
@@ -105,11 +85,6 @@ func (u *user) IsExistsService(id int) (bool, error) {
 	stmt := "SELECT EXISTS(SELECT true FROM users WHERE id = ?)"
 	err := u.db.QueryRow(stmt, id).Scan(&exists)
 	return exists, err
-}
-
-func (u *user) LogoutService(user entity.User) error {
-	// do something
-	return nil
 }
 
 func (u *user) UserProfile(ctx context.Context, nickname string) (int, entity.User, error) {
