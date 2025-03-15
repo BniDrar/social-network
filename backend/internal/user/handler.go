@@ -102,24 +102,10 @@ func (u *user) Login(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Write([]byte("user is logged in succesfully"))
-	// call service
-	// token, err, status := u.LoginService(User)
-	// if err != nil {
-	// 	w.WriteHeader(status)
-	// 	json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
-	// 	return
-	// }
-	// // send response and set token in cookie
-	// http.SetCookie(w, &http.Cookie{
-	// 	Name:  "token",
-	// 	Value: token,
-	// })
-	// w.WriteHeader(status)
 }
 
 func (u *user) Logout(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		u.loger.Error.Println("Method Not allowed")
 		// app.clientError(w, http.StatusMethodNotAllowed)
 		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
 		return
