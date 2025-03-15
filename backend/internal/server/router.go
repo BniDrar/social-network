@@ -82,6 +82,16 @@ func (app *App) createRoutes() []Route {
 			handler: app.UpdateGroup,
 			Role:    User,
 		},
+		{
+			Path: "/api/follow/",
+			handler: app.Follow,
+			Role:    User,
+		},
+		{
+			Path: "/api/profile/",
+			handler: app.Profile,
+            Role:    User,
+		},
 	}
 }
 

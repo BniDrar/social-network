@@ -43,3 +43,16 @@ func (g *group) CreateGroupService(ctx context.Context, group entity.Group) (ent
 	}
 	return group, nil
 }
+
+func (g *group) UpdateGroupService(ctx context.Context, group entity.Group) (entity.Group, error) {
+	userID, ok := ctx.Value(entity.ContextID).(int)
+	if !ok {
+		return entity.Group{}, errors.New("user id not found in context")
+	}
+	group.UserID = userID
+	group, err := g.UpdateGroupRepsitory(ctx, group)
+	if err != nil {
+		return entity.Group{}, err
+	}
+	return group, nil
+}

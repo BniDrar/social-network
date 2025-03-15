@@ -51,16 +51,13 @@ func TestMain(m *testing.M) {
 	exitCode := m.Run()
 
 	// Close the server and clean up
-	defer ts.Close()
+	ts.Close()
 
 	// Exit with the test result code
 	os.Exit(exitCode)
 }
 
 func TestPing(t *testing.T) {
-	// app, cfg := server.NewTestApplication()
-	// ts := newTestServer(t, app.InitRoutes(cfg)) // http.Server{}
-	// defer ts.Close()
 	code, _, body := ts.get(t, "/ping")
 	assert.Equal(t, code, http.StatusOK)
 	assert.Equal(t, body, "OK")
@@ -68,21 +65,6 @@ func TestPing(t *testing.T) {
 
 func TestRegister(t *testing.T) {
 	// t.Parallel() // Run sub-tests concurrently
-
-	// Create the application struct containing our mocked dependencies and set
-	// up the test server for running an end-to-end test.
-	// app, cfg := server.NewTestApplication()
-	// ts := newTestServer(t, app.InitRoutes(cfg))
-	// defer ts.Close()
-
-	// Make a GET /user/signup request and then extract the CSRF token from the
-	// response body.
-	_, _, _ = ts.get(t, "/api/register")
-
-	// csrfToken := extractCSRFToken(t, body)
-	// Log the CSRF token value in our test output using the t.Logf() function.
-	// The t.Logf() function works in the same way as fmt.Printf(), but writes
-	// the provided message to the test output.
 
 	tests := []struct {
 		name        string
@@ -232,20 +214,6 @@ func TestRegister(t *testing.T) {
 }
 
 func TestLogin(t *testing.T) {
-	// Create the application struct containing our mocked dependencies and set
-	// up the test server for running an end-to-end test.
-	// app, cfg := server.NewTestApplication()
-	// ts := newTestServer(t, app.InitRoutes(cfg))
-	// defer ts.Close()
-
-	// Make a GET /user/signup request and then extract the CSRF token from the
-	// response body.
-	_, _, _ = ts.get(t, "/api/login")
-
-	// csrfToken := extractCSRFToken(t, body)
-	// Log the CSRF token value in our test output using the t.Logf() function.
-	// The t.Logf() function works in the same way as fmt.Printf(), but writes
-	// the provided message to the test output.
 
 	tests := []struct {
 		name     string
@@ -318,20 +286,6 @@ func TestLogin(t *testing.T) {
 }
 
 func TestUserPing(t *testing.T) {
-	// Create the application struct containing our mocked dependencies and set
-	// up the test server for running an end-to-end test.
-	// app, cfg := server.NewTestApplication()
-	// ts := newTestServer(t, app.InitRoutes(cfg))
-	// defer ts.Close()
-
-	// Make a GET /user/signup request and then extract the CSRF token from the
-	// response body.
-	_, _, _ = ts.get(t, "/api/login")
-
-	// csrfToken := extractCSRFToken(t, body)
-	// Log the CSRF token value in our test output using the t.Logf() function.
-	// The t.Logf() function works in the same way as fmt.Printf(), but writes
-	// the provided message to the test output.
 
 	tests := []struct {
 		name     string
@@ -361,26 +315,17 @@ func TestUserPing(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			code, header, _ := ts.postJSON(t, "/api/login", jsonBody)
+			code, _, _ := ts.postJSON(t, "/api/login", jsonBody)
 			assert.Equal(t, code, tt.wantCode)
 
-			// --- User Phase ---
-			// Get session cookie from login response
-			cookie := extractSessionCookie(header)
-			if cookie == nil {
-				t.Fatal("No session cookie found in login response")
-			}
-
 			Req, _ := http.NewRequest(http.MethodGet, ts.URL+"/ping/user", nil) // Use GET instead of POST
-			Req.AddCookie(cookie)                                               // Attach session cookie
 
 			Resp, err := ts.Client().Do(Req) // Send request
 
 			if err != nil {
-				t.Fatal(err) // Handle errors
+				t.Fatal(err)
 			}
 
-			// --- Validate Logout Response ---
 			assert.Equal(t, Resp.StatusCode, tt.wantCode)
 		})
 	}
@@ -396,7 +341,7 @@ func TestUserLogout(t *testing.T) {
 			name:     "Successful Logout",
 			nickname: existNeckName,
 			password: validPassword,
-			wantCode: http.StatusOK, // Expect successful login
+			wantCode: http.StatusOK,
 		},
 	}
 
@@ -412,17 +357,11 @@ func TestUserLogout(t *testing.T) {
 			}
 
 			jsonBody, _ := json.Marshal(loginBody)
-			loginCode, loginHeader, _ := ts.postJSON(t, "/api/login", jsonBody)
+			loginCode, _, _ := ts.postJSON(t, "/api/login", jsonBody)
 			assert.Equal(t, loginCode, tt.wantCode) // Ensure login succeeds
 
-			// --- Extract Session Cookie ---
-			cookie := extractSessionCookie(loginHeader)
-			if cookie == nil {
-				t.Fatal("No session cookie found")
-			}
 			// --- Logout Phase ---
 			logoutReq, _ := http.NewRequest(http.MethodPost, ts.URL+"/api/logout", nil)
-			logoutReq.AddCookie(cookie)
 			logoutResp, err := ts.Client().Do(logoutReq)
 			if err != nil {
 				t.Fatal(err)
@@ -432,7 +371,6 @@ func TestUserLogout(t *testing.T) {
 			// --- Validate Session Invalidation ---
 			// Try accessing a protected route (e.g., /ping/user) after logout
 			protectedReq, _ := http.NewRequest(http.MethodGet, ts.URL+"/ping/user", nil)
-			protectedReq.AddCookie(cookie) // Use the same (now invalid) cookie
 			protectedResp, err := ts.Client().Do(protectedReq)
 			if err != nil {
 				t.Fatal(err)

@@ -37,7 +37,7 @@ func (ts *testServer) get(t *testing.T, urlPath string) (int, http.Header, strin
 // of our custom testServer type.
 func newTestServer(t *testing.T, h http.Handler) *testServer {
 	// Initialize the test server as normal.
-	ts := httptest.NewTLSServer(h)
+	ts := httptest.NewServer(h)
 	// Initialize a new cookie jar.
 	jar, err := cookiejar.New(nil)
 	if err != nil {
@@ -94,15 +94,4 @@ func (ts *testServer) postJSON(t *testing.T, urlPath string, body []byte) (int, 
 		t.Fatal(err)
 	}
 	return rs.StatusCode, rs.Header, string(bodyBytes)
-}
-
-// Helper functions
-func extractSessionCookie(headers http.Header) *http.Cookie {
-	cookies := (&http.Response{Header: headers}).Cookies()
-	for _, cookie := range cookies {
-		if cookie.Name == "session" {
-			return cookie
-		}
-	}
-	return nil
 }

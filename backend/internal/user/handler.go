@@ -4,7 +4,9 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
+	"strconv"
 
 	scs "socialNetwork/pkg/sessions"
 
@@ -29,7 +31,7 @@ type User interface {
 	Follow(w http.ResponseWriter, r *http.Request)
 	Followers(w http.ResponseWriter, r *http.Request)
 	DeleteUserByNickName(Nickname string) error
-	Exists(id uint) (bool, error)
+	IsUserExist(id uint) (bool, error)
 }
 
 func NewUser(dep *config.Dependencies) User {
@@ -80,28 +82,27 @@ func (u *user) Login(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
 		return
 	}
-	id, err := u.Authenticate(User.Username, User.Password)
+	id, err := u.authenticateService(User.Username, User.Password)
 	if err != nil {
-		u.loger.Error.Println(err)
 		if errors.Is(err, config.ErrInvalidCredentials) {
-			// w.Write([]byte("Invalid Credentials"))
-			http.Error(w, "Invalid Credentials", http.StatusBadRequest)
-			return
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
 		} else {
-			// app.serverError(w, err)
-			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			u.loger.Error.Println(err) // that's for registering error in log file
+			w.WriteHeader(http.StatusInternalServerError)
 		}
 		return
 	}
 	err = u.sessionManager.RenewToken(r.Context())
 	if err != nil {
-		u.loger.Error.Println(err)
+		u.loger.Error.Println(err) // that's for registering error in log file
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
 	}
 	u.sessionManager.Put(r.Context(), "authenticatedUserID", id)
 
 	w.Header().Set("Content-Type", "application/json")
-	w.Write([]byte("user is logged in succesfully"))
+	w.WriteHeader(http.StatusOK)
 }
 
 func (u *user) Logout(w http.ResponseWriter, r *http.Request) {
@@ -132,18 +133,23 @@ func (u *user) Logout(w http.ResponseWriter, r *http.Request) {
 
 func (u *user) Profile(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
-		u.loger.Error.Println("the method used is not allowed")
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
-
-	nickname := r.URL.Query().Get("nickname")
-	status, user, err := u.UserProfile(r.Context(), nickname)
+	target := r.URL.Query().Get("userid")
+	id, err := strconv.Atoi(target)
+	if err != nil || id <= 0 {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Invalid user ID"})
+		return
+	}
+	status, user, err := u.UserProfile(r.Context(), id)
+	fmt.Println(status, err)
 	if err != nil {
 		u.loger.Error.Println(err)
-		http.Error(w, err.Error(), status)
+		w.WriteHeader(status)
+		return
 	}
-
 	if err := json.NewEncoder(w).Encode(user); err != nil {
 		u.loger.Error.Println(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -151,14 +157,19 @@ func (u *user) Profile(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (u *user) Follow(w http.ResponseWriter, r *http.Request) {}
+func (u *user) Follow(w http.ResponseWriter, r *http.Request) {
+	followed := r.URL.Query().Get("followed")
+	followedID, err := strconv.Atoi(followed)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Invalid followed ID"})
+		return
+	}
+	status, err := u.FollowService(r.Context(), followedID)
+	if err != nil {
+		u.loger.Error.Println(err)
+	}
+	w.WriteHeader(status)
+}
 
 func (u *user) Followers(w http.ResponseWriter, r *http.Request) {}
-
-// We'll use the Exists method to check if a user exists with a specific ID.
-func (u *user) Exists(id uint) (bool, error) {
-	var exists bool
-	stmt := "SELECT EXISTS(SELECT true FROM users WHERE id = ?)"
-	err := u.db.QueryRow(stmt, id).Scan(&exists)
-	return exists, err
-}

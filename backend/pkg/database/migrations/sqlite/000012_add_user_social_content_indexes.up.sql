@@ -3,7 +3,6 @@ CREATE INDEX idx_follows_followed ON follows(followed_id);
 CREATE INDEX idx_post_user ON posts(user_id);
 CREATE INDEX idx_comment_post ON comments(post_id);
 CREATE INDEX idx_comment_user ON comments(user_id);
-CREATE INDEX idx_message_chat ON messages(chat_id);
 CREATE INDEX idx_message_sender ON messages(sender_id);
 CREATE INDEX idx_sessions_expiry ON sessions(expiry);
 

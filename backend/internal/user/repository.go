@@ -1,15 +1,54 @@
 package user
 
 import (
+	"context"
 	"database/sql"
+	"errors"
 	"fmt"
-	"log"
 
 	"socialNetwork/entity"
 	"socialNetwork/pkg/config"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 /*___________ THOS FUNCTIONS FOR AUTHENTICATION ___________*/
+
+func (r *user) GetUserProfileById(ctx context.Context, targetId int) (entity.User, error) {
+	var user entity.User
+	requesterId := ctx.Value(entity.ContextID)
+	query := `
+		SELECT 
+			u.id, u.nickname, u.email, u.password, u.avatar, 
+			u.first_name, u.last_name, u.birthday, u.about_me, 
+			u.status,
+			(SELECT COUNT(*) FROM follows WHERE followed_id = u.id) AS followers_count,
+			(SELECT COUNT(*) FROM follows WHERE follower_id = u.id) AS following_count,
+			CASE 
+				WHEN EXISTS (SELECT 1 FROM follows WHERE follower_id = $2 AND followed_id = $1) THEN 2
+				WHEN EXISTS (SELECT 1 FROM follows WHERE follower_id = $1 AND followed_id = $2) THEN 1
+				ELSE 0 
+			END AS following_state
+		FROM users u
+		WHERE u.id = $1
+	`
+
+	err := r.db.QueryRowContext(ctx, query, requesterId, targetId).Scan(
+		&user.ID, &user.Nickname, &user.Email, &user.Password, &user.Avatar,
+		&user.First, &user.Last, &user.DateOfBirth, &user.AboutMe, &user.Status,
+		&user.FollowersCount, &user.FollowingCount, &user.FollowingState,
+	)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return user, fmt.Errorf("user not found")
+		}
+		return user, err
+	}
+
+	return user, nil
+}
+
 
 // this function is used to get user by username
 func (r *user) GetUserByUsername(username string) (entity.User, error) {
@@ -19,7 +58,6 @@ func (r *user) GetUserByUsername(username string) (entity.User, error) {
 	var user entity.User
 	stmt, err := r.db.Prepare(query)
 	if err != nil {
-		log.Println("err 21", err)
 		return user, err
 	}
 	err = stmt.QueryRow(username).Scan(
@@ -126,7 +164,7 @@ func (r *user) DeleteUser(id uint) error {
 	return nil
 }
 
-// this function is used to delete user by id
+// this function is used to delete user by nickname
 func (u *user) DeleteUserByNickName(nickName string) error {
 	ok, err := u.CheckUserByUsername(nickName)
 	if err != nil {
@@ -147,7 +185,48 @@ func (u *user) DeleteUserByNickName(nickName string) error {
 	return nil
 }
 
-/* ___________ THOS FUNC USED FOR CHECK USER CREDENTIALS ___________ */
+/* ___________ THOSE FUNCS USED FOR CHECK USER CREDENTIALS ___________ */
+
+// We'll use the Exists method to check if a user exists with a specific ID.
+func (u *user) IsUserExist(id uint) (bool, error) {
+	var exists bool
+	stmt := "SELECT EXISTS(SELECT true FROM users WHERE id = ?)"
+	err := u.db.QueryRow(stmt, id).Scan(&exists)
+	return exists, err
+}
+
+// We'll use the Authenticate method to verify whether a user exists with
+// the provided email address and password. This will return the relevant
+// user ID if they do.
+func (u *user) authenticateRepo(email, password string) (int, error) {
+	// u.loger.Info.Println("email:", email)
+	// u.loger.Info.Println("password:", password)
+	// Retrieve the id and hashed password associated with the given email. If
+	// no matching email exists we return the ErrInvalidCredentials error.
+	var id int
+	var hashedPassword []byte
+	stmt := "SELECT id, password FROM users WHERE email = ? OR nickname  = ?"
+	err := u.db.QueryRow(stmt, email, email).Scan(&id, &hashedPassword)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return 0, config.ErrInvalidCredentials
+		} else {
+			return 0, err
+		}
+	}
+	// Check whether the hashed password and plain-text password provided match.
+	// If they don't, we return the ErrInvalidCredentials error.
+	err = bcrypt.CompareHashAndPassword(hashedPassword, []byte(password))
+	if err != nil {
+		if errors.Is(err, bcrypt.ErrMismatchedHashAndPassword) {
+			return 0, config.ErrInvalidCredentials
+		} else {
+			return 0, err
+		}
+	}
+	// Otherwise, the password is correct. Return the user ID.
+	return id, nil
+}
 
 // this function checks by email if the user exists
 func (r *user) CheckUserByEmail(email string) (bool, error) {
@@ -179,8 +258,9 @@ func (r *user) CheckUserByUsername(username string) (bool, error) {
 	return exists, nil
 }
 
+/*________________ THOSE FUNCS USED TO CHECK FOLOWING ____________ */
 func (u *user) isFollowedBy(follower, followed int) (bool, error) {
-	query := `SELECT EXISTS(SELECT 1 FROM follows WHERE folowwer_id = $1 AND followed_id = $2)`
+	query := `SELECT EXISTS(SELECT 1 FROM follows WHERE follower_id = $1 AND followed_id = $2)`
 	var exists bool
 	stmt, err := u.db.Prepare(query)
 	if err != nil {
@@ -216,8 +296,33 @@ func (u *user) isFollowingEither(follower, followed int) (bool, error) {
 	return exists, nil
 }
 
-/* ___________ THOS FUNC USED FOR FOLLOWERS ___________ */
+func (u *user) FollowRepository(followerId, followedId int) error {
+	// Check if the follow relationship already exists
+	queryCheck := `SELECT 1 FROM follows WHERE follower_id = $1 AND followed_id = $2`
+	var exists int
+	err := u.db.QueryRow(queryCheck, followerId, followedId).Scan(&exists)
 
+	if err == nil { // Row exists → Unfollow (delete)
+		queryDelete := `DELETE FROM follows WHERE follower_id = $1 AND followed_id = $2`
+		_, err = u.db.Exec(queryDelete, followerId, followedId)
+		if err != nil {
+			return fmt.Errorf("failed to unfollow: %w", err)
+		}
+		return nil
+	} else if err != sql.ErrNoRows { // Any other error (DB issue)
+		return fmt.Errorf("database error: %w", err)
+	}
+
+	// Row does not exist → Follow (insert)
+	queryInsert := `INSERT INTO follows (follower_id, followed_id) VALUES ($1, $2)`
+	_, err = u.db.Exec(queryInsert, followerId, followedId)
+	if err != nil {
+		return fmt.Errorf("failed to follow: %w", err)
+	}
+	return nil
+}
+
+/*___________ THOS FUNC USED FOR FOLLOWERS ___________*/
 // this function is used to get followers by user id
 // func (r *user) GetFollowers(id uint) ([]entity.User, error) {}
 // this function is used to get following by user id

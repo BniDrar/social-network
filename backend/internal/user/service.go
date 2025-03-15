@@ -2,7 +2,6 @@ package user
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 	"fmt"
 	"net/http"
@@ -10,8 +9,6 @@ import (
 	"socialNetwork/entity"
 	"socialNetwork/pkg/config"
 	"socialNetwork/pkg/utils"
-
-	"golang.org/x/crypto/bcrypt"
 )
 
 func (s *user) RegisterService(user entity.User) (int, error) {
@@ -46,70 +43,55 @@ func (s *user) RegisterService(user entity.User) (int, error) {
 	return http.StatusCreated, nil
 }
 
-// We'll use the Authenticate method to verify whether a user exists with
-// the provided email address and password. This will return the relevant
-// user ID if they do.
-func (u *user) Authenticate(email, password string) (int, error) {
-	// u.loger.Info.Println("email:", email)
-	// u.loger.Info.Println("password:", password)
-	// Retrieve the id and hashed password associated with the given email. If
-	// no matching email exists we return the ErrInvalidCredentials error.
-	var id int
-	var hashedPassword []byte
-	stmt := "SELECT id, password FROM users WHERE email = ? OR nickname  = ?"
-	err := u.db.QueryRow(stmt, email, email).Scan(&id, &hashedPassword)
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return 0, config.ErrInvalidCredentials
-		} else {
-			return 0, err
-		}
-	}
-	// Check whether the hashed password and plain-text password provided match.
-	// If they don't, we return the ErrInvalidCredentials error.
-	err = bcrypt.CompareHashAndPassword(hashedPassword, []byte(password))
-	if err != nil {
-		if errors.Is(err, bcrypt.ErrMismatchedHashAndPassword) {
-			return 0, config.ErrInvalidCredentials
-		} else {
-			return 0, err
-		}
-	}
-	// Otherwise, the password is correct. Return the user ID.
-	return id, nil
+
+
+
+
+func (u *user) LogoutService(user entity.User) error {
+	// do something
+	return nil
 }
 
-// We'll use the Exists method to check if a user exists with a specific ID.
-func (u *user) IsExistsService(id int) (bool, error) {
-	var exists bool
-	stmt := "SELECT EXISTS(SELECT true FROM users WHERE id = ?)"
-	err := u.db.QueryRow(stmt, id).Scan(&exists)
-	return exists, err
-}
+func (u *user) authenticateService(email, password string) (int, error) {
+	return u.authenticateRepo(email, password)
+} 
 
-func (u *user) UserProfile(ctx context.Context, nickname string) (int, entity.User, error) {
-	user, err := u.GetUserByUsername(nickname)
+func (u *user) UserProfile(ctx context.Context, targetId int) (int, entity.User, error) {
+	user, err := u.GetUserProfileById(ctx, targetId)
 	if err != nil {
 		return http.StatusInternalServerError, user, errors.New(fmt.Sprintf("erro while getting the profile from the database, err: %v", err))
 	}
-	user.Password = ""
 	if user.Status == entity.PublicUser {
 		return http.StatusOK, user, nil
 	}
 	userId := ctx.Value(entity.ContextID).(int)
 	exists, err := u.isFollowedBy(userId, int(user.ID))
-	if err != nil && exists && userId == int(user.ID) {
+	if err != nil || !exists {
+		if err == nil {
+			return http.StatusUnauthorized, user, errors.New(fmt.Sprintf("you can't access to the user profile"))
+		}
 		return http.StatusInternalServerError, user, err
 	}
 	return http.StatusOK, user, nil
 }
 
-func (u *user) FollowService(user entity.User) error {
-	// do something
-	return nil
+func (u *user) FollowService(ctx context.Context, followedID int) (int, error) {
+	userId := ctx.Value(entity.ContextID).(int)
+	if userId == followedID {
+        return http.StatusBadRequest, errors.New("you can't follow yourself")
+    }
+    err := u.FollowRepository(userId, followedID)
+    if err != nil {
+        return http.StatusInternalServerError, err
+    }
+    // go u.hub.SendMessage(websocket.Message{
+    //     UserID: userId,
+    //     Text:   fmt.Sprintf("%d started following %d", userId, followedID),
+    // })
+    return http.StatusOK, nil
 }
 
-func (u *user) FollowersService(user entity.User) error {
+func (u *user) FollowersService(ctx context.Context, followedId int) error {
 	// do something
 	return nil
 }
