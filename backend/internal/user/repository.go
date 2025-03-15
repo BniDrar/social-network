@@ -1,10 +1,10 @@
 package user
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"fmt"
-	"log"
 
 	"socialNetwork/entity"
 	"socialNetwork/pkg/config"
@@ -14,6 +14,42 @@ import (
 
 /*___________ THOS FUNCTIONS FOR AUTHENTICATION ___________*/
 
+func (r *user) GetUserProfileById(ctx context.Context, targetId int) (entity.User, error) {
+	var user entity.User
+	requesterId := ctx.Value(entity.ContextID)
+	query := `
+		SELECT 
+			u.id, u.nickname, u.email, u.password, u.avatar, 
+			u.first_name, u.last_name, u.birthday, u.about_me, 
+			u.status,
+			(SELECT COUNT(*) FROM follows WHERE followed_id = u.id) AS followers_count,
+			(SELECT COUNT(*) FROM follows WHERE follower_id = u.id) AS following_count,
+			CASE 
+				WHEN EXISTS (SELECT 1 FROM follows WHERE follower_id = $2 AND followed_id = $1) THEN 2
+				WHEN EXISTS (SELECT 1 FROM follows WHERE follower_id = $1 AND followed_id = $2) THEN 1
+				ELSE 0 
+			END AS following_state
+		FROM users u
+		WHERE u.id = $1
+	`
+
+	err := r.db.QueryRowContext(ctx, query, requesterId, targetId).Scan(
+		&user.ID, &user.Nickname, &user.Email, &user.Password, &user.Avatar,
+		&user.First, &user.Last, &user.DateOfBirth, &user.AboutMe, &user.Status,
+		&user.FollowersCount, &user.FollowingCount, &user.FollowingState,
+	)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return user, fmt.Errorf("user not found")
+		}
+		return user, err
+	}
+
+	return user, nil
+}
+
+
 // this function is used to get user by username
 func (r *user) GetUserByUsername(username string) (entity.User, error) {
 	// SQL query that includes the counts and following state
@@ -22,7 +58,6 @@ func (r *user) GetUserByUsername(username string) (entity.User, error) {
 	var user entity.User
 	stmt, err := r.db.Prepare(query)
 	if err != nil {
-		log.Println("err 21", err)
 		return user, err
 	}
 	err = stmt.QueryRow(username).Scan(
@@ -152,7 +187,6 @@ func (u *user) DeleteUserByNickName(nickName string) error {
 
 /* ___________ THOSE FUNCS USED FOR CHECK USER CREDENTIALS ___________ */
 
-
 // We'll use the Exists method to check if a user exists with a specific ID.
 func (u *user) IsUserExist(id uint) (bool, error) {
 	var exists bool
@@ -224,10 +258,9 @@ func (r *user) CheckUserByUsername(username string) (bool, error) {
 	return exists, nil
 }
 
-
-/*________________ THOSE FUNCS USED TO CHECK FOLOWING ____________ */ 
+/*________________ THOSE FUNCS USED TO CHECK FOLOWING ____________ */
 func (u *user) isFollowedBy(follower, followed int) (bool, error) {
-	query := `SELECT EXISTS(SELECT 1 FROM follows WHERE folowwer_id = $1 AND followed_id = $2)`
+	query := `SELECT EXISTS(SELECT 1 FROM follows WHERE follower_id = $1 AND followed_id = $2)`
 	var exists bool
 	stmt, err := u.db.Prepare(query)
 	if err != nil {
@@ -261,6 +294,32 @@ func (u *user) isFollowingEither(follower, followed int) (bool, error) {
 	}
 
 	return exists, nil
+}
+
+func (u *user) FollowRepository(followerId, followedId int) error {
+	// Check if the follow relationship already exists
+	queryCheck := `SELECT 1 FROM follows WHERE follower_id = $1 AND followed_id = $2`
+	var exists int
+	err := u.db.QueryRow(queryCheck, followerId, followedId).Scan(&exists)
+
+	if err == nil { // Row exists → Unfollow (delete)
+		queryDelete := `DELETE FROM follows WHERE follower_id = $1 AND followed_id = $2`
+		_, err = u.db.Exec(queryDelete, followerId, followedId)
+		if err != nil {
+			return fmt.Errorf("failed to unfollow: %w", err)
+		}
+		return nil
+	} else if err != sql.ErrNoRows { // Any other error (DB issue)
+		return fmt.Errorf("database error: %w", err)
+	}
+
+	// Row does not exist → Follow (insert)
+	queryInsert := `INSERT INTO follows (follower_id, followed_id) VALUES ($1, $2)`
+	_, err = u.db.Exec(queryInsert, followerId, followedId)
+	if err != nil {
+		return fmt.Errorf("failed to follow: %w", err)
+	}
+	return nil
 }
 
 /*___________ THOS FUNC USED FOR FOLLOWERS ___________*/
