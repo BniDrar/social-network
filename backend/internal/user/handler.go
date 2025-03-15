@@ -83,7 +83,7 @@ func (u *user) Login(w http.ResponseWriter, r *http.Request) {
 	id, err := u.authenticateService(User.Username, User.Password)
 	if err != nil {
 		if errors.Is(err, config.ErrInvalidCredentials) {
-			w.WriteHeader(http.StatusUnauthorized)
+			w.WriteHeader(http.StatusBadRequest)
 			json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
 		} else {
 			u.loger.Error.Println(err) // that's for registering error in log file
