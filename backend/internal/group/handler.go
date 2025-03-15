@@ -16,7 +16,6 @@ type Group interface {
 	GetGroups(w http.ResponseWriter, r *http.Request)
 	GetGroupById(w http.ResponseWriter, r *http.Request)
 	CreateGroup(w http.ResponseWriter, r *http.Request)
-	UpdateGroup(w http.ResponseWriter, r *http.Request)
 }
 
 type group struct {
@@ -65,16 +64,12 @@ func (g *group) GetGroups(w http.ResponseWriter, r *http.Request) {
 
 // this handler is used to get the group by id
 func (g *group) GetGroupById(w http.ResponseWriter, r *http.Request) {
-	// get the group id from the request URL parameters /{id}
 	groupID, err := strconv.Atoi(r.URL.Query().Get("id"))
 	if err != nil || groupID <= 0 {
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Invalid group ID"})
 		return
 	}
-
-	g.loger.Info.Println("group id: ", groupID)
-
 	group, err := g.GetGroupByIdService(r.Context(), groupID)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -88,6 +83,10 @@ func (g *group) GetGroupById(w http.ResponseWriter, r *http.Request) {
 }
 
 func (g *group) CreateGroup(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
 	// get the group data from the request body
 	var group entity.Group
 	err := json.NewDecoder(r.Body).Decode(&group)
@@ -109,22 +108,3 @@ func (g *group) CreateGroup(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(createdGroup)
 }
 
-func (g *group) UpdateGroup(w http.ResponseWriter, r *http.Request) {
-	var group entity.Group
-	err := json.NewDecoder(r.Body).Decode(&group)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Invalid request body"})
-		return
-	}
-	createdGroup, err := g.UpdateGroupService(r.Context(), group)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(createdGroup)
-}
