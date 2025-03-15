@@ -185,16 +185,6 @@ func TestRegister(t *testing.T) {
 			wantCode:    http.StatusBadRequest,
 		},
 		{
-			name:        "password_with_no_upper_case1",
-			nickname:    validNeckName,
-			email:       validEmail,
-			password:    validPassword,
-			first:       validFirst,
-			last:        validLast,
-			dateOfBirth: validDateOfBirth,
-			wantCode:    http.StatusBadRequest,
-		},
-		{
 			name:        "Duplicate email",
 			nickname:    existNeckName,
 			email:       existEmail,
