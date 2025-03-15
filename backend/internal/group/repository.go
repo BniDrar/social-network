@@ -120,3 +120,54 @@ func (g *group) CreateGroupRepository(ctx context.Context, group entity.Group) (
 	group.ID = int(groupID)
 	return group, nil
 }
+
+func (g *group) GetAllGroupsRepository(ctx context.Context, limit, offset, typeGroup int) (entity.Groups, error) {
+	query := `
+		SELECT
+			g.id,
+			g.name,
+			g.description,
+			g.type,
+			g.admin,
+			COUNT(DISTINCT gm.member_id) AS member_count,
+			COUNT(DISTINCT p.id) AS post_count
+		FROM groups g
+		JOIN group_members gm ON g.id = gm.group_id
+		LEFT JOIN posts p ON g.id = p.group_id
+		WHERE g.type = ?
+		GROUP BY g.id
+		ORDER BY g.id DESC
+		LIMIT ? OFFSET ?
+	`
+	stmt, err := g.db.PrepareContext(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	defer stmt.Close()
+	rows, err := stmt.QueryContext(ctx, typeGroup, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var groups entity.Groups
+	for rows.Next() {
+		var group entity.Group
+		err := rows.Scan(
+			&group.ID,
+			&group.Name,
+			&group.Description,
+			&group.Type,
+			&group.Admin,
+			&group.MemberCount,
+			&group.PostCount,
+		)
+			if err != nil {
+			return nil, err
+		}
+		groups = append(groups, group)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return groups, nil
+}

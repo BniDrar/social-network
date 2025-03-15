@@ -38,3 +38,11 @@ func (g *group) CreateGroupService(ctx context.Context, group entity.Group) (ent
 	}
 	return group, nil
 }
+
+func (g *group) GetAllGroupsService(ctx context.Context, limit, offset,typeGroup int) (entity.Groups, error) {
+	groups, err := g.GetAllGroupsRepository(ctx, limit, offset ,typeGroup)
+	if err != nil {
+		return nil, err
+	}
+	return groups, nil
+}
