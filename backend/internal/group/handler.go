@@ -19,6 +19,7 @@ type Group interface {
 	GetAllGroups(w http.ResponseWriter, r *http.Request)
 	CreateEvent(w http.ResponseWriter, r *http.Request)
 	VoteEvent(w http.ResponseWriter, r *http.Request)
+	GetEvent(w http.ResponseWriter, r *http.Request)
 }
 
 type group struct {
@@ -203,4 +204,30 @@ func (g *group) VoteEvent(w http.ResponseWriter, r *http.Request) {
 	}{
 		EventID: eventId,
 	})
+}
+
+
+func (g *group) GetEvent(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+	// get the event data from the request body
+	eventID, err := strconv.Atoi(r.URL.Query().Get("id"))
+	if err != nil || eventID <= 0 {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Invalid event ID"})
+		return
+	}
+	// create the event in the database
+	event, status, err := g.GetEventService(r.Context(), eventID)
+	if err != nil {
+		w.WriteHeader(status)
+		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
+		return
+	}
+	// send the created event to the client
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+	json.NewEncoder(w).Encode(event)
 }

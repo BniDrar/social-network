@@ -92,6 +92,11 @@ func (app *App) createRoutes() []Route {
 			handler: app.VoteEvent,
 			Role:    User,
 		},
+		{
+			Path:    "/api/event/get",
+			handler: app.GetEvent,
+			Role:    User,
+		},
 	}
 }
 

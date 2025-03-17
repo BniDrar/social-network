@@ -49,11 +49,12 @@ func (g *group) GetAllGroupsService(ctx context.Context, limit, offset, typeGrou
 	return groups, nil
 }
 
+
+//----------------events---------------------------------
 func (g *group) CreateEventService(ctx context.Context, event entity.Event) (int, int, error) {
 	// check if the user is a member of the group
-	userID := ctx.Value(entity.ContextID).(int)
 	fmt.Println(event.GroupID)
-	isMember, err := g.IsMemberRepository(ctx, userID, event.GroupID)
+	isMember, err := g.IsMemberRepository(ctx, event.GroupID)
 	if err != nil || !isMember {
 		if err == nil {
 			err = errors.New("user is not a member of the group")
@@ -67,15 +68,29 @@ func (g *group) CreateEventService(ctx context.Context, event entity.Event) (int
 	return eventId, status, nil
 }
 
+func (g *group) GetEventService(ctx context.Context, eventID int) (entity.Event, int, error) {
+	event, err := g.GetEventRepository(ctx, eventID)
+	if err != nil {
+		return entity.Event{}, http.StatusInternalServerError, err
+	}
+	isMember, err := g.IsMemberRepository(ctx, event.GroupID)
+	if err != nil || !isMember {
+		if err == nil {
+			err = errors.New("user is not a member of the group")
+		}
+		return entity.Event{}, http.StatusBadRequest,err
+	}
+	return event, http.StatusOK,nil
+}
+
 func (g *group) VoteEventService(ctx context.Context, vote entity.Engagement) (int, int, error) {
 	// check if the user is a member of the group
-	userID := ctx.Value(entity.ContextID).(int)
 	event, err := g.GetEventRepository(ctx, vote.EventID)
 	if err != nil {
 		return 0, http.StatusBadRequest, err
 	}
 	fmt.Println(event.UserID, event.GroupID)
-	isMember, err := g.IsMemberRepository(ctx, userID, event.GroupID)
+	isMember, err := g.IsMemberRepository(ctx, event.GroupID)
 	if err != nil || !isMember {
 		if err == nil {
 			err = errors.New("user is not a member of the group")
