@@ -1,7 +1,9 @@
 import styles from '@/components/post/post.module.css'
 import avatar from "@/assets/images/no-face.jpg"
 import post from "@/assets/images/post1.jpg"
-import likes from '@/assets/icons/likes.svg'
+import likes from '@/assets/icons/like.svg'
+import like2 from '@/assets/icons/like2.svg'
+import comment from '@/assets/icons/comment.svg'
 import Image from 'next/image';
 
 const Post = () => {
@@ -21,17 +23,27 @@ const Post = () => {
                 {/* <img src="" className={styles.post_image} alt="post image" /> */}
                 <br />
                 <Image width={500} height={500} alt='post' src={post} className={styles.post_image} />
-                <div className="">
+                <div className={styles.postInfo}>
                     <div className={styles.post_reactions_len}>
-                        <span className={styles.postLikesNum}>150</span>
-                        <Image src={likes} width={30} height={30} alt='likes' className={styles.postLikesSvg} />
+                        <Image src={likes} width={24} height={24} alt='likes' className={styles.postLikesSvg} />
+                        <span className={styles.postLikesNum}>15k</span>
                     </div>
-                    <div className={styles.post_comments_len}></div>
+                    <div className={styles.post_comments_len}>
+                        <span className={styles.postCommentsNum}>5k</span>
+                        <span className={styles.postCommentsText}>comments</span>
+                    </div>
                 </div>
             </div>
             <div className={styles.card_footer}>
                 {/* add_reaction - add_comment */}
-
+                <button className={styles.setLike}>
+                <Image src={like2} width={20} height={20} alt='likes' className={styles.button} />
+                    
+                    Like</button>
+                <button className={styles.addComment}>
+                <Image src={comment} width={20} height={20} alt='likes' className={styles.button} />
+                    
+                    Comment</button>
             </div>
         </article>
     );
