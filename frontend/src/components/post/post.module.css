@@ -1,0 +1,60 @@
+.card {
+    width: 500px;
+    max-width: 90%;
+    background-color: #161616;
+    margin: 20px auto;
+    border-radius: 8px;
+    border: 2px solid #191919;
+}
+.card_header {
+    width: 100%;
+    height: 70px;
+    display: flex;
+    align-items: center;
+}
+
+.post_avatar {
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    margin: 0 10px;
+}
+
+.post_username {
+    color: #ddd;
+}
+
+.post_created_at {
+    font-size: 14px;
+    font-weight: 400;
+    color: #504f4f;
+}
+
+.card_body {
+    width: 100%;
+    height: max-content;
+    overflow-x: hidden;
+    padding: 10px 0;
+    border-top: 2px solid #191919;
+}
+
+.post_text {
+    white-space: pre-wrap;
+}
+
+.post_image {
+    width: 100%;
+    max-width: 500px;
+}
+
+.post_reactions_len {
+    display: flex;
+    height: 50px;
+    align-items: center;
+}
+
+.postLikesSvg {
+    margin-bottom: 12px;
+    margin-left: 10px;
+}
+
