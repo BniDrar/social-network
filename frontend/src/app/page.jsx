@@ -1,10 +1,10 @@
-import Post from '@/components/post/post'
+import PostList from "@/components/PostList/PostList";
 
 export default function Home() {
   return (
     <div>
      <main>
-      <Post />
+      <PostList />
      </main>
     </div>
   );
