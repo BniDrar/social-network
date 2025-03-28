@@ -1,0 +1,36 @@
+import Image from "next/image";
+import styles from './page.module.css'
+import coverImg from '@/assets/images/coverImg.jpg'
+import avatar from '@/assets/images/no-face.jpg'
+
+const ProfilePage = async ({ params }) => {
+    const { username } = await params;
+    return (
+        <>
+            <div className={styles.header}>
+                <Image className={styles.coverImg} src={coverImg} width={1200} height={500} alt="" />
+                <div className={styles.headerInfo}>
+                    <div className={styles.headerInfoStart}>
+                        <Image className={styles.avatar} src={avatar} width={150} height={150} alt="" />
+                        <h1 className={styles.headerInfoUsername}>{username}</h1>
+                    </div>
+                    <div className={styles.headerInfoEnd}>
+                        <button className={styles.editBtn}>Edit Profile</button>
+                        <button className={styles.editBtn}>Create Post</button>
+                    </div>
+                </div>
+            </div>
+            {/* <main className="">
+                <aside className=""></aside>
+                <div className="">
+                    <form method="post">
+                        <textarea name="" id="" cols="30" rows="10"></textarea>
+                        <button>Add</button>
+                    </form>
+                </div>
+            </main> */}
+        </>
+    );
+}
+
+export default ProfilePage;
