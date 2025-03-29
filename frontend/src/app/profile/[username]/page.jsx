@@ -2,6 +2,7 @@ import Image from "next/image";
 import styles from './page.module.css'
 import coverImg from '@/assets/images/coverImg.jpg'
 import avatar from '@/assets/images/no-face.jpg'
+import NewPostCard from "@/components/NewPostCard/NewPostCard";
 
 const ProfilePage = async ({ params }) => {
     const { username } = await params;
@@ -23,7 +24,7 @@ const ProfilePage = async ({ params }) => {
             <main className={styles.content}>
                 <aside className={styles.sideBar}></aside>
                 <div className={styles.profilePosts}>
-                    
+                    <NewPostCard />
                 </div>
             </main>
         </>

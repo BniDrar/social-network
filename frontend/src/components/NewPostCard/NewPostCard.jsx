@@ -1,6 +1,6 @@
 import styles from './NewPostCard.module.css'
 
-const NewPost = () => {
+const NewPostCard = () => {
     return (
         <div className={styles.card}>
             <div className={styles.cardHeader}>
@@ -14,4 +14,4 @@ const NewPost = () => {
     );
 }
 
-export default NewPost;
+export default NewPostCard;
