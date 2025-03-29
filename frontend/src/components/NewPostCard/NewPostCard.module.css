@@ -1,5 +1,21 @@
+.cardHeader, .cardBody {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 5px 10px;
+    margin: 10px;
+    background-color: #171717;
+}
+.cardBody {
+    /* margin: 10px; */
+}
+.form {
+    width: 100%;
+}
 .createPost {
     width: 100%;
+    display: block;
     /* height: 50px; */
     background-color: #0f041ac2;
     font-size: 16px;
@@ -13,4 +29,9 @@
 
 .createPost:focus {
     border: 2px solid #ffffff;
+}
+.createPostAvatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
 }
