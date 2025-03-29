@@ -1,0 +1,51 @@
+{
+    "posts": [
+        {
+            "id": 1,
+            "avatar": "/assets/images/no-face.jpg",
+            "username": "yrahhaou",
+            "content": "🍲🍖 Classic Homestyle Meatloaf with a Tangy Glaze 🍋✨",
+            "image": "/assets/images/post1.jpg",
+            "likes": "15k",
+            "comments": "5k",
+            "user_like": false,
+            "created_at": "7h"
+        },
+        {
+            "id": 2,
+            "avatar": "/assets/images/no-face.jpg",
+            "username": "yrahhaou",
+            "content": "🍲🍖 Classic Homestyle Meatloaf with a Tangy Glaze 🍋✨",
+            "image": "/assets/images/post1.jpg",
+            "likes": "15k",
+            "comments": "5k",
+            "user_like": true,
+            "created_at": "7h"
+        },
+        {
+            "id": 3,
+            "avatar": "/assets/images/no-face.jpg",
+            "username": "yrahhaou",
+            "content": "🍲🍖 Classic Homestyle Meatloaf with a Tangy Glaze 🍋✨",
+            "image": "/assets/images/post1.jpg",
+            "likes": "15k",
+            "comments": "5k",
+            "user_like": false,
+            "created_at": "7h"
+        },
+        {
+            "id": 4,
+            "avatar": "/assets/images/no-face.jpg",
+            "username": "yrahhaou",
+            "content": "🍲🍖 Classic Homestyle Meatloaf with a Tangy Glaze 🍋✨",
+            "image": "/assets/images/post1.jpg",
+            "likes": "15k",
+            "comments": "5k",
+            "user_like": false,
+            "created_at": "7h"
+        }
+    ],
+    "profile": {
+        "id": 1
+    }
+}
