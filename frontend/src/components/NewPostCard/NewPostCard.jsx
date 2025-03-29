@@ -12,8 +12,8 @@ const NewPostCard = () => {
                 </form>
             </div>
             <div className={styles.cardBody}>
-                <button className="">Create Post</button>
-                <button className="">Create Event</button>
+                <button className={styles.editBtn}>Create Post</button>
+                <button className={styles.editBtn}>Create Event</button>
             </div>
         </div>
     );
