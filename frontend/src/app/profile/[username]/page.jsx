@@ -20,15 +20,12 @@ const ProfilePage = async ({ params }) => {
                     </div>
                 </div>
             </div>
-            {/* <main className="">
-                <aside className=""></aside>
-                <div className="">
-                    <form method="post">
-                        <textarea name="" id="" cols="30" rows="10"></textarea>
-                        <button>Add</button>
-                    </form>
+            <main className={styles.content}>
+                <aside className={styles.sideBar}></aside>
+                <div className={styles.profilePosts}>
+                    
                 </div>
-            </main> */}
+            </main>
         </>
     );
 }
