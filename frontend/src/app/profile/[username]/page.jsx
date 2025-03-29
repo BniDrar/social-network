@@ -3,6 +3,7 @@ import styles from './page.module.css'
 import coverImg from '@/assets/images/coverImg.jpg'
 import avatar from '@/assets/images/no-face.jpg'
 import NewPostCard from "@/components/NewPostCard/NewPostCard";
+import ProfileFriends from "@/components/ProfileFriends/ProfileFriends";
 
 const ProfilePage = async ({ params }) => {
     const { username } = await params;
@@ -22,7 +23,9 @@ const ProfilePage = async ({ params }) => {
                 </div>
             </div>
             <main className={styles.content}>
-                <aside className={styles.sideBar}></aside>
+                <aside className={styles.sideBar}>
+                    <ProfileFriends />
+                </aside>
                 <div className={styles.profilePosts}>
                     <NewPostCard />
                 </div>
