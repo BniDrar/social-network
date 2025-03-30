@@ -1,7 +1,7 @@
 install:
 	@sudo npm install -g json-server
 
-fakedb:
+serve:
 	@json-server ./fake-db.json -p 3100
 
 install2:

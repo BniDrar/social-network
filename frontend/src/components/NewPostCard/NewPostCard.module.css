@@ -1,16 +1,17 @@
 .card {
     margin: 10px 0;
-    background-color: #171717;
+    background-color: var(--color-dark2);
 }
 .cardHeader, .cardBody {
     width: 100%;
     display: flex;
     align-items: center;
     gap: 10px;
-    border-bottom: 2px solid #101010;
 }
+
 .cardHeader {
     padding: 0 10px;
+    border-bottom: 2px solid #101010;
 }
 /* .cardBody {
 
