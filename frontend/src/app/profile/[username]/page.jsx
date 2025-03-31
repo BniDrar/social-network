@@ -4,6 +4,7 @@ import coverImg from '@/assets/images/coverImg.jpg'
 import avatar from '@/assets/images/no-face.jpg'
 import NewPostCard from "@/components/NewPostCard/NewPostCard";
 import ProfileFriends from "@/components/ProfileFriends/ProfileFriends";
+import PostList from "@/components/PostList/PostList";
 
 const ProfilePage = async ({ params }) => {
     const { username } = await params;
@@ -28,6 +29,7 @@ const ProfilePage = async ({ params }) => {
                 </aside>
                 <div className={styles.profilePosts}>
                     <NewPostCard />
+                    <PostList />
                 </div>
             </main>
         </>

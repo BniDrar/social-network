@@ -2,6 +2,7 @@
     margin: 10px 0;
     background-color: var(--color-dark2);
 }
+
 .cardHeader {
     width: 100%;
     height: max-content;
@@ -11,15 +12,18 @@
     padding: 10px;
     border-bottom: 2px solid #101010;
 }
+
 .cardTitle {
     font-size: 24px;
     font-weight: 700;
 }
+
 .cardText {
     font-size: 13px;
     font-weight: 400;
     color: #dedede;
 }
+
 .cardLinkBtn {
     padding: 5px 10px;
     font-size: 14px;
@@ -33,6 +37,7 @@
     white-space: nowrap;
     border-radius: 6px;
 }
+
 .cardLinkBtn:hover {
     background-color: #202020;
 }
@@ -43,10 +48,12 @@
     grid-template-columns: repeat(3, 1fr);
     gap: 10px;
 }
+
 .friendCard {
     display: block;
     width: 100%;
 }
+
 .friendImg {
     width: 100%;
     height: min-content;

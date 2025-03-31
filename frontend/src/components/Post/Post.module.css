@@ -1,6 +1,5 @@
 .card {
-    width: 500px;
-    max-width: 90%;
+    width: 100%;
     background-color: var(--color-dark);
     margin: 20px auto;
     border-radius: 8px;
@@ -36,7 +35,6 @@
     height: max-content;
     overflow-x: hidden;
     padding-top: 10px;
-    
 }
 
 .post_text {
@@ -45,7 +43,9 @@
 
 .post_image {
     width: 100%;
-    max-width: 500px;
+    margin: 0 auto;
+    display: block;
+    max-height: 800px;
 }
 
 .postInfo {
