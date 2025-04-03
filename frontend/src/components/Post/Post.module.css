@@ -98,7 +98,7 @@
     justify-content: space-between;
     padding: 0;
 }
-.setLike, .addComment {
+.addComment {
     margin: 0 10px;
     background-color: transparent;
     color: #ddd;
@@ -113,6 +113,6 @@
     cursor: pointer;
 
 }
-.setLike:hover, .addComment:hover {
+.addComment:hover {
     background-color: #3b3b3bcb;
 }

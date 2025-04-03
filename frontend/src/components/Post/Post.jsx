@@ -2,9 +2,10 @@ import styles from '@/components/Post/Post.module.css'
 import avatar from '@/assets/images/no-face.jpg'
 import postImage from '@/assets/images/post1.jpg'
 import likes from '@/assets/icons/like.svg'
-import like2 from '@/assets/icons/like2.svg'
+// import like2 from '@/assets/icons/like2.svg'
 import comment from '@/assets/icons/comment.svg'
 import Image from 'next/image';
+import PostLike from '../PostLike/PostLike'
 
 const Post = ({data}) => {
     return (
@@ -36,11 +37,7 @@ const Post = ({data}) => {
             </div>
             <div className={styles.card_footer}>
                 {/* add_reaction - add_comment */}
-                <button className={styles.setLike}>
-                    {data.user_like ? 
-                        <Image src={likes} width={20} height={20} alt='likes' className={styles.button} />:
-                        <Image src={like2} width={20} height={20} alt='likes' className={styles.button} />}
-                    Like</button>
+                <PostLike data={data} />
                 <button className={styles.addComment}>
                 <Image src={comment} width={20} height={20} alt='likes' className={styles.button} />
                     Comment</button>
