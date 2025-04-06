@@ -5,6 +5,7 @@
   --color-blue: #01579B;
   --color-dark: #161616;
   --light-gray: #504f4f;
+  --container-width: 1000px;
 }
 
 /* @media (prefers-color-scheme: dark) {
