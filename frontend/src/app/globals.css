@@ -1,11 +1,16 @@
 :root {
-  --background: #ffffff;
+  --color-light: #ffffff;
   --color-dark2: #171717;
   --color-red: red;
   --color-blue: #01579B;
+  --color-blue-trans: #01589b9c;
+  --color-blue2: #154e7a;
   --color-dark: #161616;
   --light-gray: #504f4f;
   --container-width: 1000px;
+  --font1: "Geist", sans-serif;
+  --font2: "Geist Mono", monospace;
+  /* font-size: 10px; */
 }
 
 /* @media (prefers-color-scheme: dark) {

@@ -5,6 +5,7 @@ import avatar from '@/assets/images/no-face.jpg'
 import NewPostCard from "@/components/NewPostCard/NewPostCard";
 import ProfileFriends from "@/components/ProfileFriends/ProfileFriends";
 import PostList from "@/components/PostList/PostList";
+import CreatePost from "@/components/CreatePost/CreatePost";
 
 const ProfilePage = async ({ params }) => {
     const { username } = await params;
@@ -22,6 +23,7 @@ const ProfilePage = async ({ params }) => {
                         <button className={styles.editBtn}>Create Post</button>
                     </div>
                 </div>
+                <CreatePost />
             </div>
             <main className={styles.content}>
                 <aside className={styles.sideBar}>
