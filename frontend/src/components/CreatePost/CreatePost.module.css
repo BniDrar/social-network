@@ -54,11 +54,17 @@
     border: 2px solid var(--color-dark);
 }
 
+.formGroup {
+    display: flex;
+    gap: 10px;
+    /* justify-content: space-around; */
+}
+
 .imgUploadLabel {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 120px;
+    width: 50%;
     height: 40px;
     /* background-color: var(--color-dark); */
     color: var(--color-blue);
@@ -73,6 +79,26 @@
     color: var(--color-dark);
     border: 2px dashed var(--color-dark);
 }
+
+.status {
+    width: 50%;
+    height: 40px;
+    border: 2px solid var(--color-blue);
+    background-color: var(--color-light);
+    color: var(--color-blue);
+    border-radius: 6px;
+    font-size: 14px;
+    font-family: var(--font1);
+    font-weight: 600;
+    text-align: center;
+    outline: none;
+}
+
+.status:focus {
+    color: var(--color-dark);
+    border: 2px solid var(--color-dark);
+}
+
 .formImage {
     display: none;
 }
