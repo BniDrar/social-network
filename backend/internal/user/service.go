@@ -11,7 +11,6 @@ import (
 	"socialNetwork/pkg/utils"
 )
 
-
 func (s *user) RegisterService(user entity.User) (int, error) {
 	// check credentials
 	if err := utils.ValidateRegisterCredentials(user); err != nil {
@@ -44,10 +43,6 @@ func (s *user) RegisterService(user entity.User) (int, error) {
 	return http.StatusCreated, nil
 }
 
-
-
-
-
 func (u *user) LogoutService(user entity.User) error {
 	// do something
 	return nil
@@ -55,12 +50,12 @@ func (u *user) LogoutService(user entity.User) error {
 
 func (u *user) authenticateService(email, password string) (int, error) {
 	return u.authenticateRepo(email, password)
-} 
+}
 
 func (u *user) UserProfile(ctx context.Context, nickname string) (int, entity.User, error) {
 	user, err := u.GetUserByUsername(nickname)
 	if err != nil {
-		return http.StatusInternalServerError, user, errors.New(fmt.Sprintf("erro while getting the profile from the database, err: %v", err))
+		return http.StatusInternalServerError, user, fmt.Errorf("erro while getting the profile from the database, err: %v", err)
 	}
 	user.Password = ""
 	if user.Status == entity.PublicUser {

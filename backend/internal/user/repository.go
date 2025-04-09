@@ -152,7 +152,6 @@ func (u *user) DeleteUserByNickName(nickName string) error {
 
 /* ___________ THOSE FUNCS USED FOR CHECK USER CREDENTIALS ___________ */
 
-
 // We'll use the Exists method to check if a user exists with a specific ID.
 func (u *user) IsUserExist(id uint) (bool, error) {
 	var exists bool
@@ -224,8 +223,7 @@ func (r *user) CheckUserByUsername(username string) (bool, error) {
 	return exists, nil
 }
 
-
-/*________________ THOSE FUNCS USED TO CHECK FOLOWING ____________ */ 
+/*________________ THOSE FUNCS USED TO CHECK FOLOWING ____________ */
 func (u *user) isFollowedBy(follower, followed int) (bool, error) {
 	query := `SELECT EXISTS(SELECT 1 FROM follows WHERE folowwer_id = $1 AND followed_id = $2)`
 	var exists bool
@@ -242,7 +240,7 @@ func (u *user) isFollowedBy(follower, followed int) (bool, error) {
 	return exists, nil
 }
 
-func (u *user) isFollowingEither(follower, followed int) (bool, error) {
+func (u *user) IsFollowingEither(follower, followed int) (bool, error) {
 	query := `SELECT EXISTS(
                 SELECT 1 FROM follows WHERE (follower_id = $1 AND followed_id = $2) 
                 OR (follower_id = $2 AND followed_id = $1)

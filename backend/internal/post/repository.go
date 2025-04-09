@@ -1,32 +1,151 @@
 package post
 
-// func (p *post) CreatePostRepo(post entity.Post, id int) (int, int, error) {
-// 	return 0, http.StatusCreated, nil
-// }
+import (
+	"context"
+	"errors"
 
-// func (p *post) CreateGroup(post entity.Post, id int) (int, int, error) {
-// 	return 0, http.StatusCreated, nil
-// }
+	"socialNetwork/entity"
+)
 
-func (p *post) CanSeePost(userid, postid int) bool {
-	prep, err := p.db.Prepare(`SELECT
-		    1
-		FROM posts AS post 
-		INNER JOIN users AS user ON user.id = post.user_id
-		LEFT JOIN group_members AS gm ON gm.group_id=post.group_id AND gm.member_id = $1
-		LEFT JOIN follows AS follow ON follow.followed_id = post.user_id AND follow.follower_id = 1
+func (p *post) GroupMember(ctx context.Context, userID, groupID int) bool {
+	query := `SELECT
+		    user.id
+		FROM
+			users AS user
+		LEFT JOIN group_members AS gm ON gm.group_id = $2
+			AND gm.member_id = $1
 		WHERE
-		    (post.group_id IS NOT NULL AND gm.member_id = $1 AND post.id=$2)
-		    OR 
-		    (post.group_id IS NULL AND follow.follower_id = $1 AND post.id=$2);`)
+		    ($2 IS NOT NULL AND gm.member_id IS NOT NULL)`
+	smtp, err := p.db.PrepareContext(ctx, query)
 	if err != nil {
 		return false
 	}
-	row := prep.QueryRow(userid, postid)
-	var res bool
+	row := smtp.QueryRowContext(ctx, userID, groupID)
+	var res int
 	err = row.Scan(&res)
 	if err != nil {
 		return false
+	} else {
+		return true
 	}
-	return res
+}
+
+func (p *post) Repo_UserCanPost(ctx context.Context, id, postid int) bool {
+	query := `SELECT
+		    post.id
+		FROM
+			posts AS post
+		LEFT JOIN follows AS follow ON follow.followed_id = post.user_id
+			AND follow.follower_id = $1
+		LEFT JOIN group_members AS gm ON gm.group_id = post.group_id
+			AND gm.member_id = $1
+		WHERE
+		    (post.group_id IS NOT NULL AND gm.member_id IS NOT NULL AND post.id = $2)
+		    OR (post.group_id IS NULL AND follow.follower_id = $1 AND post.id = $2)
+			OR (post.status = 2 AND post.id = $2)
+			OR (post.user_id = $1);`
+	smtp, err := p.db.PrepareContext(ctx, query)
+	if err != nil {
+		return false
+	}
+	row := smtp.QueryRowContext(ctx, id, postid)
+	var res int
+	err = row.Scan(&res)
+	if err != nil {
+		return false
+	} else {
+		return true
+	}
+}
+
+func (p *post) Repo_GetAll(ctx context.Context, id int) (posts []entity.Post, err error) {
+	prep, err := p.db.PrepareContext(ctx, `SELECT
+			post.id
+			post.user_id
+		    user.avatar,
+		    content,
+			post.image,
+		    (SELECT nickname FROM users AS u WHERE post.user_id=u.id) AS creator
+		FROM
+		    posts AS post
+		LEFT JOIN groups AS "group" ON "group".id = post.group_id
+		LEFT JOIN group_members AS gm ON gm.member_id = $1 AND gm.group_id = "group".id
+		LEFT JOIN follows AS follow 
+		    ON (follow.followed_id = post.user_id AND 
+		        follow.follower_id = $1 AND 
+		        post.status = 0 AND 
+		        post.group_id IS NULL)
+		WHERE
+			    (post.group_id IS NOT NULL AND gm.member_id IS NOT NULL)
+		    OR
+		    	(post.group_id IS NULL AND follow.follower_id = $1)
+			OR
+				(post.status = 2)
+			OR
+				(post.userid = $1);`)
+	if err != nil {
+		return
+	}
+	res, err := prep.QueryContext(ctx, id)
+	if err != nil {
+		return
+	}
+	for res.Next() {
+		post := entity.Post{}
+		err := res.Scan(&post.ID, &post.Avatar, &post.Content, &post.Image, &post.UserName)
+		if err != nil {
+			continue
+		}
+		posts = append(posts, post)
+	}
+	return
+}
+
+func (p *post) Repo_GetOne(ctx context.Context, post_id int) (post entity.Post, err error) {
+	prep, err := p.db.PrepareContext(ctx, `SELECT
+		    post.id,
+		    user.avatar,
+		    post.content,
+			post.image,
+		    user.nickname AS creator
+		FROM posts AS post 
+		INNER JOIN users AS user ON user.id = post.user_id
+		WHERE (post.id=$1);`)
+	if err != nil {
+		return
+	}
+	res := prep.QueryRowContext(ctx, post_id)
+	err = res.Scan(&post.ID, &post.Avatar, &post.Content, &post.Image, &post.UserName)
+	return
+}
+
+func (p *post) Repo_CreatePost(ctx context.Context, user_id int, post entity.Post) (err error) {
+	prep, err := p.db.PrepareContext(ctx, `INSERT into posts
+		(user_id, content, image, group_id, status)
+	VALUES
+		($1, $2, $3, $4, $5)`)
+	if err != nil {
+		return
+	}
+	res, err := prep.Exec(user_id, post.Content, post.Image, post.GroupID, post.Status)
+	if err != nil {
+		return
+	}
+	last, err := res.LastInsertId()
+	if last == 0 && err == nil {
+		err = errors.New("insert error")
+	}
+	return
+}
+
+func (p *post) Repo_React(ctx context.Context, user_id int, react entity.Vote) (err error) {
+	prep, err := p.db.PrepareContext(ctx, `INSERT INTO engagements
+			(user_id, post_id, status)
+		VALUES
+			($1, $2, $3)`)
+	if err != nil {
+		return
+	}
+	_, err = prep.ExecContext(ctx, user_id, react.ID, react.Status)
+	return
 }
