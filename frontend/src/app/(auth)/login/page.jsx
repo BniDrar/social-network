@@ -10,30 +10,32 @@ export default function LoginPage() {
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
 
-      const email = form.email.value;
+      const nickname = form.nickname.value;
       const password = form.password.value;
 
+      console.log(nickname, password);
       try {
         const response = await fetch('http://localhost:8080/api/login', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ email, password }),
+          body: JSON.stringify({ nickname, password }),
         });
 
-        const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(data.message || 'Login failed');
+        // Check if the response is OK (status 2xx)
+        if (response.ok) {
+          // If the response is successful, redirect to the homepage
+          console.log('Login successful');
+          window.location.href = '/';  // Redirect to homepage
+        } else {
+          // If the response is not OK, handle the error message
+          const errorData = await response.text();  // Get the raw text (no JSON)
+          throw new Error(errorData || 'Login failed');
         }
-
-        // Handle successful login (redirect or show message)
-        console.log('Login successful:', data);
-        window.location.href = '/'; // redirect to homepage (change as needed)
       } catch (err) {
         console.error(err.message);
-        errorMsg.textContent = err.message;
+        errorMsg.textContent = err.message;  // Display error message to the user
       }
     });
   }, []);
@@ -42,8 +44,8 @@ export default function LoginPage() {
     <div className="login-container">
       <h1>Login</h1>
       <form id="login-form">
-        <label htmlFor="email">Email:</label>
-        <input type="email" id="email" name="email" required />
+        <label htmlFor="nickname">nickname:</label>
+        <input type="nickname" id="nickname" name="nickname" required />
 
         <label htmlFor="password">Password:</label>
         <input type="password" id="password" name="password" required />
