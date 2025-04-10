@@ -1,45 +1,45 @@
-.registerContainer {
-    max-width: 500px;
-    margin: 50px auto;
-    padding: 25px;
-    border: 1px solid #ccc;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    font-family: sans-serif;
+.container {
+  max-width: 500px;
+  margin: 50px auto;
+  padding: 25px;
+  border: 1px solid #ccc;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  font-family: sans-serif;
 }
 
 .form {
-    display: flex;
-    flex-direction: column;
+  display: flex;
+  flex-direction: column;
 }
 
 .label {
-    margin-top: 10px;
+  margin-top: 10px;
 }
 
 .input,
 .textarea {
-    padding: 8px;
-    margin-top: 5px;
-    font-size: 16px;
+  padding: 8px;
+  margin-top: 5px;
+  font-size: 16px;
 }
 
 .button {
-    margin-top: 20px;
-    padding: 10px;
-    font-size: 16px;
-    background-color: #28a745;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
+  margin-top: 20px;
+  padding: 10px;
+  font-size: 16px;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
 }
 
 .button:hover {
-    background-color: #218838;
+  background-color: #218838;
 }
 
-.error-message {
-    color: red;
-    margin-top: 10px;
+.errorMessage {
+  color: red;
+  margin-top: 10px;
 }

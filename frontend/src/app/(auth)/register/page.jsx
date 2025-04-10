@@ -1,5 +1,6 @@
 'use client';
 import { useEffect } from 'react';
+import styles from './style.module.css';
 
 export default function RegisterPage() {
   useEffect(() => {
@@ -9,6 +10,11 @@ export default function RegisterPage() {
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
 
+      if (form.password.value !== form.confirm_password.value) {
+        errorMsg.textContent = 'Passwords do not match';
+        return;
+      }
+
       const userData = {
         nickname: form.nickname.value,
         email: form.email.value,
@@ -17,7 +23,7 @@ export default function RegisterPage() {
         last: form.last.value,
         date_of_birth: form.date_of_birth.value,
         about_me: form.about_me.value,
-        status: 0, // default, not shown to user
+        status: 0,
       };
 
       try {
@@ -29,95 +35,52 @@ export default function RegisterPage() {
           body: JSON.stringify(userData),
         });
 
-        // Check if the response is OK (status 2xx)
         if (response.ok) {
-          // If the response is successful, redirect to the homepage
-          console.log('Login successful');
-          window.location.href = '/';  // Redirect to homepage
+          console.log('Registration successful');
+          window.location.href = '/';
         } else {
-          // If the response is not OK, handle the error message
-          const errorData = await response.text();  // Get the raw text (no JSON)
-          throw new Error(errorData || 'Login failed');
+          const errorData = await response.text();
+          throw new Error(errorData || 'Registration failed');
         }
       } catch (err) {
         console.error(err.message);
-        errorMsg.textContent = err.message;  // Display error message to the user
+        errorMsg.textContent = err.message;
       }
     });
   }, []);
 
   return (
-    <div className="register-container">
+    <div className={styles.container}>
       <h1>Register</h1>
-      <form id="register-form">
-        <label htmlFor="nickname">Nickname:</label>
-        <input type="text" name="nickname" required />
+      <form id="register-form" className={styles.form}>
+        <label htmlFor="nickname" className={styles.label}>Nickname:</label>
+        <input type="text" name="nickname" required className={styles.input} />
 
-        <label htmlFor="email">Email:</label>
-        <input type="email" name="email" required />
+        <label htmlFor="email" className={styles.label}>Email:</label>
+        <input type="email" name="email" required className={styles.input} />
 
-        <label htmlFor="password">Password:</label>
-        <input type="password" name="password" required />
+        <label htmlFor="password" className={styles.label}>Password:</label>
+        <input type="password" name="password" required className={styles.input} />
 
-        <label htmlFor="first">First Name:</label>
-        <input type="text" name="first" required />
+        <label htmlFor="confirm_password" className={styles.label}>Confirm Password:</label>
+        <input type="password" name="confirm_password" required className={styles.input} />
 
-        <label htmlFor="last">Last Name:</label>
-        <input type="text" name="last" required />
+        <label htmlFor="first" className={styles.label}>First Name:</label>
+        <input type="text" name="first" required className={styles.input} />
 
-        <label htmlFor="date_of_birth">Date of Birth:</label>
-        <input type="date" name="date_of_birth" required />
+        <label htmlFor="last" className={styles.label}>Last Name:</label>
+        <input type="text" name="last" required className={styles.input} />
 
-        <label htmlFor="about_me">About Me:</label>
-        <textarea name="about_me" rows="3"></textarea>
+        <label htmlFor="date_of_birth" className={styles.label}>Date of Birth:</label>
+        <input type="date" name="date_of_birth" required className={styles.input} />
 
-        <button type="submit">Register</button>
+        <label htmlFor="about_me" className={styles.label}>About Me:</label>
+        <textarea name="about_me" rows="3" className={styles.textarea}></textarea>
 
-        <p id="error-message" style={{ color: 'red' }}></p>
+        <button type="submit" className={styles.button}>Register</button>
+
+        <p id="error-message" className={styles.errorMessage}></p>
       </form>
-
-      <style jsx>{`
-        .register-container {
-          max-width: 500px;
-          margin: 50px auto;
-          padding: 25px;
-          border: 1px solid #ccc;
-          border-radius: 12px;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-          font-family: sans-serif;
-        }
-
-        form {
-          display: flex;
-          flex-direction: column;
-        }
-
-        label {
-          margin-top: 10px;
-        }
-
-        input,
-        textarea {
-          padding: 8px;
-          margin-top: 5px;
-          font-size: 16px;
-        }
-
-        button {
-          margin-top: 20px;
-          padding: 10px;
-          font-size: 16px;
-          background-color: #28a745;
-          color: white;
-          border: none;
-          border-radius: 6px;
-          cursor: pointer;
-        }
-
-        button:hover {
-          background-color: #218838;
-        }
-      `}</style>
     </div>
   );
 }
