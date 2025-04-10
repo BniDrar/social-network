@@ -1,5 +1,7 @@
 'use client';
 
+import styles from "./style.module.css"
+
 import { useEffect } from 'react';
 
 export default function LoginPage() {
@@ -41,61 +43,20 @@ export default function LoginPage() {
   }, []);
 
   return (
-    <div className="login-container">
+    <div className={styles.loginContainer}>
       <h1>Login</h1>
-      <form id="login-form">
-        <label htmlFor="nickname">nickname:</label>
-        <input type="nickname" id="nickname" name="nickname" required />
+      <form id="login-form" className={styles.loginForm}>
+        <label htmlFor="nickname" className={styles.label}>nickname:</label>
+        <input type="nickname" id="nickname" name="nickname" required className={styles.input} />
 
-        <label htmlFor="password">Password:</label>
-        <input type="password" id="password" name="password" required />
+        <label htmlFor="password" className={styles.label}>Password:</label>
+        <input type="password" id="password" name="password" required className={styles.input} />
 
-        <button type="submit">Login</button>
+        <button type="submit" className={styles.button}>Login</button>
 
         <p id="error-message" style={{ color: 'red' }}></p>
       </form>
 
-      <style jsx>{`
-        .login-container {
-          max-width: 400px;
-          margin: 100px auto;
-          padding: 20px;
-          border: 1px solid #ccc;
-          border-radius: 12px;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-          font-family: sans-serif;
-        }
-
-        form {
-          display: flex;
-          flex-direction: column;
-        }
-
-        label {
-          margin-top: 10px;
-        }
-
-        input {
-          padding: 8px;
-          margin-top: 5px;
-          font-size: 16px;
-        }
-
-        button {
-          margin-top: 20px;
-          padding: 10px;
-          font-size: 16px;
-          background-color: #0070f3;
-          color: white;
-          border: none;
-          border-radius: 6px;
-          cursor: pointer;
-        }
-
-        button:hover {
-          background-color: #0059c1;
-        }
-      `}</style>
     </div>
   );
 }
