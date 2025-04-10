@@ -53,7 +53,10 @@ export default function LoginPage() {
         <input type="password" id="password" name="password" required className={styles.input} />
 
         <button type="submit" className={styles.button}>Login</button>
-
+        <p className={styles.linkText}>
+          Don't have an account?{' '}
+          <a href="/register" className={styles.link}>Register here</a>
+        </p>
         <p id="error-message" style={{ color: 'red' }}></p>
       </form>
 

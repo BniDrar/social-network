@@ -7,8 +7,20 @@ export default function RegisterPage() {
     const form = document.getElementById('register-form');
     const errorMsg = document.getElementById('error-message');
 
+    // Set max date for date_of_birth input to today
+    const today = new Date().toISOString().split('T')[0];
+    const dobInput = form.date_of_birth;
+    if (dobInput) {
+      dobInput.max = today;
+
+    }
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
+
+      if (form.password.value !== form.confirm_password.value) {
+        errorMsg.textContent = 'Passwords do not match';
+        return;
+      }
 
       if (form.password.value !== form.confirm_password.value) {
         errorMsg.textContent = 'Passwords do not match';
@@ -72,12 +84,17 @@ export default function RegisterPage() {
         <input type="text" name="last" required className={styles.input} />
 
         <label htmlFor="date_of_birth" className={styles.label}>Date of Birth:</label>
-        <input type="date" name="date_of_birth" required className={styles.input} max={new Date().toISOString().split('T')[0]}/>
+        <input type="date" name="date_of_birth" required className={styles.input} max={new Date().toISOString().split('T')[0]} />
 
         <label htmlFor="about_me" className={styles.label}>About Me:</label>
         <textarea name="about_me" rows="3" className={styles.textarea}></textarea>
 
         <button type="submit" className={styles.button}>Register</button>
+
+        <p className={styles.linkText}>
+          Already have an account?{' '}
+          <a href="/login" className={styles.link}>Login here</a>
+        </p>
 
         <p id="error-message" className={styles.errorMessage}></p>
       </form>
