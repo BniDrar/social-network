@@ -72,7 +72,7 @@ export default function RegisterPage() {
         <input type="text" name="last" required className={styles.input} />
 
         <label htmlFor="date_of_birth" className={styles.label}>Date of Birth:</label>
-        <input type="date" name="date_of_birth" required className={styles.input} />
+        <input type="date" name="date_of_birth" required className={styles.input} max={new Date().toISOString().split('T')[0]}/>
 
         <label htmlFor="about_me" className={styles.label}>About Me:</label>
         <textarea name="about_me" rows="3" className={styles.textarea}></textarea>
