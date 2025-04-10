@@ -49,7 +49,7 @@ export default function RegisterPage() {
 
         if (response.ok) {
           console.log('Registration successful');
-          window.location.href = '/';
+          window.location.href = '/login';
         } else {
           const errorData = await response.text();
           throw new Error(errorData || 'Registration failed');
