@@ -13,7 +13,7 @@ import (
 
 type Post interface {
 	Post(w http.ResponseWriter, r *http.Request)
-	// GetPosts(w http.ResponseWriter, r *http.Request)
+	GetPosts(w http.ResponseWriter, r *http.Request)
 	// React(w http.ResponseWriter, r *http.Request)
 }
 

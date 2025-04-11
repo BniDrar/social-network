@@ -90,6 +90,11 @@ func (app *App) createRoutes() []Route {
 			handler: app.GetAllGroups,
 			Role:    User,
 		},
+		{
+			Path:    "/api/posts",
+			handler: app.Post.GetPosts,
+			Role:    User,
+		},
 		/*... handlers*/
 	}
 }
