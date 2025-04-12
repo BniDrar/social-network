@@ -1,6 +1,40 @@
 package main
 
-// const postAPI = "/ping"
+import (
+	"net/http"
+	"socialNetwork/pkg/assert"
+	"testing"
+)
+
+func TestGetPosts(t *testing.T) {
+
+	/*_________________THE FIRST STEP IS TO LOGIN_______________*/
+	t.Run("Loging For Posts Test", ts.login)
+	/*___________MAKE A TEST TABLE OF ALL POSSIBLE CASES_________*/
+	tests := []struct {
+		name     string
+		limit    int
+		offset   int
+		wantCode int
+	}{
+		{
+			name:     "User Posts",
+			limit:    10,
+			offset:   0,
+			wantCode: http.StatusOK,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			query := "?limit=10&&offset=0"
+			url := "/api/posts" + query
+
+			code, _, _ := ts.JSONRequest(t, url, nil, http.MethodGet)
+			assert.Equal(t, code, tt.wantCode)
+		})
+
+	}
+}
 
 // func TestPost(t *testing.T) {
 
@@ -28,7 +62,7 @@ package main
 // 		wantCode int
 // 	}{
 // 		{
-// 			name:     "User Group",
+// 			name:     "User Posts",
 // 			wantCode: http.StatusOK,
 // 		},
 // 	}
@@ -42,7 +76,7 @@ package main
 // 				t.Fatal(err)
 // 			}
 
-// 			code, _, _ := ts.postJSON(t, postAPI, jsonBody)
+// 			code, _, _ := ts.postJSON(t, "/api/posts", jsonBody)
 // 			assert.Equal(t, code, tt.wantCode)
 // 		})
 // 	}
