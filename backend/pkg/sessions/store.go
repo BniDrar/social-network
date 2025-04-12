@@ -21,5 +21,5 @@ type Store interface {
 	// Commit should add the session token and data to the store, with the given
 	// expiry time. If the session token already exists, then the data and
 	// expiry time should be overwritten.
-	Commit(token string, b []byte, expiry time.Time,user_id int) (err error)
+	Commit(token string, b []byte, expiry time.Time) (err error)
 }

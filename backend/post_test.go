@@ -1,35 +1,5 @@
 package main
 
-// func TestGetPosts(t *testing.T) {
-
-// 	/*_________________THE FIRST STEP IS TO LOGIN_______________*/
-// 	t.Run("Loging For Posts Test", ts.login)
-// 	/*___________MAKE A TEST TABLE OF ALL POSSIBLE CASES_________*/
-// 	tests := []struct {
-// 		name     string
-// 		limit    int
-// 		offset   int
-// 		wantCode int
-// 	}{
-// 		{
-// 			name:     "User Posts",
-// 			limit:    10,
-// 			offset:   0,
-// 			wantCode: http.StatusOK,
-// 		},
-// 	}
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			query := "?limit=10&offset=0"
-// 			url := "/api/posts" + query
-
-// 			code, _, _ := ts.JSONRequest(t, url, nil, http.MethodGet)
-// 			assert.Equal(t, code, tt.wantCode)
-// 		})
-
-// 	}
-// }
-
 // const postAPI = "/ping"
 
 // func TestPost(t *testing.T) {

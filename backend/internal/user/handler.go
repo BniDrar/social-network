@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
-	"log"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -73,6 +72,7 @@ func (u *user) Login(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
+
 	// get user data from request
 	var User entity.Credentials
 	err := json.NewDecoder(r.Body).Decode(&User)
@@ -82,8 +82,6 @@ func (u *user) Login(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
 		return
 	}
-	log.Println(User.Username)
-	log.Println(User.Password)
 	id, err := u.authenticateService(User.Username, User.Password)
 	if err != nil {
 		if errors.Is(err, config.ErrInvalidCredentials) {
@@ -98,12 +96,11 @@ func (u *user) Login(w http.ResponseWriter, r *http.Request) {
 	err = u.sessionManager.RenewToken(r.Context())
 	if err != nil {
 		u.loger.Error.Println(err) // that's for registering error in log file
-		w.WriteHeader(http.StatusInternalServerError)
+			w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	log.Println("user id: ", id)
-	u.sessionManager.Put(r.Context(), string(entity.ContextID), id)
-	
+	u.sessionManager.Put(r.Context(), "authenticatedUserID", id)
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 }

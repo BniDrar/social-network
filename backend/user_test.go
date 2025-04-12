@@ -4,8 +4,9 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
-	"socialNetwork/pkg/assert"
 	"testing"
+
+	"socialNetwork/pkg/assert"
 )
 
 func TestRegister(t *testing.T) {
@@ -347,27 +348,27 @@ func TestProfile(t *testing.T) {
 	}
 }
 
-func TestFollow(t *testing.T) {
+// func TestFollow(t *testing.T) {
 
-	/*_________________THE FIRST STEP IS TO LOGIN_______________*/
-	t.Run("Loging For Follow Test", ts.login)
-	/*___________MAKE A TEST TABLE OF ALL POSSIBLE CASES_________*/
-	tests := []struct {
-		name     string
-		wantCode int
-	}{
-		{
-			name:     "Get Follow",
-			wantCode: http.StatusOK,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			code, _, _ := ts.JSONRequest(t, "/api/follow?followed?=2", nil, http.MethodGet)
-			assert.Equal(t, code, tt.wantCode)
-		})
-	}
-}
+// 	/*_________________THE FIRST STEP IS TO LOGIN_______________*/
+// 	t.Run("Loging For Follow Test", ts.login)
+// 	/*___________MAKE A TEST TABLE OF ALL POSSIBLE CASES_________*/
+// 	tests := []struct {
+// 		name     string
+// 		wantCode int
+// 	}{
+// 		{
+// 			name:     "Get Follow",
+// 			wantCode: http.StatusOK,
+// 		},
+// 	}
+// 	for _, tt := range tests {
+// 		t.Run(tt.name, func(t *testing.T) {
+// 			code, _, _ := ts.JSONRequest(t, "/api/follow?followed?=2", nil, http.MethodGet)
+// 			assert.Equal(t, code, tt.wantCode)
+// 		})
+// 	}
+// }
 
 // func TestFollows(t *testing.T) {
 

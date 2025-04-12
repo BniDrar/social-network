@@ -90,26 +90,6 @@ func (app *App) createRoutes() []Route {
 			handler: app.GetAllGroups,
 			Role:    User,
 		},
-		{
-			Path:    "/api/posts",
-			handler: app.GetPosts,
-			Role:    User,
-		},
-		{
-			Path:    "/api/event/create",
-			handler: app.CreateEvent,
-			Role:    User,
-		},
-		{
-			Path:    "/api/event/vote",
-			handler: app.VoteEvent,
-			Role:    User,
-		},
-		{
-			Path:    "/api/event/get",
-			handler: app.GetEvent,
-			Role:    User,
-		},
 		/*... handlers*/
 	}
 }

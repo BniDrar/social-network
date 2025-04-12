@@ -1,12 +1,5 @@
 package main
 
-// import (
-// 	"encoding/json"
-// 	"net/http"
-// 	"socialNetwork/pkg/assert"
-// 	"testing"
-// )
-
 // func TestGetGroups(t *testing.T) {
 
 // 	/*_________________THE FIRST STEP IS TO LOGIN_______________*/
@@ -27,13 +20,23 @@ package main
 // 	}
 // 	for _, tt := range tests {
 // 		t.Run(tt.name, func(t *testing.T) {
-// 			query := "?limit=10&offset=0"
-// 			url := "/api/posts" + query
+// 			reqBody := struct {
+// 				Limit  int `json:"limit"`
+// 				Offset int `json:"offset"`
+// 			}{
+// 				Limit:  10,
+// 				Offset: 0,
+// 			}
 
-// 			code, _, _ := ts.JSONRequest(t, url, nil, http.MethodGet)
+// 			jsonBody, err := json.Marshal(reqBody)
+// 			if err != nil {
+// 				t.Fatal(err)
+// 			}
+
+// 			//code, _, _ := ts.JSONRequest(t, "/api/user_groups", jsonBody, http.MethodPost)
+// 			code, _, _ := ts.JSONRequest(t, "/api/user_groups", jsonBody, http.MethodGet)
 // 			assert.Equal(t, code, tt.wantCode)
 // 		})
-
 // 	}
 // }
 

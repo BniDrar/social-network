@@ -11,33 +11,16 @@ import (
 
 func secureHeaders(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Allow requests from your React app
-		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
-		// Allow specific methods
-		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-		// Allow specific headers
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
-
-		// Handle preflight OPTIONS request
-		if r.Method == http.MethodOptions {
-			w.WriteHeader(http.StatusOK)
-			return
-		}
-
-		// Pass control to the next handler
+		// Note: This is split across multiple lines for readability. You don't
+		// need to do this in your own code.
+		w.Header().Set("Content-Security-Policy",
+			"default-src 'self'; style-src 'self' fonts.googleapis.com; font-src fonts.gstatic.com")
+		w.Header().Set("Referrer-Policy", "origin-when-cross-origin")
+		w.Header().Set("X-Content-Type-Options", "nosniff")
+		w.Header().Set("X-Frame-Options", "deny")
+		w.Header().Set("X-XSS-Protection", "0")
 		next.ServeHTTP(w, r)
 	})
-	// return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-	// 	// Note: This is split across multiple lines for readability. You don't
-	// 	// need to do this in your own code.
-	// 	w.Header().Set("Content-Security-Policy",
-	// 		"default-src 'self'; style-src 'self' fonts.googleapis.com; font-src fonts.gstatic.com")
-	// 	w.Header().Set("Referrer-Policy", "origin-when-cross-origin")
-	// 	w.Header().Set("X-Content-Type-Options", "nosniff")
-	// 	w.Header().Set("X-Frame-Options", "deny")
-	// 	w.Header().Set("X-XSS-Protection", "0")
-	// 	next.ServeHTTP(w, r)
-	// })
 }
 
 func (app *App) logRequest(next http.Handler) http.Handler {
@@ -78,6 +61,7 @@ func (app *App) requireAuthentication(next http.Handler) http.Handler {
 			return
 		}
 
+
 		// Otherwise set the "Cache-Control: no-store" header so that pages
 		// require authentication are not stored in the users browser cache (or
 		// other intermediary cache).
@@ -93,7 +77,7 @@ func (app *App) authenticate(next http.Handler) http.Handler {
 		// GetInt() method. This will return the zero value for an int (0) if no
 		// "authenticatedUserID" value is in the session -- in which case we
 		// call the next handler in the chain as normal and return.
-		// id := app.SessionManager.GetInt(r.Context(), "authenticatedUserID")
+		//id := app.SessionManager.GetInt(r.Context(), "authenticatedUserID")
 		id := app.SessionManager.GetInt(r.Context(), "authenticatedUserID")
 		if id == 0 {
 			next.ServeHTTP(w, r)
