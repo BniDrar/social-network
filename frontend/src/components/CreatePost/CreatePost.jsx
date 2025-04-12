@@ -17,7 +17,9 @@ const CreatePost = () => {
         const formData = event.target
         const content = formData.get("content")
         const image = formData.get("image")
+        const statusName = formData.get("status")
         console.log(content);
+        console.log(image);
         console.log(image);
     }
     return (
