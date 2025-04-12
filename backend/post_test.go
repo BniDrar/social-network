@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"net/http"
 	"socialNetwork/pkg/assert"
 	"testing"
@@ -29,7 +30,9 @@ func TestGetPosts(t *testing.T) {
 			query := "?limit=10&&offset=0"
 			url := "/api/posts" + query
 
-			code, _, _ := ts.JSONRequest(t, url, nil, http.MethodGet)
+			code, header, body := ts.JSONRequest(t, url, nil, http.MethodGet)
+			log.Println("header:", header)
+			log.Println("body:", body)
 			assert.Equal(t, code, tt.wantCode)
 		})
 

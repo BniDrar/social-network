@@ -40,7 +40,7 @@ func (p *post) CanSeePost(userid, postid int) bool {
 
 func (p *post) GetPostsByUserID(ctx context.Context, userID int, limit int, offset int) ([]entity.Post, error) {
 	query := `
-		SELECT id, title, image, content, user_id, status, group_id, created_at, updated_at
+		SELECT id, title, image, content, user_id, status, group_id,  created_at, updated_at
 		FROM posts
 		WHERE user_id = ?
 		ORDER BY created_at DESC
@@ -68,7 +68,6 @@ func (p *post) GetPostsByUserID(ctx context.Context, userID int, limit int, offs
 			&post.UserID,
 			&post.Status,
 			&post.GroupID,
-			&post.Nickname,
 			&post.CreatedAt,
 			&post.UpdatedAt,
 		)

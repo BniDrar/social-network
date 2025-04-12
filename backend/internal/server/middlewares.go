@@ -18,6 +18,8 @@ func secureHeaders(next http.Handler) http.Handler {
 		// Allow specific headers
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 
+		w.Header().Set("Access-Control-Allow-Credentials", "true")
+
 		// Handle preflight OPTIONS request
 		if r.Method == http.MethodOptions {
 			w.WriteHeader(http.StatusOK)

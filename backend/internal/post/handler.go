@@ -139,6 +139,7 @@ func (p *post) GetPosts(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
+	p.loger.Info.Println("response:", posts)
 	json.NewEncoder(w).Encode(posts)
 }
 
