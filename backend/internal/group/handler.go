@@ -3,7 +3,6 @@ package group
 import (
 	"database/sql"
 	"encoding/json"
-	"log"
 	"net/http"
 	"strconv"
 
@@ -33,22 +32,26 @@ func NewGroup(dep *config.Dependencies) Group {
 // this handler is used to get all groups
 func (g *group) GetGroups(w http.ResponseWriter, r *http.Request) {
 	// get the limit and offset from the request body
-	var requestBody struct {
-		Limit  int `json:"limit"`
-		Offset int `json:"offset"`
-	}
-	log.Println("request body", r.Body)
-	log.Println("request body decoded", requestBody)
-	err := json.NewDecoder(r.Body).Decode(&requestBody)
+	limitStr := r.URL.Query().Get("limit")
+	offsetStr := r.URL.Query().Get("offset")
+
+	limit, err := strconv.Atoi(limitStr)
 	if err != nil {
+		g.loger.Error.Println("Invalid limit:", err)
 		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Invalid request body"})
+		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Invalid limit"})
 		return
 	}
-	limit := requestBody.Limit
-	offset := requestBody.Offset
-	log.Println("Limit:", limit)
-	log.Println("Offset:", offset)
+
+	offset, err := strconv.Atoi(offsetStr)
+	if err != nil {
+		g.loger.Error.Println("Invalid offset:", err)
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Invalid offset"})
+		return
+	}
+
+	g.loger.Info.Println("Limit:", limit, "Offset:", offset)
 	if limit <= 0 || offset < 0 {
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Invalid limit or offset"})
@@ -57,7 +60,6 @@ func (g *group) GetGroups(w http.ResponseWriter, r *http.Request) {
 
 	groups, err := g.GetGroupsByUserService(r.Context(), limit, offset)
 	if err != nil {
-		log.Println("group err 0", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
 		return

@@ -27,23 +27,13 @@ func TestGetGroups(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			reqBody := struct {
-				Limit  int `json:"limit"`
-				Offset int `json:"offset"`
-			}{
-				Limit:  10,
-				Offset: 0,
-			}
+			query := "?limit=10&offset=0"
+			url := "/api/posts" + query
 
-			jsonBody, err := json.Marshal(reqBody)
-			if err != nil {
-				t.Fatal(err)
-			}
-
-			//code, _, _ := ts.JSONRequest(t, "/api/user_groups", jsonBody, http.MethodPost)
-			code, _, _ := ts.JSONRequest(t, "/api/user_groups", jsonBody, http.MethodGet)
+			code, _, _ := ts.JSONRequest(t, url, nil, http.MethodGet)
 			assert.Equal(t, code, tt.wantCode)
 		})
+
 	}
 }
 

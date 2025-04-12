@@ -5,6 +5,7 @@ import (
 	"socialNetwork/internal/chat"
 	"socialNetwork/internal/comment"
 	"socialNetwork/internal/group"
+	"socialNetwork/internal/post"
 	"socialNetwork/internal/user"
 	"socialNetwork/pkg/config"
 	"socialNetwork/pkg/database"
@@ -64,5 +65,6 @@ func NewTestApplication() (*App, *config.Conf) {
 		Comment:        comment.NewComment(dep),
 		Chat:           chat.NewChat(dep),
 		Group:          group.NewGroup(dep /* we need to add the hub to group*/),
+		Post:           post.Newpost(dep),
 	}, cfg
 }

@@ -69,52 +69,42 @@ func (u *user) Register(w http.ResponseWriter, r *http.Request) {
 }
 
 func (u *user) Login(w http.ResponseWriter, r *http.Request) {
-	log.Println("start logging")
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
-	log.Println("0")
 	// get user data from request
 	var User entity.Credentials
 	err := json.NewDecoder(r.Body).Decode(&User)
-	log.Println(User)
 	if err != nil {
 		u.loger.Error.Println(err)
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
 		return
 	}
-	log.Println("1")
 	log.Println(User.Username)
 	log.Println(User.Password)
 	id, err := u.authenticateService(User.Username, User.Password)
 	if err != nil {
-		log.Println("11")
 		if errors.Is(err, config.ErrInvalidCredentials) {
-			log.Println("12")
 			w.WriteHeader(http.StatusBadRequest)
 			json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
 		} else {
-			log.Println("13")
 			u.loger.Error.Println(err) // that's for registering error in log file
 			w.WriteHeader(http.StatusInternalServerError)
 		}
 		return
 	}
-	log.Println("2")
 	err = u.sessionManager.RenewToken(r.Context())
 	if err != nil {
 		u.loger.Error.Println(err) // that's for registering error in log file
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	log.Println("3")
 	u.sessionManager.Put(r.Context(), "authenticatedUserID", id)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	log.Println("4")
 }
 
 func (u *user) Logout(w http.ResponseWriter, r *http.Request) {

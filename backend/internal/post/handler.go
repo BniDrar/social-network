@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"net/http"
+	"strconv"
 
 	"socialNetwork/entity"
 	"socialNetwork/pkg/config"
@@ -39,11 +40,8 @@ func Newpost(dep *config.Dependencies) Post {
 	return &post{db: dep.DB, loger: *dep.Loger, Hub: dep.Hub}
 }
 
-func (u *post) GetPosts(w http.ResponseWriter, r *http.Request) {
-	id, valid := r.Context().Value(entity.ContextID).(int)
-	if !valid {
-		return
-	}
+/*this is not working ... obenali made this comment*/
+/*func (u *post) GetPosts(w http.ResponseWriter, r *http.Request) {
 	prep, err := u.db.PrepareContext(r.Context(), `SELECT
 			post.id
 			post.user_id
@@ -56,36 +54,85 @@ func (u *post) GetPosts(w http.ResponseWriter, r *http.Request) {
 		    posts AS post
 		LEFT JOIN groups AS "group" ON "group".id = post.group_id
 		LEFT JOIN group_members AS gm ON gm.member_id = $1 AND gm.group_id = "group".id
-		LEFT JOIN follows AS follow 
-		    ON (follow.followed_id = post.user_id AND 
-		        follow.follower_id = $1 AND 
-		        post.status = 0 AND 
+		LEFT JOIN follows AS follow
+		    ON (follow.followed_id = post.user_id AND
+		        follow.follower_id = $1 AND
+		        post.status = 0 AND
 		        post.group_id IS NULL)
 		WHERE
 		    (post.group_id IS NOT NULL AND gm.member_id IS NOT NULL)
-		    OR 
+		    OR
 		    (post.group_id IS NULL AND follow.follower_id = $1);`)
 	if err != nil {
+		u.loger.Error.Println(err)
 		return
 	}
 	posts := []entity.Post{}
-	res, err := prep.QueryContext(r.Context(), id)
+	res, err := prep.QueryContext(r.Context())
 	if err != nil {
+		u.loger.Error.Println(err)
 		return
 	}
 	for res.Next() {
 		post := entity.Post{}
 		err := res.Scan(&post.ID, &post.UserID, &post.Title, &post.Content, &post.Image, &post.GroupID, &post.Nickname)
 		if err != nil {
+			u.loger.Error.Println(err)
 			continue
 		}
 		posts = append(posts, post)
 	}
 	data, err := json.Marshal(posts)
 	if err != nil {
+		u.loger.Error.Println(err)
 		return
 	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+
 	w.Write(data)
+}
+*/
+
+func (p *post) GetPosts(w http.ResponseWriter, r *http.Request) {
+	// get the limit and offset from the request body
+	limitStr := r.URL.Query().Get("limit")
+	offsetStr := r.URL.Query().Get("offset")
+
+	limit, err := strconv.Atoi(limitStr)
+	if err != nil {
+		p.loger.Error.Println("Invalid limit:", err)
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Invalid limit"})
+		return
+	}
+
+	offset, err := strconv.Atoi(offsetStr)
+	if err != nil {
+		p.loger.Error.Println("Invalid offset:", err)
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Invalid offset"})
+		return
+	}
+
+	p.loger.Info.Println("Limit:", limit, "Offset:", offset)
+	if limit <= 0 || offset < 0 {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Invalid limit or offset"})
+		return
+	}
+
+	groups, err := p.GetPostsByUserService(r.Context(), limit, offset)
+	if err != nil {
+		p.loger.Error.Println(1, err)
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(groups)
 }
 
 /*             NextJs                */

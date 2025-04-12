@@ -1,5 +1,11 @@
 package post
 
+import (
+	"context"
+	"errors"
+	"socialNetwork/entity"
+)
+
 // func (p *post) CreatePostService(post entity.Post, id int) (int, int, error) {
 // 	var (
 // 		status, GroupID int
@@ -32,3 +38,15 @@ package post
 // 0 => table(group) contains user id
 // 1 => table(follows) contains user id
 // if not status forbidden
+
+func (p *post) GetPostsByUserService(ctx context.Context, limit, offset int) (entity.Groups, error) {
+	userID, ok := ctx.Value(entity.ContextID).(int)
+	if !ok {
+		return nil, errors.New("user id not found in context")
+	}
+	groups, err := p.GetPostsByUserID(ctx, userID, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+	return groups, nil
+}
