@@ -101,8 +101,9 @@ func (u *user) Login(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	u.sessionManager.Put(r.Context(), "authenticatedUserID", id)
-
+	log.Println("user id: ", id)
+	u.sessionManager.Put(r.Context(), string(entity.ContextID), id)
+	
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 }

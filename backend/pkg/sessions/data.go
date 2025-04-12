@@ -267,7 +267,9 @@ func (s *SessionManager) doStoreFind(token string) (b []byte, found bool, err er
 }
 
 func (s *SessionManager) doStoreCommit(ctx context.Context, token string, b []byte, expiry time.Time) (err error) {
-	return s.Store.Commit(token, b, expiry)
+	// get the user ID from the context 
+	 user_id :=ctx.Value(s.contextKey).(*sessionData).values["ID"].(int)
+	return s.Store.Commit(token, b, expiry , user_id)
 }
 
 func (s *SessionManager) getSessionDataFromContext(ctx context.Context) *sessionData {
