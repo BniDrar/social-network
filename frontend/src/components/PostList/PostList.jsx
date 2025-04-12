@@ -1,30 +1,45 @@
+"use client";
+import { useEffect, useState } from "react";
 import Post from "../Post/Post";
-import { backendUrl, validbackendUrl } from "@/utils/ustil";
+import { validbackendUrl } from "@/utils/ustil";
 
-const PostList = async () => {
-  //const res = await fetch(`${backendUrl}/posts`, { // fake database
-  const res = await fetch(`${validbackendUrl}/api/posts?limit=3&offset=0`, {
-    cache: "no-store",
-    credentials: "include",
-  });
+const PostList = () => {
+  const [posts, setPosts] = useState([]);
+  const [error, setError] = useState(null);
 
-  console.log("status:", res.status);
-  console.log(res)
-  if (!res.ok) {
-    const text = await res.json();
-    console.log("json:", text)
-    console.error("Non-OK response:", res.status, text);
-    throw new Error(`Request failed with status ${res.status}`);
-  }
+  useEffect(() => {
+    fetch(`${validbackendUrl}/api/posts?limit=10&offset=0`, {
+      cache: "no-store",
+      credentials: "include",
+    })
+      .then(async (res) => {
+        const contentType = res.headers.get("content-type");
+        if (!res.ok) {
+          const errorBody = contentType?.includes("application/json")
+            ? await res.json()
+            : await res.text();
+          throw new Error(
+            errorBody || `Request failed with status ${res.status}`
+          );
+        }
+        return res.json();
+      })
+      .then(setPosts)
+      .catch((err) => {
+        console.error("Fetch error:", err.message);
+        setError(err.message);
+      });
+  }, []);
 
-  const posts = await res.json();
-  console.log("posts:", posts);
+  if (error) return <div>Error: {error}</div>;
 
+  console.log('fetched posts:', posts)
+ 
   return (
     <section>
-      {posts.map((post) => {
-        return <Post key={post.id} data={post} />;
-      })}
+      {posts.map((post) => (
+        <Post key={post.id} data={post} />
+      ))}
     </section>
   );
 };
