@@ -24,9 +24,10 @@ const Navebar = () => {
                     <Image src={Logo} className={styles.logo} width={60} height={50} alt='logo' />
                 </Link>
             </div>
+            <menu className={styles.menu}>
             <nav className={styles.navbar_middle}>
                 {/* [home - groups - followers - events] */}
-                <Link href={'/'}>
+                <Link href={'/'} className={styles.link}>
                     <Image className={styles.pageIcon} src={HomeIcon} width={36} height={36} alt='home icon link' />
                 </Link>
                 <Link href={'/groups'}>
@@ -62,6 +63,10 @@ const Navebar = () => {
                         </Link>
                     </>}
             </div>
+            </menu>
+            <button className={styles.bergerMenu}>
+                menu
+            </button>
         </header>
     );
 }

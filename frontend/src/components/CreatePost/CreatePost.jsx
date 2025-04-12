@@ -6,6 +6,7 @@ import Form  from "next/form"
 /*
     - content
     - image
+    - status
 */
 
 
@@ -14,14 +15,17 @@ const CreatePost = () => {
     const [friends,setFriends] = useState(["yassine","oussama","elfihry","brahim","naytderhm","ghost"])
     const [viewers,setViewers] = useState([])
     const HandleForm = async (event) => {
-        const formData = event.target
+        event.preventDefault()
+        const formData = new FormData(event.target)
         const content = formData.get("content")
         const image = formData.get("image")
         const statusName = formData.get("status")
         console.log(content);
         console.log(image);
-        console.log(image);
+        console.log(statusName);
+        if (statusName === "private") console.log(viewers);
     }
+
     return (
         <>
             <div className={styles.overlay} id="overlay"></div>
