@@ -24,7 +24,7 @@ func (n *Notification) ProcessVoteOnNotification(ctx context.Context, notf entit
 			// add the user to the following list in data base
 
 		}
-		n.addResponseToNotification()
+		// n.addResponseToNotification()
 	case entity.EventNotification:
 		// add the react to the event 
 	case entity.GroupInvitationNotification  :
