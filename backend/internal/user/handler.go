@@ -4,7 +4,9 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
+	"strconv"
 
 	scs "socialNetwork/pkg/sessions"
 
@@ -133,18 +135,23 @@ func (u *user) Logout(w http.ResponseWriter, r *http.Request) {
 
 func (u *user) Profile(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
-		u.loger.Error.Println("the method used is not allowed")
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
-
-	nickname := r.URL.Query().Get("nickname")
-	status, user, err := u.UserProfile(r.Context(), nickname)
+	target := r.URL.Query().Get("userid")
+	id, err := strconv.Atoi(target)
+	if err != nil || id <= 0 {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Invalid user ID"})
+		return
+	}
+	status, user, err := u.UserProfile(r.Context(), id)
+	fmt.Println(status, err)
 	if err != nil {
 		u.loger.Error.Println(err)
-		http.Error(w, err.Error(), status)
+		w.WriteHeader(status)
+		return
 	}
-
 	if err := json.NewEncoder(w).Encode(user); err != nil {
 		u.loger.Error.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -152,7 +159,19 @@ func (u *user) Profile(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (u *user) Follow(w http.ResponseWriter, r *http.Request) {}
+func (u *user) Follow(w http.ResponseWriter, r *http.Request) {
+	followed := r.URL.Query().Get("followed")
+	followedID, err := strconv.Atoi(followed)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Invalid followed ID"})
+		return
+	}
+	status, err := u.FollowService(r.Context(), followedID)
+	if err != nil {
+		u.loger.Error.Println(err)
+	}
+	w.WriteHeader(status)
+}
 
 func (u *user) Followers(w http.ResponseWriter, r *http.Request) {}
-
