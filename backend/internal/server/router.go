@@ -82,6 +82,12 @@ func (app *App) createRoutes() []Route {
 			handler: app.GetAllGroups,
 			Role:    User,
 		},
+		// that path for websocket connection
+		{
+			Path:    "/api/chat",
+			handler: app.Chat.WebSocket,
+			Role:    Auth, // this should be user
+		},
 	}
 }
 
