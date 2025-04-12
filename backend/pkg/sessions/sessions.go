@@ -109,7 +109,8 @@ func New() *SessionManager {
 			Path:     "/",
 			Persist:  true,
 			Secure:   false,
-			SameSite: http.SameSiteLaxMode,
+			SameSite: http.SameSiteLaxMode, // instead of None
+			//SameSite: http.SameSiteNoneMode, // Cross-origin requests require SameSite=None
 		},
 	}
 	return s

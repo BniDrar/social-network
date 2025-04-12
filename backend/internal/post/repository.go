@@ -40,9 +40,8 @@ func (p *post) CanSeePost(userid, postid int) bool {
 
 func (p *post) GetPostsByUserID(ctx context.Context, userID int, limit int, offset int) ([]entity.Post, error) {
 	query := `
-		SELECT id, title, image, content, user_id, status, group_id,  created_at, updated_at
+		SELECT id, title, image, content, user_id, status, group_id, created_at, updated_at
 		FROM posts
-		WHERE user_id = ?
 		ORDER BY created_at DESC
 		LIMIT ? OFFSET ?
 	`
@@ -52,7 +51,7 @@ func (p *post) GetPostsByUserID(ctx context.Context, userID int, limit int, offs
 		return nil, errors.New(fmt.Sprintf("error preparing query in GetGroupsByUserID function: %v", err))
 	}
 	defer stmt.Close()
-	rows, err := stmt.QueryContext(ctx, userID, limit, offset)
+	rows, err := stmt.QueryContext(ctx, limit, offset)
 	if err != nil {
 		return nil, err
 	}

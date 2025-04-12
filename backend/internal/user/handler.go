@@ -96,13 +96,14 @@ func (u *user) Login(w http.ResponseWriter, r *http.Request) {
 	err = u.sessionManager.RenewToken(r.Context())
 	if err != nil {
 		u.loger.Error.Println(err) // that's for registering error in log file
-			w.WriteHeader(http.StatusInternalServerError)
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 	u.sessionManager.Put(r.Context(), "authenticatedUserID", id)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
+	u.loger.Info.Println(User, ": is logged in")
 }
 
 func (u *user) Logout(w http.ResponseWriter, r *http.Request) {
