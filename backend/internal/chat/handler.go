@@ -31,10 +31,10 @@ func NewChat(dep *config.Dependencies) Chat {
 func (c *chat) WebSocket(w http.ResponseWriter, r *http.Request) {
 	log.Println("WebSocket endpoint hit")
 	var upgrader = websocket.Upgrader{
-    CheckOrigin: func(r *http.Request) bool {
-        return true // Allow all origins (use cautiously in production)
-    },
-}
+		CheckOrigin: func(r *http.Request) bool {
+			return true // Allow all origins (use cautiously in production)
+		},
+	}
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		c.loger.Error.Println("Error while upgrading connection:", err)

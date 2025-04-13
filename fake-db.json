@@ -1,0 +1,98 @@
+{
+    "posts": [
+        {
+            "id": 1,
+            "avatar": "/assets/images/no-face.jpg",
+            "username": "yrahhaou",
+            "content": "🍲🍖 Classic Homestyle Meatloaf with a Tangy Glaze 🍋✨",
+            "image": "/assets/images/post1.jpg",
+            "likes": "15k",
+            "comments": "5k",
+            "user_like": false,
+            "created_at": "7h"
+        },
+        {
+            "id": 2,
+            "avatar": "/assets/images/no-face.jpg",
+            "username": "yrahhaou",
+            "content": "🍲🍖 Classic Homestyle Meatloaf with a Tangy Glaze 🍋✨",
+            "image": "/assets/images/post1.jpg",
+            "likes": "15k",
+            "comments": "5k",
+            "user_like": true,
+            "created_at": "7h"
+        },
+        {
+            "id": 3,
+            "avatar": "/assets/images/no-face.jpg",
+            "username": "yrahhaou",
+            "content": "🍲🍖 Classic Homestyle Meatloaf with a Tangy Glaze 🍋✨",
+            "image": "/assets/images/post1.jpg",
+            "likes": "15k",
+            "comments": "5k",
+            "user_like": false,
+            "created_at": "7h"
+        },
+        {
+            "id": 4,
+            "avatar": "/assets/images/no-face.jpg",
+            "username": "yrahhaou",
+            "content": "🍲🍖 Classic Homestyle Meatloaf with a Tangy Glaze 🍋✨",
+            "image": "/assets/images/post1.jpg",
+            "likes": "15k",
+            "comments": "5k",
+            "user_like": false,
+            "created_at": "7h"
+        }
+    ],
+    "profile": {
+        "id": 1
+    },
+    "profile-friends": [
+        {
+            "id": 1,
+            "image": "/assets/images/friend1.jpg",
+            "name": "Alice"
+        },
+        {
+            "id": 2,
+            "image": "/assets/images/friend2.jpg",
+            "name": "Bob"
+        },
+        {
+            "id": 3,
+            "image": "/assets/images/friend3.jpg",
+            "name": "Charlie"
+        },
+        {
+            "id": 4,
+            "image": "/assets/images/friend4.jpg",
+            "name": "Diana"
+        },
+        {
+            "id": 5,
+            "image": "/assets/images/friend5.jpg",
+            "name": "Eve"
+        },
+        {
+            "id": 6,
+            "image": "/assets/images/friend6.jpg",
+            "name": "Frank"
+        },
+        {
+            "id": 7,
+            "image": "/assets/images/friend7.jpg",
+            "name": "Grace"
+        },
+        {
+            "id": 8,
+            "image": "/assets/images/friend8.jpg",
+            "name": "Hank"
+        },
+        {
+            "id": 9,
+            "image": "/assets/images/friend9.jpg",
+            "name": "Ivy"
+        }
+    ]
+}

@@ -1,14 +1,23 @@
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --color-light: #ffffff;
+  --color-dark2: #171717;
+  --color-red: red;
+  --color-blue: #01579B;
+  --color-blue-trans: #01589b9c;
+  --color-blue2: #154e7a;
+  --color-dark: #161616;
+  --light-gray: #504f4f;
+  --container-width: 1000px;
+  --font1: "Geist", sans-serif;
+  --font2: "Geist Mono", monospace;
 }
 
-@media (prefers-color-scheme: dark) {
+/* @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
-    --foreground: #ededed;
+    --color-dark2: #ededed;
   }
-}
+} */
 
 html,
 body {
@@ -17,11 +26,13 @@ body {
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
+  color: #ffffff;
+  background: #0a0a0a;
   font-family: Arial, Helvetica, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  height: 100vh;
+
 }
 
 * {
@@ -35,8 +46,8 @@ a {
   text-decoration: none;
 }
 
-@media (prefers-color-scheme: dark) {
+/* @media (prefers-color-scheme: dark) {
   html {
     color-scheme: dark;
   }
-}
+} */

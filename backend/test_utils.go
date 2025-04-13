@@ -2,13 +2,30 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"io"
 	"net/http"
 	"net/http/cookiejar"
 	"net/http/httptest"
-	"net/url"
+	"socialNetwork/pkg/assert"
 	"testing"
 	// New import
+)
+
+const (
+	existNeckName = "existuser@example.com"
+	existLast     = "user"
+	existFirst    = "exist"
+	existEmail    = "existuser@example.com"
+
+	validNeckName    = "validuser"
+	validFirst       = "valid"
+	validLast        = "user"
+	validDateOfBirth = "01/01/2000"
+	validPassword    = "validPa$$word1"
+	validEmail       = "validuser@example.com"
+
+	InvalidEmail = "BadEmail"
 )
 
 // Define a custom testServer type which embeds a httptest.Server instance.
@@ -37,7 +54,7 @@ func (ts *testServer) get(t *testing.T, urlPath string) (int, http.Header, strin
 // of our custom testServer type.
 func newTestServer(t *testing.T, h http.Handler) *testServer {
 	// Initialize the test server as normal.
-	ts := httptest.NewTLSServer(h)
+	ts := httptest.NewServer(h)
 	// Initialize a new cookie jar.
 	jar, err := cookiejar.New(nil)
 	if err != nil {
@@ -55,25 +72,6 @@ func newTestServer(t *testing.T, h http.Handler) *testServer {
 		return http.ErrUseLastResponse
 	}
 	return &testServer{ts}
-}
-
-// Create a postForm method for sending POST requests to the test server. The
-// final parameter to this method is a url.Values object which can contain any
-// form data that you want to send in the request body.
-func (ts *testServer) postForm(t *testing.T, urlPath string, form url.Values) (int, http.Header, string) {
-	rs, err := ts.Client().PostForm(ts.URL+urlPath, form)
-	if err != nil {
-		t.Fatal(err)
-	}
-	// Read the response body from the test server.
-	defer rs.Body.Close()
-	body, err := io.ReadAll(rs.Body)
-	if err != nil {
-		t.Fatal(err)
-	}
-	bytes.TrimSpace(body)
-	// Return the response status, headers and body.
-	return rs.StatusCode, rs.Header, string(body)
 }
 
 func (ts *testServer) postJSON(t *testing.T, urlPath string, body []byte) (int, http.Header, string) {
@@ -96,13 +94,39 @@ func (ts *testServer) postJSON(t *testing.T, urlPath string, body []byte) (int, 
 	return rs.StatusCode, rs.Header, string(bodyBytes)
 }
 
-// Helper functions
-func extractSessionCookie(headers http.Header) *http.Cookie {
-	cookies := (&http.Response{Header: headers}).Cookies()
-	for _, cookie := range cookies {
-		if cookie.Name == "session" {
-			return cookie
-		}
+func (ts *testServer) JSONRequest(t *testing.T, urlPath string, body []byte, method string) (int, http.Header, string) {
+	req, err := http.NewRequest(method, ts.URL+urlPath, bytes.NewBuffer(body))
+	if err != nil {
+		t.Fatal(err)
 	}
-	return nil
+	req.Header.Set("Content-Type", "application/json")
+
+	rs, err := ts.Client().Do(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer rs.Body.Close()
+
+	bodyBytes, err := io.ReadAll(rs.Body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return rs.StatusCode, rs.Header, string(bodyBytes)
+}
+
+func (ts *testServer) login(t *testing.T) {
+	reqBody := struct {
+		Nickname string `json:"nickname"`
+		Password string `json:"password"`
+	}{
+		Nickname: existNeckName,
+		Password: validPassword,
+	}
+
+	jsonBody, err := json.Marshal(reqBody)
+	if err != nil {
+		t.Fatal(err)
+	}
+	code, _, _ := ts.postJSON(t, "/api/login", jsonBody)
+	assert.Equal(t, code, http.StatusOK)
 }
