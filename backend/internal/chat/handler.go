@@ -52,15 +52,14 @@ func (c *chat) WebSocket(w http.ResponseWriter, r *http.Request) {
 	}
 	defer conn.Close()
 	log.Println("Client connected")
-	// get user id from session
-	userId := r.Context().Value("userID")
+	//get user id from session
+	userId := r.Context().Value(entity.ContextID)
 	if userId == nil {
 		c.loger.Error.Println("User ID not found in session")
 		//w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
-
-	//
+	c.loger.Info.Println("user Id", userId)
 	WsListing(conn, r.Context())
 	c.loger.Info.Println("Client disconnected")
 }
