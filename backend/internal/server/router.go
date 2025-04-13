@@ -24,6 +24,10 @@ func (app *App) InitRoutes(conf *config.Conf) http.Handler {
 		if requireLogin(route.Role) {
 			mux.Handle(route.Path, app.SessionManager.LoadAndSave(app.authenticate(app.requireAuthentication(http.HandlerFunc(route.handler)))))
 		} else {
+			if route.Path == "/api/ws" {
+				mux.Handle(route.Path, http.HandlerFunc(route.handler))
+				continue
+			}
 			mux.Handle(route.Path, app.SessionManager.LoadAndSave(app.authenticate(http.HandlerFunc(route.handler))))
 		}
 	}
@@ -94,6 +98,11 @@ func (app *App) createRoutes() []Route {
 			Path:    "/api/posts",
 			handler: app.GetPosts,
 			Role:    User,
+		},
+		{
+			Path:    "/api/ws",
+			handler: app.WebSocket,
+			Role:    Auth,
 		},
 		// {
 		// 	Path:    "/api/event/create",
