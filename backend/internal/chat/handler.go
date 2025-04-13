@@ -2,9 +2,11 @@ package chat
 
 import (
 	"database/sql"
-	"fmt"
+	"encoding/json"
+	"log"
 	"net/http"
 
+	"socialNetwork/entity"
 	"socialNetwork/pkg/config"
 	"socialNetwork/pkg/loger"
 	scs "socialNetwork/pkg/sessions"
@@ -35,21 +37,30 @@ var upgrader = websocket.Upgrader{
 }
 
 func (c *chat) WebSocket(w http.ResponseWriter, r *http.Request) {
-
-	wupgrade := w
-	if u, ok := w.(interface{ Unwrap() http.ResponseWriter }); ok {
-		wupgrade = u.Unwrap()
+	// upgrade
+	log.Println("WebSocket endpoint hit")
+	var upgrader = websocket.Upgrader{
+		CheckOrigin: func(r *http.Request) bool {
+			return true // Allow all origins (use cautiously in production)
+		},
 	}
-
-	c.loger.Info.Printf("w's type is %T\n", w)
-
-	ws, err := upgrader.Upgrade(wupgrade, r, nil)
+	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		c.loger.Error.Println(err)
+		c.loger.Error.Println("Error while upgrading connection:", err)
+		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Error while upgrading connection"})
+		return
+	}
+	defer conn.Close()
+	log.Println("Client connected")
+	// get user id from session
+	userId := r.Context().Value("userID")
+	if userId == nil {
+		c.loger.Error.Println("User ID not found in session")
+		//w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
-	c.loger.Info.Printf("Web client connected from %s", r.RemoteAddr)
-
-	fmt.Println("done", ws)
+	//
+	WsListing(conn, r.Context())
+	c.loger.Info.Println("Client disconnected")
 }
