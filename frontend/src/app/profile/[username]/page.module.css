@@ -81,7 +81,7 @@
     height: 100vh;
     @media(max-width: 720px) {
         position: relative;
-        width: 80%;
+        width: 90%;
         height: max-content;
         margin: 0 auto;
     }
@@ -90,7 +90,7 @@
 .profilePosts {
     width: 60%;
     @media(max-width: 720px) {
-        width: 80%;
+        width: 90%;
         margin: 0 auto;
     }
 }
