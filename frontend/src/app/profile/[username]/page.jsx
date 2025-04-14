@@ -7,6 +7,13 @@ import ProfileFriends from "@/components/ProfileFriends/ProfileFriends";
 import PostList from "@/components/PostList/PostList";
 import CreatePost from "@/components/CreatePost/CreatePost";
 
+
+export async function generateMetadata({ params }) {
+    return {
+        title: params.username,
+    }
+}
+
 const ProfilePage = async ({ params }) => {
     const { username } = await params;
     return (
@@ -19,7 +26,7 @@ const ProfilePage = async ({ params }) => {
                         <h1 className={styles.headerInfoUsername}>{username}</h1>
                     </div>
                     <div className={styles.headerInfoEnd}>
-                        <button className={styles.editBtn}>Edit Profile</button>
+                        {/* <button className={styles.editBtn}>Edit Profile</button> */}
                         <button className={styles.editBtn}>Create Post</button>
                     </div>
                 </div>

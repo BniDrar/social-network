@@ -49,27 +49,74 @@
 
 .bergerMenu{
     display: none;
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+}
+.bergerMenuIcon {
+    filter: drop-shadow(0 0 2px black);
+}
+.closeBtn {
+    display: none;
+}
+.pageName {
+    display: none;
 }
 
 @media(max-width: 960px) {
     .menu {
-        display: block;
+        display: none;
         position: fixed;
         top: 0;
         left: 0;
         width: 300px;
         max-width: 100%;
         height: 100vh;
-        background-color: var(--color-light);
+        background-color: var(--color-dark2);
         z-index: 1100;
+        box-shadow: 0 0 4px var(--color-dark), 0 0 4px var(--color-dark);
+    }
+    
+    .closeBtn {
+        background-color: transparent;
+        border: none;
+        display: block;
+        margin: 20px;
+        margin-left: auto;
+    }
+
+    .link {
+        display: flex;
+        align-items: center;
+        width: 100%;
+        height: max-content;
+        padding: 10px;
+        border-bottom: 1px solid #ffffff86;
+    }
+    /* .link:hover {
+        background-color: var(--color-blue);
+    } */
+    .pageIcon:hover {
+        filter: none;
+    }
+    .pageName {
+        display: block;
+        margin: 0 10px;
+        font-family: var(--font1);
+        font-size: 16px;
+        font-weight: 600;
     }
     .bergerMenu {
         display: block;
     }
     .navbar_middle {
         display: block;
+        width: 100%;
+        height: max-content;
     }
     .navbar_end {
         display: block;
+        width: 100%;
+        height: max-content;
     }
 }
