@@ -43,15 +43,6 @@ func (s *user) RegisterService(user entity.User) (int, error) {
 	return http.StatusCreated, nil
 }
 
-
-
-
-
-func (u *user) LogoutService(user entity.User) error {
-	// do something
-	return nil
-}
-
 func (u *user) authenticateService(email, password string) (int, error) {
 	return u.authenticateRepo(email, password)
 } 
@@ -80,7 +71,17 @@ func (u *user) FollowService(ctx context.Context, followedID int) (int, error) {
 	if userId == followedID {
         return http.StatusBadRequest, errors.New("you can't follow yourself")
     }
-    err := u.FollowRepository(userId, followedID)
+	//check if the followed account is private
+	user, err := u.GetUserProfileById(ctx, userId)
+	if err != nil {
+		return http.StatusBadRequest, errors.New("unvailable user")
+	}
+	if user.Status == entity.PrivateUser {
+		// create notification in data base 
+		// notify the user by websocket
+		return http.StatusOK, nil
+	}
+    err = u.FollowRepository(userId, followedID)
     if err != nil {
         return http.StatusInternalServerError, err
     }
@@ -96,16 +97,22 @@ func (u *user) FollowersService(ctx context.Context, followedId int) error {
 	return nil
 }
 
-// func (s *user) FollowersService(user entity.User) error {
-// 	// do something
-// 	return nil
-// }
+func (u *user) processRequestResponse(ctx context.Context, notification entity.Notification) (int, error) {
+	userId := ctx.Value(entity.ContextID).(int)
+	// this user is contained in the group
+	exist, err := u.GroupContainsMember(notification.GroupId, userId)
+	if !exist || err != nil {
+		if err!= nil {
+			return http.StatusInternalServerError, err
+		}
+		return http.StatusForbidden, errors.New("forbidden access to this action")
+	}
+	if notification.Accepted {
+		err = u.FollowRepository(notification.SenderId, userId)
+		if err != nil {
+			return http.StatusInternalServerError, err
+		}
+	}
 
-// func (s *user) IsExistsService(user uint) bool {
-// 	// do something
-// 	return false
-// }
-
-// func (s *user) DeleteUserService(user entity.User) error {
-// 	return nil
-// }
+	return http.StatusOK, nil
+}
