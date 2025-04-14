@@ -56,7 +56,8 @@ func (c *chat) WebSocket(w http.ResponseWriter, r *http.Request) {
 	userId := r.Context().Value(entity.ContextID)
 	if userId == nil {
 		c.loger.Error.Println("User ID not found in session")
-		//w.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "you are not authorized"})
+		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 	c.loger.Info.Println("user Id", userId)

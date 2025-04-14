@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"log"
 
 	"socialNetwork/entity"
 	"socialNetwork/pkg/config"
@@ -204,7 +205,7 @@ func (u *user) authenticateRepo(email, password string) (int, error) {
 	// Retrieve the id and hashed password associated with the given email. If
 	// no matching email exists we return the ErrInvalidCredentials error.
 	var id int
-	var hashedPassword []byte
+	var hashedPassword string
 	stmt := "SELECT id, password FROM users WHERE email = ? OR nickname  = ?"
 	err := u.db.QueryRow(stmt, email, email).Scan(&id, &hashedPassword)
 	if err != nil {
@@ -216,9 +217,11 @@ func (u *user) authenticateRepo(email, password string) (int, error) {
 	}
 	// Check whether the hashed password and plain-text password provided match.
 	// If they don't, we return the ErrInvalidCredentials error.
-	err = bcrypt.CompareHashAndPassword(hashedPassword, []byte(password))
+	
+	err = bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
 	if err != nil {
 		if errors.Is(err, bcrypt.ErrMismatchedHashAndPassword) {
+			log.Println("password is not correct", hashedPassword, password)
 			return 0, config.ErrInvalidCredentials
 		} else {
 			return 0, err

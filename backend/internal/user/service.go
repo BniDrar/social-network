@@ -9,6 +9,8 @@ import (
 	"socialNetwork/entity"
 	"socialNetwork/pkg/config"
 	"socialNetwork/pkg/utils"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 func (s *user) RegisterService(user entity.User) (int, error) {
@@ -17,12 +19,11 @@ func (s *user) RegisterService(user entity.User) (int, error) {
 		return http.StatusBadRequest, err
 	}
 	// hash password
-	hashedPassword, err := utils.HashPassword(user.Password)
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return http.StatusInternalServerError, err
 	}
-	user.Password = hashedPassword
-	// chek if user Email already exists
+	user.Password = string(hashedPassword)
 	_, err = s.GetUserByUsername(user.Email)
 	if err != nil {
 		return http.StatusBadRequest, errors.New("email already exists")
