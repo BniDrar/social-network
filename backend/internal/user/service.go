@@ -44,15 +44,6 @@ func (s *user) RegisterService(user entity.User) (int, error) {
 	return http.StatusCreated, nil
 }
 
-
-
-
-
-func (u *user) LogoutService(user entity.User) error {
-	// do something
-	return nil
-}
-
 func (u *user) authenticateService(email, password string) (int, error) {
 	return u.authenticateRepo(email, password)
 } 
@@ -105,4 +96,24 @@ func (u *user) FollowService(ctx context.Context, followedID int) (int, error) {
 func (u *user) FollowersService(ctx context.Context, followedId int) error {
 	// do something
 	return nil
+}
+
+func (u *user) processRequestResponse(ctx context.Context, notification entity.Notification) (int, error) {
+	userId := ctx.Value(entity.ContextID).(int)
+	// this user is contained in the group
+	exist, err := u.GroupContainsMember(notification.GroupId, userId)
+	if !exist || err != nil {
+		if err!= nil {
+			return http.StatusInternalServerError, err
+		}
+		return http.StatusForbidden, errors.New("forbidden access to this action")
+	}
+	if notification.Accepted {
+		err = u.FollowRepository(notification.SenderId, userId)
+		if err != nil {
+			return http.StatusInternalServerError, err
+		}
+	}
+
+	return http.StatusOK, nil
 }

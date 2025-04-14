@@ -322,6 +322,22 @@ func (u *user) FollowRepository(followerId, followedId int) error {
 	return nil
 }
 
+// need some changes to follow up with the macro image
+func (u *user) GroupContainsMember(groupId, userId int) (bool, error) {
+	query := `SELECT 1 FROM members WHERE group_id = ? AND user_id = ? LIMIT 1`
+	var exists int
+
+	err := u.db.QueryRow(query, groupId, userId).Scan(&exists)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return false, nil
+		}
+		return false, errors.New(fmt.Sprintf("Error checking group membership: %v", err))
+	}
+
+	return true, nil
+}
+
 /*___________ THOS FUNC USED FOR FOLLOWERS ___________*/
 // this function is used to get followers by user id
 // func (r *user) GetFollowers(id uint) ([]entity.User, error) {}

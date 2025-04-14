@@ -173,4 +173,27 @@ func (u *user) Follow(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(status)
 }
 
-func (u *user) Followers(w http.ResponseWriter, r *http.Request) {}
+func(u *user) HandleRequestResponse(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+	var notf entity.Notification
+	err := json.NewDecoder(r.Body).Decode(&notf)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Invalid request body"})
+	}
+	status, err:= u.processRequestResponse(r.Context(), notf) 
+	if err != nil {
+		w.WriteHeader(status)
+		u.loger.Error.Println(err)
+		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
+		return
+	}
+	w.WriteHeader(status)	
+}
+
+func (u *user) Followers(w http.ResponseWriter, r *http.Request) {
+
+}
