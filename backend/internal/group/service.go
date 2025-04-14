@@ -32,11 +32,6 @@ func (g *group) GetGroupByIdService(ctx context.Context, groupID int) (entity.Gr
 }
 
 func (g *group) CreateGroupService(ctx context.Context, group entity.Group) (entity.Group, error) {
-	userID, ok := ctx.Value(entity.ContextID).(int)
-	if !ok {
-		return entity.Group{}, errors.New("user id not found in context")
-	}
-	group.UserID = userID
 	group, err := g.CreateGroupRepository(ctx, group)
 	if err != nil {
 		return entity.Group{}, err
@@ -44,15 +39,10 @@ func (g *group) CreateGroupService(ctx context.Context, group entity.Group) (ent
 	return group, nil
 }
 
-func (g *group) UpdateGroupService(ctx context.Context, group entity.Group) (entity.Group, error) {
-	userID, ok := ctx.Value(entity.ContextID).(int)
-	if !ok {
-		return entity.Group{}, errors.New("user id not found in context")
-	}
-	group.UserID = userID
-	group, err := g.UpdateGroupRepsitory(ctx, group)
+func (g *group) GetAllGroupsService(ctx context.Context, limit, offset,typeGroup int) (entity.Groups, error) {
+	groups, err := g.GetAllGroupsRepository(ctx, limit, offset ,typeGroup)
 	if err != nil {
-		return entity.Group{}, err
+		return nil, err
 	}
-	return group, nil
+	return groups, nil
 }

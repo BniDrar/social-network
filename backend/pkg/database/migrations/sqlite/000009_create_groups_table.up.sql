@@ -2,8 +2,7 @@ CREATE TABLE IF NOT EXISTS groups (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
     type INTEGER NOT NULL, -- 0: real group, 1: fake, 2: messages group
+    description TEXT,
     admin INTEGER,
-    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (admin) REFERENCES users(id) ON DELETE SET NULL
 );
