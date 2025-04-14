@@ -173,7 +173,7 @@ func (u *user) Follow(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(status)
 }
 
-func(u *user) HandleRequestResponse(w http.ResponseWriter, r *http.Request) {
+func(u *user) HandleFollowRequestResponse(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
