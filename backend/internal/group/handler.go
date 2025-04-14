@@ -40,7 +40,8 @@ func (g *group) GetGroups(w http.ResponseWriter, r *http.Request) {
 		Limit  int `json:"limit"`
 		Offset int `json:"offset"`
 	}
-
+	
+	w.Header().Set("Content-Type", "application/json")
 	err := json.NewDecoder(r.Body).Decode(&requestBody)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -61,7 +62,6 @@ func (g *group) GetGroups(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
 		return
 	}
-	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(groups)
 }
@@ -74,6 +74,7 @@ func (g *group) GetGroupById(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Invalid group ID"})
 		return
 	}
+	w.Header().Set("Content-Type", "application/json")
 	group, err := g.GetGroupByIdService(r.Context(), groupID)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -81,7 +82,6 @@ func (g *group) GetGroupById(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(group)
 }
@@ -91,6 +91,7 @@ func (g *group) CreateGroup(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
+	w.Header().Set("Content-Type", "application/json")
 	// get the group data from the request body
 	var group entity.Group
 	err := json.NewDecoder(r.Body).Decode(&group)
@@ -107,7 +108,6 @@ func (g *group) CreateGroup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// send the created group to the client
-	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(createdGroup)
 }
@@ -121,6 +121,7 @@ func (g *group) GetAllGroups(w http.ResponseWriter, r *http.Request) {
 		Offset int `json:"offset"`
 		// Type   int `json:"type"`
 	}
+	w.Header().Set("Content-Type", "application/json")
 	err := json.NewDecoder(r.Body).Decode(&requestBody)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -141,11 +142,97 @@ func (g *group) GetAllGroups(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
 		return
 	}
-	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(groups)
 }
 
+/*------------- notification things -------------------*/
+func (g *group) InviteToJoinGroup(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+
+	var invitation entity.Invitation
+	err := json.NewDecoder(r.Body).Decode(&invitation)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "invalid request body"})
+		return
+	}
+	status, err := g.inviteToJoinGroupService(r.Context(), invitation)
+	if err != nil {
+		if status == http.StatusBadRequest {
+			json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "invalid request data"})
+		}
+	}
+	w.WriteHeader(status)
+}
+
+func (g *group) InvitationResponse(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	var notf entity.Notification
+	err := json.NewDecoder(r.Body).Decode(&notf)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Invalid request body"})
+	}
+	status, err:= g.proccessInvitationResponse(r.Context(), notf) 
+	if err != nil {
+		w.WriteHeader(status)
+		g.loger.Error.Println(err)
+		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
+		return
+	}
+	w.WriteHeader(status)	
+}
+
+func (g *group) RequestToJoinGroup(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+
+	var invitation entity.Invitation
+	err := json.NewDecoder(r.Body).Decode(&invitation)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "invalid request body"})
+		return
+	}
+
+	status, err := g.requestToJoingGroupService(r.Context(), invitation)
+	if err != nil {
+		if status == http.StatusBadRequest {
+			json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "invalid request data"})
+		}
+	}
+	w.WriteHeader(status)
+}
+
+func (g *group) RequestToJoinResponse(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+
+	var invitation entity.Invitation
+	err := json.NewDecoder(r.Body).Decode(&invitation)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "invalid request body"})
+		return
+	}
+}
+
+/*------------- events things ---------------*/
 func (g *group) CreateEvent(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		w.WriteHeader(http.StatusMethodNotAllowed)

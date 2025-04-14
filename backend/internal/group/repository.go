@@ -175,7 +175,7 @@ func (g *group) GetAllGroupsRepository(ctx context.Context, limit, offset, typeG
 }
 
 // CHECK IF THE USER IS A MEMBER OF THE GROUP
-func (g *group) IsMemberRepository(ctx context.Context, groupID int) (bool, error) {
+func (g *group) IsMemberRepository(ctx context.Context, userID, groupID int) (bool, error) {
 	query := `
 SELECT COUNT(*) 
 FROM group_members 
@@ -188,7 +188,6 @@ WHERE member_id = ?
 	}
 	defer stmt.Close()
 	var count int
-	userID:= ctx.Value(entity.ContextID).(int)
 	err = stmt.QueryRowContext(ctx, userID, groupID).Scan(&count)
 	if err != nil {
 		return false, err
