@@ -32,6 +32,7 @@ func (app *App) InitRoutes(conf *config.Conf) http.Handler {
 
 func (app *App) createRoutes() []Route {
 	return []Route{
+		/*testing handlers*/
 		{
 			Path:    "/ping",
 			handler: ping,
@@ -42,6 +43,7 @@ func (app *App) createRoutes() []Route {
 			handler: ping,
 			Role:    User,
 		},
+		/*user handlers*/
 		{
 			Path:    "/api/register",
 			handler: app.User.Register,
@@ -58,10 +60,16 @@ func (app *App) createRoutes() []Route {
 			Role:    User,
 		},
 		{
+			Path:    "/api/follow/",
+			handler: app.Follow,
+			Role:    User,
+		},
+		{
 			Path:    "/api/profile",
 			handler: app.Profile,
 			Role:    User,
 		},
+		/*group handlers*/
 		{
 			Path:    "/api/user_groups",
 			handler: app.GetGroups,
@@ -82,6 +90,37 @@ func (app *App) createRoutes() []Route {
 			handler: app.GetAllGroups,
 			Role:    User,
 		},
+		{
+			Path:    "/api/posts",
+			handler: app.GetPosts,
+			Role:    Auth,
+		},
+		{
+			Path:    "/api/post/{id}",
+			handler: app.GetPost,
+			Role:    Auth,
+		},
+		{
+			Path:    "/api/posts/{username}",
+			handler: app.GetPostByUsername,
+			Role:    Auth,
+		},
+		// {
+		// 	Path:    "/api/event/create",
+		// 	handler: app.CreateEvent,
+		// 	Role:    User,
+		// },
+		// {
+		// 	Path:    "/api/event/vote",
+		// 	handler: app.VoteEvent,
+		// 	Role:    User,
+		// },
+		// {
+		// 	Path:    "/api/event/get",
+		// 	handler: app.GetEvent,
+		// 	Role:    User,
+		// },
+		/*... handlers*/
 	}
 }
 

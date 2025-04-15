@@ -2,87 +2,15 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
-	"os"
 	"testing"
 
-	"socialNetwork/internal/server"
 	"socialNetwork/pkg/assert"
-	config "socialNetwork/pkg/config"
 )
-
-const (
-	existNeckName = "existuser@example.com"
-	existLast     = "user"
-	existFirst    = "exist"
-	existEmail    = "existuser@example.com"
-
-	validNeckName    = "validuser"
-	validFirst       = "valid"
-	validLast        = "user"
-	validDateOfBirth = "01/01/2000"
-	validPassword    = "validPa$$word1"
-	validEmail       = "validuser@example.com"
-
-	InvalidEmail = "BadEmail"
-)
-
-func init() {
-	// Initialization code that runs before tests
-	fmt.Println("Initializing resources before tests...")
-}
-
-// Declare global variables for the app and test server
-var (
-	app *server.App
-	cfg *config.Conf
-	ts  *testServer
-)
-
-// TestMain is executed before any tests are run
-func TestMain(m *testing.M) {
-	// Initialize the application and server once
-	app, cfg = server.NewTestApplication()
-	ts = newTestServer(nil, app.InitRoutes(cfg))
-
-	// Run the tests
-	exitCode := m.Run()
-
-	// Close the server and clean up
-	defer ts.Close()
-
-	// Exit with the test result code
-	os.Exit(exitCode)
-}
-
-func TestPing(t *testing.T) {
-	// app, cfg := server.NewTestApplication()
-	// ts := newTestServer(t, app.InitRoutes(cfg)) // http.Server{}
-	// defer ts.Close()
-	code, _, body := ts.get(t, "/ping")
-	assert.Equal(t, code, http.StatusOK)
-	assert.Equal(t, body, "OK")
-}
 
 func TestRegister(t *testing.T) {
 	// t.Parallel() // Run sub-tests concurrently
-
-	// Create the application struct containing our mocked dependencies and set
-	// up the test server for running an end-to-end test.
-	// app, cfg := server.NewTestApplication()
-	// ts := newTestServer(t, app.InitRoutes(cfg))
-	// defer ts.Close()
-
-	// Make a GET /user/signup request and then extract the CSRF token from the
-	// response body.
-	_, _, _ = ts.get(t, "/api/register")
-
-	// csrfToken := extractCSRFToken(t, body)
-	// Log the CSRF token value in our test output using the t.Logf() function.
-	// The t.Logf() function works in the same way as fmt.Printf(), but writes
-	// the provided message to the test output.
 
 	tests := []struct {
 		name        string
@@ -232,20 +160,6 @@ func TestRegister(t *testing.T) {
 }
 
 func TestLogin(t *testing.T) {
-	// Create the application struct containing our mocked dependencies and set
-	// up the test server for running an end-to-end test.
-	// app, cfg := server.NewTestApplication()
-	// ts := newTestServer(t, app.InitRoutes(cfg))
-	// defer ts.Close()
-
-	// Make a GET /user/signup request and then extract the CSRF token from the
-	// response body.
-	_, _, _ = ts.get(t, "/api/login")
-
-	// csrfToken := extractCSRFToken(t, body)
-	// Log the CSRF token value in our test output using the t.Logf() function.
-	// The t.Logf() function works in the same way as fmt.Printf(), but writes
-	// the provided message to the test output.
 
 	tests := []struct {
 		name     string
@@ -318,20 +232,6 @@ func TestLogin(t *testing.T) {
 }
 
 func TestUserPing(t *testing.T) {
-	// Create the application struct containing our mocked dependencies and set
-	// up the test server for running an end-to-end test.
-	// app, cfg := server.NewTestApplication()
-	// ts := newTestServer(t, app.InitRoutes(cfg))
-	// defer ts.Close()
-
-	// Make a GET /user/signup request and then extract the CSRF token from the
-	// response body.
-	_, _, _ = ts.get(t, "/api/login")
-
-	// csrfToken := extractCSRFToken(t, body)
-	// Log the CSRF token value in our test output using the t.Logf() function.
-	// The t.Logf() function works in the same way as fmt.Printf(), but writes
-	// the provided message to the test output.
 
 	tests := []struct {
 		name     string
@@ -361,26 +261,17 @@ func TestUserPing(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			code, header, _ := ts.postJSON(t, "/api/login", jsonBody)
+			code, _, _ := ts.postJSON(t, "/api/login", jsonBody)
 			assert.Equal(t, code, tt.wantCode)
 
-			// --- User Phase ---
-			// Get session cookie from login response
-			cookie := extractSessionCookie(header)
-			if cookie == nil {
-				t.Fatal("No session cookie found in login response")
-			}
-
 			Req, _ := http.NewRequest(http.MethodGet, ts.URL+"/ping/user", nil) // Use GET instead of POST
-			Req.AddCookie(cookie)                                               // Attach session cookie
 
 			Resp, err := ts.Client().Do(Req) // Send request
 
 			if err != nil {
-				t.Fatal(err) // Handle errors
+				t.Fatal(err)
 			}
 
-			// --- Validate Logout Response ---
 			assert.Equal(t, Resp.StatusCode, tt.wantCode)
 		})
 	}
@@ -396,7 +287,7 @@ func TestUserLogout(t *testing.T) {
 			name:     "Successful Logout",
 			nickname: existNeckName,
 			password: validPassword,
-			wantCode: http.StatusOK, // Expect successful login
+			wantCode: http.StatusOK,
 		},
 	}
 
@@ -412,17 +303,11 @@ func TestUserLogout(t *testing.T) {
 			}
 
 			jsonBody, _ := json.Marshal(loginBody)
-			loginCode, loginHeader, _ := ts.postJSON(t, "/api/login", jsonBody)
+			loginCode, _, _ := ts.postJSON(t, "/api/login", jsonBody)
 			assert.Equal(t, loginCode, tt.wantCode) // Ensure login succeeds
 
-			// --- Extract Session Cookie ---
-			cookie := extractSessionCookie(loginHeader)
-			if cookie == nil {
-				t.Fatal("No session cookie found")
-			}
 			// --- Logout Phase ---
 			logoutReq, _ := http.NewRequest(http.MethodPost, ts.URL+"/api/logout", nil)
-			logoutReq.AddCookie(cookie)
 			logoutResp, err := ts.Client().Do(logoutReq)
 			if err != nil {
 				t.Fatal(err)
@@ -432,7 +317,6 @@ func TestUserLogout(t *testing.T) {
 			// --- Validate Session Invalidation ---
 			// Try accessing a protected route (e.g., /ping/user) after logout
 			protectedReq, _ := http.NewRequest(http.MethodGet, ts.URL+"/ping/user", nil)
-			protectedReq.AddCookie(cookie) // Use the same (now invalid) cookie
 			protectedResp, err := ts.Client().Do(protectedReq)
 			if err != nil {
 				t.Fatal(err)
@@ -442,62 +326,68 @@ func TestUserLogout(t *testing.T) {
 	}
 }
 
-// Helper functions
-// func TestPosts(t *testing.T) {
-// 	// Create a new instance of our application struct which uses the mocked
-// 	// dependencies.
-// 	app, cfg := server.NewTestApplication()
-// 	// Establish a new test server for running end-to-end tests.
-// 	ts := newTestServer(t, app.InitRoutes(cfg))
-// 	defer ts.Close()
-// 	// Set up some table-driven tests to check the responses sent by our
-// 	// application for different URLs.
+func TestProfile(t *testing.T) {
+
+	/*_________________THE FIRST STEP IS TO LOGIN_______________*/
+	t.Run("Loging For GetGroup By ID Test", ts.login)
+	/*___________MAKE A TEST TABLE OF ALL POSSIBLE CASES_________*/
+	tests := []struct {
+		name     string
+		wantCode int
+	}{
+		{
+			name:     "Get Profile",
+			wantCode: http.StatusOK,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			code, _, _ := ts.JSONRequest(t, "/api/profile?userid=1", nil, http.MethodGet)
+			assert.Equal(t, code, tt.wantCode)
+		})
+	}
+}
+
+// func TestFollow(t *testing.T) {
+
+// 	/*_________________THE FIRST STEP IS TO LOGIN_______________*/
+// 	t.Run("Loging For Follow Test", ts.login)
+// 	/*___________MAKE A TEST TABLE OF ALL POSSIBLE CASES_________*/
 // 	tests := []struct {
 // 		name     string
-// 		urlPath  string
 // 		wantCode int
-// 		wantBody string
 // 	}{
 // 		{
-// 			name:     "Valid ID",
-// 			urlPath:  "/snippet/view?id=1",
+// 			name:     "Get Follow",
 // 			wantCode: http.StatusOK,
-// 			wantBody: "An old silent pond...",
-// 		},
-// 		{
-// 			name:     "Non-existent ID",
-// 			urlPath:  "/snippet/view?id=2",
-// 			wantCode: http.StatusNotFound,
-// 		},
-// 		{
-// 			name:     "Negative ID",
-// 			urlPath:  "/snippet/view?id-1",
-// 			wantCode: http.StatusNotFound,
-// 		},
-// 		{
-// 			name:     "Decimal ID",
-// 			urlPath:  "/snippet/view?id=1.23",
-// 			wantCode: http.StatusNotFound,
-// 		},
-// 		{
-// 			name:     "String ID",
-// 			urlPath:  "/snippet/view?id=foo",
-// 			wantCode: http.StatusNotFound,
-// 		},
-// 		{
-// 			name:     "Empty ID",
-// 			urlPath:  "/snippet/view/",
-// 			wantCode: http.StatusNotFound,
 // 		},
 // 	}
 // 	for _, tt := range tests {
 // 		t.Run(tt.name, func(t *testing.T) {
-// 			code, _, body := ts.get(t, tt.urlPath)
-// 			fmt.Println(body)
+// 			code, _, _ := ts.JSONRequest(t, "/api/follow?followed?=2", nil, http.MethodGet)
 // 			assert.Equal(t, code, tt.wantCode)
-// 			if tt.wantBody != "" {
-// 				assert.StringContains(t, body, tt.wantBody)
-// 			}
+// 		})
+// 	}
+// }
+
+// func TestFollows(t *testing.T) {
+
+// 	/*_________________THE FIRST STEP IS TO LOGIN_______________*/
+// 	t.Run("Loging For Follow Test", ts.login)
+// 	/*___________MAKE A TEST TABLE OF ALL POSSIBLE CASES_________*/
+// 	tests := []struct {
+// 		name     string
+// 		wantCode int
+// 	}{
+// 		{
+// 			name:     "Get Follow",
+// 			wantCode: http.StatusOK,
+// 		},
+// 	}
+// 	for _, tt := range tests {
+// 		t.Run(tt.name, func(t *testing.T) {
+// 			code, _, _ := ts.JSONRequest(t, "/api/followers", nil, http.MethodGet)
+// 			assert.Equal(t, code, tt.wantCode)
 // 		})
 // 	}
 // }

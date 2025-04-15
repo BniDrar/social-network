@@ -3,6 +3,7 @@ package post
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"socialNetwork/entity"
 )
@@ -60,14 +61,14 @@ func (p *post) Repo_UserCanPost(ctx context.Context, id, postid int) bool {
 
 func (p *post) Repo_GetAll(ctx context.Context, id int) (posts []entity.Post, err error) {
 	prep, err := p.db.PrepareContext(ctx, `SELECT
-			post.id
-			post.user_id
+			post.id,
 		    user.avatar,
-		    content,
+		    post.content,
 			post.image,
 		    (SELECT nickname FROM users AS u WHERE post.user_id=u.id) AS creator
 		FROM
 		    posts AS post
+		INNER JOIN users AS user ON user.id= post.user_id
 		LEFT JOIN groups AS "group" ON "group".id = post.group_id
 		LEFT JOIN group_members AS gm ON gm.member_id = $1 AND gm.group_id = "group".id
 		LEFT JOIN follows AS follow 
@@ -82,7 +83,7 @@ func (p *post) Repo_GetAll(ctx context.Context, id int) (posts []entity.Post, er
 			OR
 				(post.status = 2)
 			OR
-				(post.userid = $1);`)
+				(post.user_id = $1);`)
 	if err != nil {
 		return
 	}
@@ -91,11 +92,14 @@ func (p *post) Repo_GetAll(ctx context.Context, id int) (posts []entity.Post, er
 		return
 	}
 	for res.Next() {
+		fmt.Println("Gitted")
 		post := entity.Post{}
 		err := res.Scan(&post.ID, &post.Avatar, &post.Content, &post.Image, &post.UserName)
 		if err != nil {
+			fmt.Println(err)
 			continue
 		}
+		fmt.Println(post)
 		posts = append(posts, post)
 	}
 	return
@@ -147,5 +151,49 @@ func (p *post) Repo_React(ctx context.Context, user_id int, react entity.Vote) (
 		return
 	}
 	_, err = prep.ExecContext(ctx, user_id, react.ID, react.Status)
+	return
+}
+
+func (p *post) GetPostsByUserID(ctx context.Context, user_id int, username string) (posts []entity.Post, err error) {
+	prep, err := p.db.PrepareContext(ctx, `SELECT
+			post.id,
+		    user.avatar,
+		    post.content,
+			post.image,
+		    (SELECT nickname FROM users AS u WHERE post.user_id=u.id) AS creator
+		FROM
+		    posts AS post
+		INNER JOIN users AS user ON user.id= post.user_id
+		LEFT JOIN groups AS "group" ON "group".id = post.group_id
+		LEFT JOIN group_members AS gm ON gm.member_id = $1 AND gm.group_id = "group".id
+		LEFT JOIN follows AS follow 
+		    ON (follow.followed_id = post.user_id AND 
+		        follow.follower_id = $1 AND 
+		        post.status = 0 AND 
+		        post.group_id IS NULL)
+		WHERE
+			    (post.group_id IS NOT NULL AND gm.member_id IS NOT NULL AND user.nickname = $2)
+		    OR
+		    	(post.group_id IS NULL AND follow.follower_id = $1 AND user.nickname = $2)
+			OR
+				(post.status = 2 AND user.nickname = $2)
+			OR
+				(post.user_id = $1 AND user.nickname = $2)`)
+	if err != nil {
+		return
+	}
+	res, err := prep.QueryContext(ctx, user_id, username)
+	if err != nil {
+		return
+	}
+	for res.Next() {
+		post := entity.Post{}
+		err := res.Scan(&post.ID, &post.Avatar, &post.Content, &post.Image, &post.UserName)
+		if err != nil {
+			fmt.Println(entity.WhereIsError() + " " + err.Error())
+			continue
+		}
+		posts = append(posts, post)
+	}
 	return
 }

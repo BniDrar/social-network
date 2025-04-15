@@ -14,6 +14,7 @@ type Post interface {
 	CreatePost(w http.ResponseWriter, r *http.Request)
 	GetPost(w http.ResponseWriter, r *http.Request)
 	ReactPost(w http.ResponseWriter, r *http.Request)
+	GetPostByUsername(w http.ResponseWriter, r *http.Request)
 }
 
 type post struct {
@@ -52,4 +53,8 @@ func (p *post) CreatePost(w http.ResponseWriter, r *http.Request) {
 
 func (p *post) GetPost(w http.ResponseWriter, r *http.Request) {
 	p.Service_GetOne(w, r)
+}
+
+func (p *post) GetPostByUsername(w http.ResponseWriter, r *http.Request) {
+	p.GetPostsByUserService(w, r)
 }

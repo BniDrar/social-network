@@ -8,7 +8,7 @@ import (
 
 type Post struct {
 	ID        int       `json:"id"`
-	Avatar    string    `json:"avatar"`
+	Avatar    []byte    `json:"avatar"`
 	UserName  string    `json:"username"`
 	Content   string    `json:"content"`
 	Image     string    `json:"image"`
@@ -18,6 +18,12 @@ type Post struct {
 	GroupID   uint
 	Status    int
 	UpdatedAt time.Time `json:"updated_at"`
+}
+
+type Target struct {
+	Target uint `json:"target"`
+	Limit  uint `json:"liimit"`
+	Offset uint `json:"offset"`
 }
 
 func (p *Post) Validate() error {

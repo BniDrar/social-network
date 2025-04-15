@@ -2,7 +2,7 @@ CREATE TABLE IF NOT EXISTS posts (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     title TEXT,
     image BLOB,
-    content TEXT,
+    content TEXT NOT NULL,
     user_id INTEGER,
     status INTEGER DEFAULT 0, -- 0: private, 1: friends, 2: global
     group_id INTEGER,

@@ -3,7 +3,6 @@ package post
 import (
 	"encoding/json"
 	"net/http"
-	"runtime"
 	"strconv"
 
 	"socialNetwork/entity"
@@ -13,14 +12,15 @@ func (p *post) Service_GetAll(w http.ResponseWriter, r *http.Request) {
 	id := 1 // r.Context().Value(entity.ContextID).(int)
 	posts, err := p.Repo_GetAll(r.Context(), id)
 	if err != nil {
-		w.Write([]byte(GetError(err)))
+		w.Write([]byte(entity.WhereIsError() + " " + err.Error()))
 		return
 	}
 	data, err := json.Marshal(posts)
 	if err != nil {
-		w.Write([]byte(GetError(err)))
+		w.Write([]byte(entity.WhereIsError() + " " + err.Error()))
 		return
 	}
+	w.Header().Set("Content-Type", "application/json")
 	w.Write(data)
 }
 
@@ -30,18 +30,18 @@ func (p *post) Service_GetOne(w http.ResponseWriter, r *http.Request) {
 	post_id, err := strconv.Atoi(post_str)
 	if err != nil {
 		w.Write([]byte("id : " + post_str))
-		w.Write([]byte(GetError(err)))
+		w.Write([]byte(entity.WhereIsError() + " " + err.Error()))
 		return
 	}
 	if p.Repo_UserCanPost(r.Context(), id, post_id) {
 		post, err := p.Repo_GetOne(r.Context(), post_id)
 		if err != nil {
-			w.Write([]byte(GetError(err)))
+			w.Write([]byte(entity.WhereIsError() + " " + err.Error()))
 			return
 		}
 		data, err := json.Marshal(post)
 		if err != nil {
-			w.Write([]byte(GetError(err)))
+			w.Write([]byte(entity.WhereIsError() + " " + err.Error()))
 			return
 		}
 		w.Write(data)
@@ -72,7 +72,7 @@ func (p *post) Service_React(w http.ResponseWriter, r *http.Request) {
 	if p.Repo_UserCanPost(r.Context(), id, react.ID) {
 		err := p.Repo_React(r.Context(), id, react)
 		if err != nil {
-			w.Write([]byte(GetError(err)))
+			w.Write([]byte(entity.WhereIsError() + " " + err.Error()))
 			return
 		}
 		w.Write([]byte(`{
@@ -81,12 +81,6 @@ func (p *post) Service_React(w http.ResponseWriter, r *http.Request) {
 	} else {
 		w.Write([]byte(" { error : 'you can't see the post' } "))
 	}
-}
-
-func GetError(err error) string {
-	_, _, line, _ := runtime.Caller(1)
-	ln := strconv.Itoa(line)
-	return "line > " + ln + " := " + err.Error()
 }
 
 // get
@@ -98,3 +92,20 @@ func GetError(err error) string {
 // 0 => table(group) contains user id
 // 1 => table(follows) contains user id
 // if not status forbidden
+
+func (p *post) GetPostsByUserService(w http.ResponseWriter, r *http.Request) {
+	userID := 1 // r.Context().Value(entity.ContextID).(int)
+	username := r.PathValue("username")
+	posts, err := p.GetPostsByUserID(r.Context(), userID, username)
+	if err != nil {
+		w.Write([]byte(entity.WhereIsError() + " " + err.Error()))
+		return
+	}
+	data, err := json.Marshal(posts)
+	if err != nil {
+		w.Write([]byte(entity.WhereIsError() + " " + err.Error()))
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(data)
+}

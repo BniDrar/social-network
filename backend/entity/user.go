@@ -25,6 +25,7 @@ type User struct {
 	Status         uint   `json:"status,omitempty"`
 	FollowersCount uint   `json:"followers_count,omitempty"`
 	FollowingCount uint   `json:"following_count,omitempty"`
+	FollowingState uint   `json:"following_state,omitempty"`
 }
 
 type Credentials struct {

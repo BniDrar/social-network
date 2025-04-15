@@ -4,7 +4,9 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
+	"strconv"
 
 	scs "socialNetwork/pkg/sessions"
 
@@ -94,18 +96,18 @@ func (u *user) Login(w http.ResponseWriter, r *http.Request) {
 	err = u.sessionManager.RenewToken(r.Context())
 	if err != nil {
 		u.loger.Error.Println(err) // that's for registering error in log file
-			w.WriteHeader(http.StatusInternalServerError)
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 	u.sessionManager.Put(r.Context(), "authenticatedUserID", id)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
+	u.loger.Info.Println(User, ": is logged in")
 }
 
 func (u *user) Logout(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		u.loger.Error.Println("Method Not allowed")
 		// app.clientError(w, http.StatusMethodNotAllowed)
 		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
 		return
@@ -133,18 +135,23 @@ func (u *user) Logout(w http.ResponseWriter, r *http.Request) {
 
 func (u *user) Profile(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
-		u.loger.Error.Println("the method used is not allowed")
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
-
-	nickname := r.URL.Query().Get("nickname")
-	status, user, err := u.UserProfile(r.Context(), nickname)
+	target := r.URL.Query().Get("userid")
+	id, err := strconv.Atoi(target)
+	if err != nil || id <= 0 {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Invalid user ID"})
+		return
+	}
+	status, user, err := u.UserProfile(r.Context(), id)
+	fmt.Println(status, err)
 	if err != nil {
 		u.loger.Error.Println(err)
-		http.Error(w, err.Error(), status)
+		w.WriteHeader(status)
+		return
 	}
-
 	if err := json.NewEncoder(w).Encode(user); err != nil {
 		u.loger.Error.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -152,7 +159,42 @@ func (u *user) Profile(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (u *user) Follow(w http.ResponseWriter, r *http.Request) {}
+func (u *user) Follow(w http.ResponseWriter, r *http.Request) {
+	followed := r.URL.Query().Get("followed")
+	followedID, err := strconv.Atoi(followed)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Invalid followed ID"})
+		return
+	}
+	status, err := u.FollowService(r.Context(), followedID)
+	if err != nil {
+		u.loger.Error.Println(err)
+	}
+	w.WriteHeader(status)
+}
 
-func (u *user) Followers(w http.ResponseWriter, r *http.Request) {}
+func(u *user) HandleFollowRequestResponse(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+	var notf entity.Notification
+	err := json.NewDecoder(r.Body).Decode(&notf)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Invalid request body"})
+	}
+	status, err:= u.processRequestResponse(r.Context(), notf) 
+	if err != nil {
+		w.WriteHeader(status)
+		u.loger.Error.Println(err)
+		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
+		return
+	}
+	w.WriteHeader(status)	
+}
 
+func (u *user) Followers(w http.ResponseWriter, r *http.Request) {
+
+}
