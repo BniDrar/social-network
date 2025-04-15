@@ -23,7 +23,6 @@ func WsListing(conn *websocket.Conn, ctx context.Context) error {
 	}
 	m.AddClient(id, conn)
 	defer m.RemoveClient(id)
-	log.Printf("Client %d connected", id)
 	// Listen for messages from the client
 	for {
 		_, message, err := conn.ReadMessage()

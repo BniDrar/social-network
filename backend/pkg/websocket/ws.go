@@ -14,13 +14,13 @@ type Client struct {
 
 type WsManager struct {
 	Clients map[uint]*Client
-	Mtx      sync.Mutex
+	Mtx     sync.Mutex
 }
 
 func NewManager() *WsManager {
 	return &WsManager{
 		Clients: make(map[uint]*Client),
-		Mtx:    sync.Mutex{},
+		Mtx:     sync.Mutex{},
 	}
 }
 
