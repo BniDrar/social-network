@@ -1,5 +1,5 @@
 "use client"
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import styles from './Navbar.module.css'
 import Image from 'next/image';
 import Logo from "@/assets/logo.png"
@@ -19,6 +19,27 @@ import Overlay from '../Overlay/Overlay';
 
 const Navebar = () => {
     const [isAuth, setIsAuth] = useState(true)
+    const [showNav, setShowNav] = useState(false)
+    const [scWidth, setScWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 0);
+    const [showMenu, setShowMenu] = useState('')
+
+    useEffect(() => {
+        showNav ? setShowMenu('block') : scWidth < 960 ? setShowMenu('none') : setShowMenu('flex')
+    }, [showNav]);
+
+    useEffect(() => {
+        const handleResize = () => {
+            setScWidth(window.innerWidth);
+        };
+        if (scWidth > 960 && showNav) setShowNav(false);
+        showNav ? setShowMenu('block') : scWidth < 960 ? setShowMenu('none') : setShowMenu('flex')
+
+        window.addEventListener("resize", handleResize);
+        return () => {
+            window.removeEventListener("resize", handleResize);
+        };
+    }, [scWidth]);
+
     return (
         <header className={styles.navbar}>
             <div className={styles.navbar_start}>
@@ -27,12 +48,12 @@ const Navebar = () => {
                     <Image src={Logo} className={styles.logo} width={60} height={50} alt='logo' />
                 </Link>
             </div>
-            <Overlay display={false} />
-            <menu className={styles.menu}>
-                <button className={styles.closeBtn}>
+            <Overlay display={showNav} />
+            <menu className={styles.menu} style={{display: showMenu}}>
+                <button className={styles.closeBtn} onClick={() => setShowNav(false)}>
                     <Image src={CloseIcon} width={20} height={20} alt='close button' />
                 </button>
-                <nav className={styles.navbar_middle}>
+                <nav className={styles.navbar_middle} style={showNav ? { display: "block" } : { display: "flex" }} onClick={() => showNav ? setShowNav(false) : ''}>
                     {/* [home - groups - followers - events] */}
                     <Link href={'/'} className={styles.link}>
                         <Image className={styles.pageIcon} src={HomeIcon} width={36} height={36} alt='home icon link' />
@@ -51,7 +72,7 @@ const Navebar = () => {
                         <span className={styles.pageName}>Followers</span>
                     </Link>
                 </nav>
-                <div className={styles.navbar_end}>
+                <div className={styles.navbar_end} style={showNav ? { display: "block" } : { display: "flex" }} onClick={() => showNav ? setShowNav(false) : ''}>
                     {/* [login - register] OR [profile - logout] */}
                     {isAuth ?
                         <>
@@ -80,7 +101,7 @@ const Navebar = () => {
                         </>}
                 </div>
             </menu>
-            <button className={styles.bergerMenu}>
+            <button className={styles.bergerMenu} onClick={(e) => setShowNav(true)}>
                 <Image className={styles.bergerMenuIcon} src={MenuIcon} width={30} height={30} alt='menu button icon' />
             </button>
         </header>
