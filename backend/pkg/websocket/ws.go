@@ -1,6 +1,7 @@
 package websocket
 
 import (
+	"fmt"
 	"log"
 	"sync"
 
@@ -68,14 +69,33 @@ func (m *WsManager) readMessage(userID uint) {
 func (m *WsManager) writeMessage(userID uint) {
 	c := m.Clients[userID]
 	defer m.RemoveClient(userID)
-
-	for message := range c.send {
+	fmt.Println("clients:", c)
+	for message := range c.send { //
+		fmt.Println("message:", message)
 		err := c.conn.WriteMessage(websocket.TextMessage, message)
 		if err != nil {
 			log.Printf("Error writing message to Client %d: %v", userID, err)
 			break
 		}
 	}
+	// for id, c := range m.Clients {
+	// 	// Skip sending a message to the user that triggered the event
+	// 	if id == userID {
+	// 		continue
+	// 	}
+
+	// 	for message := range c.send {
+	// 		if c.conn == nil {
+	// 			log.Printf("Client %d's connection is nil", id)
+	// 			continue
+	// 		}
+
+	// 		err := c.conn.WriteMessage(websocket.TextMessage, message)
+	// 		if err != nil {
+	// 			log.Printf("Error writing message to Client %d: %v", id, err)
+	// 		}
+	// 	}
+	// }
 }
 
 func (m *WsManager) SendMessage(userID uint, message []byte) {

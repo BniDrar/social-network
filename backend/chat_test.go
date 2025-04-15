@@ -32,8 +32,8 @@ func TestWebSocket(t *testing.T) {
 	header.Set("Origin", "http://localhost:3000")
 
 	u := "ws" + strings.TrimPrefix(ts.URL, "http") + "/api/ws"
-
-	conn, _, err := websocket.DefaultDialer.Dial(u, header)
+	dialer := websocket.Dialer{}
+	conn, _, err := dialer.Dial(u, header)
 	if err != nil {
 		t.Fatalf("WebSocket connect failed: %v", err)
 	}
