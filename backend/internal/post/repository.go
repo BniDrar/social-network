@@ -160,7 +160,9 @@ func (p *post) GetPostsByUserID(ctx context.Context, user_id int, username strin
 		    user.avatar,
 		    post.content,
 			post.image,
-		    (SELECT nickname FROM users AS u WHERE post.user_id=u.id) AS creator
+		    (SELECT nickname FROM users AS u WHERE post.user_id=u.id) AS creator,
+			post.status,
+			"group".name
 		FROM
 		    posts AS post
 		INNER JOIN users AS user ON user.id= post.user_id
@@ -188,7 +190,7 @@ func (p *post) GetPostsByUserID(ctx context.Context, user_id int, username strin
 	}
 	for res.Next() {
 		post := entity.Post{}
-		err := res.Scan(&post.ID, &post.Avatar, &post.Content, &post.Image, &post.UserName)
+		err := res.Scan(&post.ID, &post.Avatar, &post.Content, &post.Image, &post.UserName, &post.Status, &post.GroupName)
 		if err != nil {
 			fmt.Println(entity.WhereIsError() + " " + err.Error())
 			continue

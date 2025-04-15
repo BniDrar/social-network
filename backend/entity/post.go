@@ -15,6 +15,7 @@ type Post struct {
 	Comments  uint      `json:"comments"`
 	Likes     uint      `json:"likes"`
 	CreatedAt time.Time `json:"created_at"`
+	GroupName string    `json:"groupe_name"`
 	GroupID   uint
 	Status    int
 	UpdatedAt time.Time `json:"updated_at"`
