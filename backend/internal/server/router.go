@@ -71,8 +71,8 @@ func (app *App) createRoutes() []Route {
 		},
 		/*group handlers*/
 		{
-			Path:    "/api/user_groups",
-			handler: app.GetGroups,
+			Path:    "/api/user/groups",
+			handler: app.GetUserGroups,
 			Role:    User,
 		},
 		{
@@ -90,6 +90,22 @@ func (app *App) createRoutes() []Route {
 			handler: app.GetAllGroups,
 			Role:    User,
 		},
+		{
+			Path:    "/api/group/members",
+			handler: app.GetGroupMembers,
+			Role:    User,
+		},
+		{
+			Path: 	"/api/group/request",
+			handler: app.RequestToJoinGroup,
+			Role:    User,
+		},
+		{
+			Path: "/api/group/accept",
+			handler: app.AcceptRequestToJoinGroup,
+			Role:    User,
+		},
+		/*post handlers*/
 		{
 			Path:    "/api/posts",
 			handler: app.GetPosts,
