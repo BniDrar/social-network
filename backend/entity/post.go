@@ -1,21 +1,53 @@
 package entity
 
-import "time"
+import (
+	"errors"
+	"strings"
+	"time"
+)
 
 type Post struct {
 	ID        int       `json:"id"`
-	Title     string    `json:"title"`
-	Image     []byte    `json:"image"`
+	Avatar    []byte    `json:"avatar"`
+	UserName  string    `json:"username"`
 	Content   string    `json:"content"`
-	UserID    int       `json:"user_id"`
-	Status    int       `json:"status"`   // 0: private, 1: friends, 2: global
-	GroupID   int       `json:"group"`    // Group ID, can be null
-	Nickname  string    `json:"nickname"` // why is this ?????
+	Image     string    `json:"image"`
+	Comments  uint      `json:"comments"`
+	Likes     uint      `json:"likes"`
 	CreatedAt time.Time `json:"created_at"`
+	GroupName string    `json:"groupe_name"`
+	GroupID   uint
+	Status    int
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
-type Reaction struct {
-	ID     int
-	Status int
+type Target struct {
+	Target uint `json:"target"`
+	Limit  uint `json:"liimit"`
+	Offset uint `json:"offset"`
+}
+
+// -- 0: private, 1: friends, 2: global
+func (p *Post) Validate(users []string) error {
+	if len(strings.TrimSpace(p.Content)) >= 1 && len(p.Content) <= 1000 {
+		switch p.Status {
+		case 0:
+			if p.GroupID == 0 {
+				return errors.New("must Have groupID in Private post")
+			}
+		case 1:
+			if p.GroupID != 0 {
+				return errors.New("must Have groupID in Private post")
+			}
+			if len(users) == 0 {
+			}
+		case 2:
+			if p.GroupID == 0 {
+				return errors.New("must Have'nt groupID in Public post")
+			}
+		}
+	} else {
+		return errors.New("content Lenght")
+	}
+	return nil
 }

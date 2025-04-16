@@ -39,7 +39,6 @@ func (r *user) GetUserProfileById(ctx context.Context, targetId int) (entity.Use
 		&user.First, &user.Last, &user.DateOfBirth, &user.AboutMe, &user.Status,
 		&user.FollowersCount, &user.FollowingCount, &user.FollowingState,
 	)
-
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return user, fmt.Errorf("user not found")
@@ -49,7 +48,6 @@ func (r *user) GetUserProfileById(ctx context.Context, targetId int) (entity.Use
 
 	return user, nil
 }
-
 
 // this function is used to get user by username
 func (r *user) GetUserByUsername(username string) (entity.User, error) {
@@ -278,7 +276,7 @@ func (u *user) isFollowedBy(follower, followed int) (bool, error) {
 	return exists, nil
 }
 
-func (u *user) isFollowingEither(follower, followed int) (bool, error) {
+func (u *user) IsFollowingEither(follower, followed int) (bool, error) {
 	query := `SELECT EXISTS(
                 SELECT 1 FROM follows WHERE (follower_id = $1 AND followed_id = $2) 
                 OR (follower_id = $2 AND followed_id = $1)
