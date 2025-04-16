@@ -75,16 +75,6 @@ func (p *post) Service_React(ctx context.Context, body io.ReadCloser) (err error
 	return
 }
 
-// get
-// 0 => table(group) contains user id
-// 1 => table(follows) contains user id
-// 2 => get direct
-
-// react
-// 0 => table(group) contains user id
-// 1 => table(follows) contains user id
-// if not status forbidden
-
 func (p *post) GetPostsByUserService(ctx context.Context, username string) (data []byte, err error) {
 	userID := 1 // ctx.Value(entity.ContextID).(int)
 	posts, err := p.GetPostsByUserID(ctx, userID, username)
