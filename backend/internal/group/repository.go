@@ -124,22 +124,17 @@ func (g *group) CreateGroupRepository(ctx context.Context, group entity.Group) (
 
 func (g *group) GetAllGroupsRepository(ctx context.Context, limit, offset, typeGroup int) (entity.Groups, error) {
 	query := `
-		SELECT
-			g.id,
-			g.name,
-			g.description,
-			g.type,
-			g.admin,
-			COUNT(DISTINCT gm.member_id) AS member_count,
-			COUNT(DISTINCT p.id) AS post_count
-
-			FROM groups g
-		JOIN group_members gm ON g.id = gm.group_id
-		LEFT JOIN posts p ON g.id = p.group_id
+	 SELECT
+		    g.id,
+		    g.name,
+		    g.description,
+		    g.type,
+		    g.admin
+		FROM groups g
 		WHERE g.type = ?
 		GROUP BY g.id
 		ORDER BY g.id DESC
-		LIMIT ? OFFSET ?
+		LIMIT ? OFFSET ?;
 	`
 	stmt, err := g.db.PrepareContext(ctx, query)
 	if err != nil {
@@ -160,8 +155,6 @@ func (g *group) GetAllGroupsRepository(ctx context.Context, limit, offset, typeG
 			&group.Description,
 			&group.Type,
 			&group.Admin,
-			&group.MemberCount,
-			&group.PostCount,
 		)
 		if err != nil {
 			return nil, err
@@ -174,41 +167,41 @@ func (g *group) GetAllGroupsRepository(ctx context.Context, limit, offset, typeG
 	return groups, nil
 }
 
-func (g *group)GetGroupMembersRepository(ctx context.Context, groupID int) ([]entity.User, error) {
- 	query := `
+func (g *group) GetGroupMembersRepository(ctx context.Context, groupID int) ([]entity.User, error) {
+	query := `
  		SELECT gm.member_id, u.nickname, u.avatar
  		FROM group_members gm
  		JOIN users u ON gm.member_id = u.id
  		WHERE gm.group_id = ?
  	`
- 	stmt, err := g.db.PrepareContext(ctx, query)
- 	if err != nil {
- 		return nil, err
- 	}
- 	defer stmt.Close()
- 	rows, err := stmt.QueryContext(ctx, groupID)
- 	if err != nil {
- 		return nil, err
- 	}
- 	defer rows.Close()
- 	var groupMembers []entity.User
- 	for rows.Next() {
- 		var groupMember entity.User
- 		err := rows.Scan(
- 			&groupMember.ID,
- 			&groupMember.Nickname,
- 			&groupMember.Avatar,
- 		)
- 		if err != nil {
- 			return nil, err
- 		}
- 		groupMembers = append(groupMembers, groupMember)
- 	}
- 	if err := rows.Err(); err != nil {
- 		return nil, err
- 	}
- 	return groupMembers, nil
- }
+	stmt, err := g.db.PrepareContext(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	defer stmt.Close()
+	rows, err := stmt.QueryContext(ctx, groupID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var groupMembers []entity.User
+	for rows.Next() {
+		var groupMember entity.User
+		err := rows.Scan(
+			&groupMember.ID,
+			&groupMember.Nickname,
+			&groupMember.Avatar,
+		)
+		if err != nil {
+			return nil, err
+		}
+		groupMembers = append(groupMembers, groupMember)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return groupMembers, nil
+}
 
 // CHECK IF THE USER IS A MEMBER OF THE GROUP
 func (g *group) IsMemberRepository(ctx context.Context, userID, groupID int) (bool, error) {
