@@ -27,7 +27,8 @@ type Target struct {
 	Offset uint `json:"offset"`
 }
 
-func (p *Post) Validate() error {
+// -- 0: private, 1: friends, 2: global
+func (p *Post) Validate(users []string) error {
 	if len(strings.TrimSpace(p.Content)) >= 1 && len(p.Content) <= 1000 {
 		switch p.Status {
 		case 0:
@@ -35,8 +36,10 @@ func (p *Post) Validate() error {
 				return errors.New("must Have groupID in Private post")
 			}
 		case 1:
-			if p.GroupID == 0 {
+			if p.GroupID != 0 {
 				return errors.New("must Have groupID in Private post")
+			}
+			if len(users) == 0 {
 			}
 		case 2:
 			if p.GroupID == 0 {

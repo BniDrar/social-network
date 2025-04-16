@@ -2,6 +2,7 @@ package post
 
 import (
 	"bufio"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -17,83 +18,61 @@ import (
 	_ "image/gif"
 	_ "image/jpeg"
 	_ "image/png"
-
-	"github.com/google/uuid"
 )
 
-func (p *post) Service_GetAll(w http.ResponseWriter, r *http.Request) {
-	id := 1 // r.Context().Value(entity.ContextID).(int)
-	posts, err := p.Repo_GetAll(r.Context(), id)
+func (p *post) Service_GetAll(ctx context.Context) (data []byte, err error) {
+	id := 1 // ctx.Value(entity.ContextID).(int)
+	posts, err := p.Repo_GetAll(ctx, id)
 	if err != nil {
-		w.Write([]byte(entity.WhereIsError() + " " + err.Error()))
 		return
 	}
-	data, err := json.Marshal(posts)
-	if err != nil {
-		w.Write([]byte(entity.WhereIsError() + " " + err.Error()))
-		return
-	}
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(data)
+	data, err = json.Marshal(posts)
+	return
 }
 
-func (p *post) Service_GetOne(w http.ResponseWriter, r *http.Request) {
-	id := 1 // r.Context().Value(entity.ContextID).(int)
-	post_str := r.PathValue("id")
+func (p *post) Service_GetOne(ctx context.Context, post_str string) (data []byte, err error) {
+	id := 1 // ctx.Value(entity.ContextID).(int)
 	post_id, err := strconv.Atoi(post_str)
 	if err != nil {
-		w.Write([]byte("id : " + post_str))
-		w.Write([]byte(entity.WhereIsError() + " " + err.Error()))
 		return
 	}
-	if p.Repo_UserCanPost(r.Context(), id, post_id) {
-		post, err := p.Repo_GetOne(r.Context(), post_id)
+	if p.Repo_UserCanPost(ctx, id, post_id) {
+		var post entity.Post
+		post, err = p.Repo_GetOne(ctx, post_id)
 		if err != nil {
-			w.Write([]byte(entity.WhereIsError() + " " + err.Error()))
 			return
 		}
-		data, err := json.Marshal(post)
-		if err != nil {
-			w.Write([]byte(entity.WhereIsError() + " " + err.Error()))
-			return
-		}
-		w.Write(data)
+		data, err = json.Marshal(post)
+		return
 	} else {
-		w.Write([]byte("{ error: 'post not found' }"))
+		err = errors.New("you can't see post")
 		return
 	}
 }
 
-func (p *post) Service_CreateOne(w http.ResponseWriter, r *http.Request) {
-	id := 1 // r.Context().Value(entity.ContextID).(int)
-	post := entity.Post{}
-	json.NewDecoder(r.Body).Decode(&post)
-	err := post.Validate()
+func (p *post) Service_CreateOne(ctx context.Context, body io.ReadCloser, users []string, post entity.Post) error {
+	id := 1 // ctx.Value(entity.ContextID).(int)
+	ImageFileName := post.Image
+	json.NewDecoder(body).Decode(&post)
+	post.Image = ImageFileName
+	err := post.Validate(users)
 	if err != nil {
-		w.Write([]byte("{ error: " + err.Error() + " }"))
+		return errors.New(string("{ error: " + err.Error() + " }"))
 	}
-	p.Repo_CreatePost(r.Context(), id, post)
-	w.Write([]byte(`{
-		result: "done"
-	}`))
+	p.Repo_CreatePost(ctx, id, post)
+	return nil
 }
 
-func (p *post) Service_React(w http.ResponseWriter, r *http.Request) {
-	id := 1 // r.Context().Value(entity.ContextID).(int)
+func (p *post) Service_React(ctx context.Context, body io.ReadCloser) (err error) {
+	id := 1 // ctx.Value(entity.ContextID).(int)
 	react := entity.Vote{}
-	json.NewDecoder(r.Body).Decode(&react)
-	if p.Repo_UserCanPost(r.Context(), id, react.ID) {
-		err := p.Repo_React(r.Context(), id, react)
-		if err != nil {
-			w.Write([]byte(entity.WhereIsError() + " " + err.Error()))
-			return
-		}
-		w.Write([]byte(`{
-			result: "done"
-		}`))
+	json.NewDecoder(body).Decode(&react)
+	if p.Repo_UserCanPost(ctx, id, react.ID) {
+		err = p.Repo_React(ctx, id, react)
 	} else {
-		w.Write([]byte(" { error : 'you can't see the post' } "))
+		err = errors.New("you can't see the post")
 	}
+	return
 }
 
 // get
@@ -106,24 +85,20 @@ func (p *post) Service_React(w http.ResponseWriter, r *http.Request) {
 // 1 => table(follows) contains user id
 // if not status forbidden
 
-func (p *post) GetPostsByUserService(w http.ResponseWriter, r *http.Request) {
-	userID := 1 // r.Context().Value(entity.ContextID).(int)
-	username := r.PathValue("username")
-	posts, err := p.GetPostsByUserID(r.Context(), userID, username)
+func (p *post) GetPostsByUserService(ctx context.Context, username string) (data []byte, err error) {
+	userID := 1 // ctx.Value(entity.ContextID).(int)
+	posts, err := p.GetPostsByUserID(ctx, userID, username)
 	if err != nil {
-		w.Write([]byte(entity.WhereIsError() + " " + err.Error()))
 		return
 	}
-	data, err := json.Marshal(posts)
+	data, err = json.Marshal(posts)
 	if err != nil {
-		w.Write([]byte(entity.WhereIsError() + " " + err.Error()))
 		return
 	}
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(data)
+	return
 }
 
-func FileUpload(File multipart.File, FileHeader *multipart.FileHeader, err error) error {
+func FileUpload(NeWFileName string, File multipart.File, FileHeader *multipart.FileHeader, err error) error {
 	if err != nil {
 		return err
 	}
@@ -163,7 +138,6 @@ func FileUpload(File multipart.File, FileHeader *multipart.FileHeader, err error
 	if !FileIsAccepted {
 		return errors.New("file type not matched")
 	}
-	NewFileName := uuid.NewString()
-	os.WriteFile("../"+NewFileName+".png", FileContent, 0o444)
+	os.WriteFile("../"+NeWFileName+".png", FileContent, 0o444)
 	return nil
 }

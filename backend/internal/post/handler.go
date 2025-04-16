@@ -2,12 +2,15 @@ package post
 
 import (
 	"database/sql"
-	"fmt"
+	"encoding/json"
 	"net/http"
 
+	"socialNetwork/entity"
 	"socialNetwork/pkg/config"
 	"socialNetwork/pkg/loger"
 	"socialNetwork/pkg/websocket"
+
+	"github.com/google/uuid"
 )
 
 type Post interface {
@@ -41,23 +44,57 @@ func Newpost(dep *config.Dependencies) Post {
 }
 
 func (p *post) GetPosts(w http.ResponseWriter, r *http.Request) {
-	p.Service_GetAll(w, r)
+	data, err := p.Service_GetAll(r.Context())
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Invalid request body"})
+		return
+	}
+	w.Write(data)
 }
 
 func (p *post) ReactPost(w http.ResponseWriter, r *http.Request) {
-	p.Service_React(w, r)
+	err := p.Service_React(r.Context(), r.Body)
+	if err != nil {
+	}
 }
 
 func (p *post) CreatePost(w http.ResponseWriter, r *http.Request) {
-	// p.Service_CreateOne(w, r)
-	err := FileUpload(r.FormFile("image"))
-	fmt.Println(err)
+	NewFileName := uuid.NewString()
+	post := entity.Post{
+		Image: NewFileName,
+	}
+	err := p.Service_CreateOne(r.Context(), r.Body, r.Form["users"], post)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Invalid request body"})
+		return
+	}
+	File, FileHeader, err := r.FormFile("image")
+	err = FileUpload(NewFileName, File, FileHeader, err)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "File Not Uploaded"})
+		return
+	}
 }
 
 func (p *post) GetPost(w http.ResponseWriter, r *http.Request) {
-	p.Service_GetOne(w, r)
+	data, err := p.Service_GetOne(r.Context(), r.FormValue("id"))
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
+		return
+	}
+	w.Write(data)
 }
 
 func (p *post) GetPostByUsername(w http.ResponseWriter, r *http.Request) {
-	p.GetPostsByUserService(w, r)
+	data, err := p.GetPostsByUserService(r.Context(), r.PathValue("username"))
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
+		return
+	}
+	w.Write(data)
 }
