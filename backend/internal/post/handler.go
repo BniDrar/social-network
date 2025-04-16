@@ -2,6 +2,7 @@ package post
 
 import (
 	"database/sql"
+	"fmt"
 	"net/http"
 
 	"socialNetwork/pkg/config"
@@ -48,7 +49,9 @@ func (p *post) ReactPost(w http.ResponseWriter, r *http.Request) {
 }
 
 func (p *post) CreatePost(w http.ResponseWriter, r *http.Request) {
-	p.Service_CreateOne(w, r)
+	// p.Service_CreateOne(w, r)
+	err := FileUpload(r.FormFile("image"))
+	fmt.Println(err)
 }
 
 func (p *post) GetPost(w http.ResponseWriter, r *http.Request) {

@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS users (
     first_name TEXT,
     last_name TEXT,
     birthday DATETIME,
-    avatar BLOB,
+    avatar TEXT,
     nickname TEXT UNIQUE,
     about_me TEXT,
     status INTEGER DEFAULT 0  -- 0: private, 1: global
