@@ -203,9 +203,19 @@ func (g *group) GetGroupMembersRepository(ctx context.Context, groupID int) ([]e
 	return groupMembers, nil
 }
 
-func (g *group) addGroupMember(ctx context.Context, userID, groupID int) error {
-	
-	return nil
+func (g *group) addGroupMember(ctx context.Context, userID, groupID int) (int, error) {
+	query := `INSERT INTO group_members (member_id, group_id)
+	VALUES (?, ?)`
+	stmt, err := g.db.PrepareContext(ctx, query)
+	if err != nil {
+		return http.StatusInternalServerError, err
+	}
+	defer stmt.Close()
+	_, err = stmt.ExecContext(ctx, )
+	if err != nil {
+		return http.StatusBadRequest, err
+	}
+	return http.StatusOK, nil
 }
 
 // CHECK IF THE USER IS A MEMBER OF THE GROUP
