@@ -2,10 +2,12 @@
 import { useState } from "react"
 import styles from "./CreatePost.module.css"
 import Form  from "next/form"
+import Overlay from "../Overlay/Overlay"
 // import { HandleForm } from "@/services/CreatePost"
 /*
     - content
     - image
+    - status
 */
 
 
@@ -14,15 +16,20 @@ const CreatePost = () => {
     const [friends,setFriends] = useState(["yassine","oussama","elfihry","brahim","naytderhm","ghost"])
     const [viewers,setViewers] = useState([])
     const HandleForm = async (event) => {
-        const formData = event.target
+        event.preventDefault()
+        const formData = new FormData(event.target)
         const content = formData.get("content")
         const image = formData.get("image")
+        const statusName = formData.get("status")
         console.log(content);
         console.log(image);
+        console.log(statusName);
+        if (statusName === "private") console.log(viewers);
     }
+
     return (
         <>
-            <div className={styles.overlay} id="overlay"></div>
+            <Overlay display={false} />
             <div className={styles.card}>
                 <h3 className={styles.cardTitle}>Create Post</h3>
                 <div className={styles.cardBody}>

@@ -23,7 +23,7 @@ const Post = ({data}) => {
                 <p className={styles.post_text}>{data.content}</p>
                 {/* <img src="" className={styles.post_image} alt="post image" /> */}
                 <br />
-                <Image width={500} height={500} alt='post' src={postImage} className={styles.post_image} />
+                <Image width={600} height={600} alt='post' src={postImage} className={styles.post_image} />
                 <div className={styles.postInfo}>
                     <div className={styles.post_reactions_len}>
                         <Image src={likes} width={24} height={24} alt='likes' className={styles.postLikesSvg} />
