@@ -174,6 +174,42 @@ func (g *group) GetAllGroupsRepository(ctx context.Context, limit, offset, typeG
 	return groups, nil
 }
 
+func (g *group)GetGroupMembersRepository(ctx context.Context, groupID int) ([]entity.User, error) {
+ 	query := `
+ 		SELECT gm.member_id, u.nickname, u.avatar
+ 		FROM group_members gm
+ 		JOIN users u ON gm.member_id = u.id
+ 		WHERE gm.group_id = ?
+ 	`
+ 	stmt, err := g.db.PrepareContext(ctx, query)
+ 	if err != nil {
+ 		return nil, err
+ 	}
+ 	defer stmt.Close()
+ 	rows, err := stmt.QueryContext(ctx, groupID)
+ 	if err != nil {
+ 		return nil, err
+ 	}
+ 	defer rows.Close()
+ 	var groupMembers []entity.User
+ 	for rows.Next() {
+ 		var groupMember entity.User
+ 		err := rows.Scan(
+ 			&groupMember.ID,
+ 			&groupMember.Nickname,
+ 			&groupMember.Avatar,
+ 		)
+ 		if err != nil {
+ 			return nil, err
+ 		}
+ 		groupMembers = append(groupMembers, groupMember)
+ 	}
+ 	if err := rows.Err(); err != nil {
+ 		return nil, err
+ 	}
+ 	return groupMembers, nil
+ }
+
 // CHECK IF THE USER IS A MEMBER OF THE GROUP
 func (g *group) IsMemberRepository(ctx context.Context, userID, groupID int) (bool, error) {
 	query := `

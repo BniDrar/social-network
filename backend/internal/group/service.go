@@ -21,6 +21,7 @@ func (g *group) GetGroupsByUserService(ctx context.Context, limit, offset int) (
 	return groups, nil
 }
 
+// GetGroupByIdService returns a group by its ID.
 func (g *group) GetGroupByIdService(ctx context.Context, groupID int) (entity.Group, error) {
 	userID, ok := ctx.Value(entity.ContextID).(int)
 	if !ok {
@@ -32,7 +33,7 @@ func (g *group) GetGroupByIdService(ctx context.Context, groupID int) (entity.Gr
 	}
 	return group, nil
 }
-
+// CreateGroupService creates a new group.
 func (g *group) CreateGroupService(ctx context.Context, group entity.Group) (entity.Group, error) {
 	group, err := g.CreateGroupRepository(ctx, group)
 	if err != nil {
@@ -48,7 +49,13 @@ func (g *group) GetAllGroupsService(ctx context.Context, limit, offset, typeGrou
 	}
 	return groups, nil
 }
-
+func (g *group) GetGroupMembersService(ctx context.Context, groupID int) ([]entity.User, error) {
+ 	group, err := g.GetGroupMembersRepository(ctx, groupID)
+ 	if err != nil {
+ 		return nil, err
+ 	}
+ 	return group, nil
+ }
 /*---------------notification related functions ---------------------*/
 func (g *group) inviteToJoinGroupService(ctx context.Context, invitation entity.Invitation) (int, error) {
 	invitedId := invitation.InvitedID

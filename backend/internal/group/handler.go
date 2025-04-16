@@ -13,13 +13,18 @@ import (
 )
 
 type Group interface {
-	GetGroups(w http.ResponseWriter, r *http.Request)
+	GetUserGroups(w http.ResponseWriter, r *http.Request)
 	GetGroupById(w http.ResponseWriter, r *http.Request)
 	CreateGroup(w http.ResponseWriter, r *http.Request)
 	GetAllGroups(w http.ResponseWriter, r *http.Request)
+	GetGroupMembers(w http.ResponseWriter, r *http.Request)
 	CreateEvent(w http.ResponseWriter, r *http.Request)
 	VoteEvent(w http.ResponseWriter, r *http.Request)
 	GetEvent(w http.ResponseWriter, r *http.Request)
+	InvitationResponse(w http.ResponseWriter, r *http.Request)
+	InviteToJoinGroup(w http.ResponseWriter, r *http.Request)
+	RequestToJoinGroup(w http.ResponseWriter, r *http.Request)
+	RequestToJoinResponse(w http.ResponseWriter, r *http.Request)
 }
 
 type group struct {
@@ -33,7 +38,7 @@ func NewGroup(dep *config.Dependencies) Group {
 }
 
 // this handler is used to get all groups
-func (g *group) GetGroups(w http.ResponseWriter, r *http.Request) {
+func (g *group) GetUserGroups(w http.ResponseWriter, r *http.Request) {
 	g.loger.Info.Println("In Get Groups")
 	// get the limit and offset from the request body
 	var requestBody struct {
@@ -86,6 +91,7 @@ func (g *group) GetGroupById(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(group)
 }
 
+// this handler is used to create a group
 func (g *group) CreateGroup(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		w.WriteHeader(http.StatusMethodNotAllowed)
@@ -144,6 +150,24 @@ func (g *group) GetAllGroups(w http.ResponseWriter, r *http.Request) {
 	}
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(groups)
+}
+
+func (g *group)	GetGroupMembers(w http.ResponseWriter, r *http.Request){
+	groupID, err := strconv.Atoi(r.URL.Query().Get("id"))
+	if err != nil || groupID <= 0 {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Invalid group ID"})
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	members, err := g.GetGroupMembersService(r.Context(), groupID)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(members)
 }
 
 /*------------- notification things -------------------*/
