@@ -33,6 +33,7 @@ func (g *group) GetGroupByIdService(ctx context.Context, groupID int) (entity.Gr
 	}
 	return group, nil
 }
+
 // CreateGroupService creates a new group.
 func (g *group) CreateGroupService(ctx context.Context, group entity.Group) (entity.Group, error) {
 	group, err := g.CreateGroupRepository(ctx, group)
@@ -49,13 +50,15 @@ func (g *group) GetAllGroupsService(ctx context.Context, limit, offset, typeGrou
 	}
 	return groups, nil
 }
+
 func (g *group) GetGroupMembersService(ctx context.Context, groupID int) ([]entity.User, error) {
- 	group, err := g.GetGroupMembersRepository(ctx, groupID)
- 	if err != nil {
- 		return nil, err
- 	}
- 	return group, nil
- }
+	group, err := g.GetGroupMembersRepository(ctx, groupID)
+	if err != nil {
+		return nil, err
+	}
+	return group, nil
+}
+
 /*---------------notification related functions ---------------------*/
 func (g *group) inviteToJoinGroupService(ctx context.Context, invitation entity.Invitation) (int, error) {
 	invitation.InviterID = ctx.Value(entity.ContextID).(int)
@@ -101,9 +104,11 @@ func (g *group) proccessInvitationResponse(ctx context.Context, notf entity.Noti
 	if err != nil {
 		return http.StatusInternalServerError, err
 	}
-	status, err := g.addGroupMember(ctx, notf.Id, notf.GroupId)
-	if err != nil {
-		return status, err
+	if notf.Accepted {
+		status, err := g.addGroupMember(ctx, notf.Id, notf.GroupId)
+		if err != nil {
+			return status, err
+		}
 	}
 	return http.StatusOK, nil
 }
@@ -132,7 +137,27 @@ func (g *group) requestToJoingGroupService(ctx context.Context, invitation entit
 }
 
 func (g *group) processRequestToJoinResponse(ctx context.Context, notf entity.Notification) (int, error) {
-	return 0, nil
+	userId := ctx.Value(entity.ContextID).(int)
+	notification, err := g.getNotificationById(ctx, notf.Id)
+	if err != nil || notification.ReceiverID != userId {
+		return http.StatusBadRequest, errors.New("bad request")
+	}
+
+	group, err := g.GetGroupByIdRepository(ctx, userId, notf.GroupId)
+	if err != nil || group.Admin != userId {
+		return http.StatusForbidden, errors.New("you are not allowed to that")
+	}
+	err = g.RemoveNotificationById(ctx, notf.Id)
+	if err != nil {
+		return http.StatusInternalServerError, err
+	}
+	if notf.Accepted {
+		status, err := g.addGroupMember(ctx, notification.SenderId, notification.GroupId)
+		if err != nil {
+			return status, err
+		}
+	}
+	return http.StatusOK, nil
 }
 
 // ----------------events---------------------------------
