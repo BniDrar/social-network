@@ -58,10 +58,9 @@ func (g *group) GetGroupMembersService(ctx context.Context, groupID int) ([]enti
  }
 /*---------------notification related functions ---------------------*/
 func (g *group) inviteToJoinGroupService(ctx context.Context, invitation entity.Invitation) (int, error) {
-	invitedId := invitation.InvitedID
-	inviterId := ctx.Value(entity.ContextID).(int)
+	invitation.InviterID = ctx.Value(entity.ContextID).(int)
 	// check if the inviter is a group member
-	inviterIsAGroupMember, err := g.IsMemberRepository(ctx, inviterId, invitation.GroupId)
+	inviterIsAGroupMember, err := g.IsMemberRepository(ctx, invitation.InviterID, invitation.GroupId)
 	if err != nil || !inviterIsAGroupMember {
 		if err == nil {
 			err = errors.New("you are not a member in that group")
@@ -69,8 +68,8 @@ func (g *group) inviteToJoinGroupService(ctx context.Context, invitation entity.
 		return http.StatusBadRequest, err
 	}
 
-	//check the invited is not a group member
-	invitedIsAGroupMember, err := g.IsMemberRepository(ctx, invitedId, invitation.GroupId)
+	// check the invited is not a group member
+	invitedIsAGroupMember, err := g.IsMemberRepository(ctx, invitation.InvitedID, invitation.GroupId)
 	if err != nil || invitedIsAGroupMember {
 		if err == nil {
 			err = errors.New("the user already a member")
@@ -78,9 +77,14 @@ func (g *group) inviteToJoinGroupService(ctx context.Context, invitation entity.
 		return http.StatusBadRequest, err
 	}
 
+	notfID, status, err := g.CreateInvitationNotification(ctx, invitation)
+	if err != nil {
+		return status, err
+	}
+
+	g.loger.Info.Println(notfID)
 	// send the notification via websocket
 
-	// add the notification to the data base
 	return http.StatusOK, nil
 }
 
@@ -88,9 +92,22 @@ func (g *group) proccessInvitationResponse(ctx context.Context, notf entity.Noti
 	/* first of all get the notification from the data base,
 	then check if the user already accept it before
 	append the user to the group*/
-
+	userId := ctx.Value(entity.ContextID).(int)
+	notification, err := g.getNotificationById(ctx, notf.Id)
+	if err != nil {
+		return http.StatusBadRequest, errors.New("invalid credentials")
+	}
+	if userId != notification.ReceiverID {
+		return http.StatusForbidden, errors.New("you doesn't have the right permitions")
+	}
+	err = g.RemoveNotificationById(ctx, notf.Id)
+	if err != nil {
+		return http.StatusInternalServerError, err
+	}
+	err = g.addGroupMember(ctx, notf.Id, notf.GroupId)
 	return 0, nil
-} 
+}
+
 func (g *group) requestToJoingGroupService(ctx context.Context, invitation entity.Invitation) (int, error) {
 	userId := ctx.Value(entity.ContextID).(int)
 	invitedIsAGroupMember, err := g.IsMemberRepository(ctx, userId, invitation.GroupId)
@@ -112,12 +129,10 @@ func (g *group) requestToJoingGroupService(ctx context.Context, invitation entit
 }
 
 func (g *group) processRequestToJoinResponse(ctx context.Context, notf entity.Notification) (int, error) {
-
 	return 0, nil
 }
 
-
-//----------------events---------------------------------
+// ----------------events---------------------------------
 func (g *group) CreateEventService(ctx context.Context, event entity.Event) (int, int, error) {
 	// check if the user is a member of the group
 	isMember, err := g.IsMemberRepository(ctx, ctx.Value(entity.ContextID).(int), event.GroupID)
@@ -144,9 +159,9 @@ func (g *group) GetEventService(ctx context.Context, eventID int) (entity.Event,
 		if err == nil {
 			err = errors.New("user is not a member of the group")
 		}
-		return entity.Event{}, http.StatusBadRequest,err
+		return entity.Event{}, http.StatusBadRequest, err
 	}
-	return event, http.StatusOK,nil
+	return event, http.StatusOK, nil
 }
 
 func (g *group) VoteEventService(ctx context.Context, vote entity.Engagement) (int, int, error) {
@@ -156,7 +171,7 @@ func (g *group) VoteEventService(ctx context.Context, vote entity.Engagement) (i
 		return 0, http.StatusBadRequest, err
 	}
 	fmt.Println(event.UserID, event.GroupID)
-	isMember, err := g.IsMemberRepository(ctx,ctx.Value(entity.ContextID).(int), event.GroupID)
+	isMember, err := g.IsMemberRepository(ctx, ctx.Value(entity.ContextID).(int), event.GroupID)
 	if err != nil || !isMember {
 		if err == nil {
 			err = errors.New("user is not a member of the group")

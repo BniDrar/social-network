@@ -247,13 +247,22 @@ func (g *group) RequestToJoinResponse(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Content-Type", "application/json")
 
-	var invitation entity.Invitation
-	err := json.NewDecoder(r.Body).Decode(&invitation)
+	var notif entity.Notification
+	err := json.NewDecoder(r.Body).Decode(&notif)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "invalid request body"})
 		return
 	}
+	
+	status, err:= g.processRequestToJoinResponse(r.Context(), notif) 
+	if err != nil {
+		w.WriteHeader(status)
+		g.loger.Error.Println(err)
+		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
+		return
+	}
+	w.WriteHeader(status)	
 }
 
 /*------------- events things ---------------*/
