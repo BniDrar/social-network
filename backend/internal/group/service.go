@@ -84,14 +84,11 @@ func (g *group) inviteToJoinGroupService(ctx context.Context, invitation entity.
 
 	g.loger.Info.Println(notfID)
 	// send the notification via websocket
-
+	g.ws.SendMessage(uint(invitation.InvitedID), []byte("something"))
 	return http.StatusOK, nil
 }
 
 func (g *group) proccessInvitationResponse(ctx context.Context, notf entity.Notification) (int, error) {
-	/* first of all get the notification from the data base,
-	then check if the user already accept it before
-	append the user to the group*/
 	userId := ctx.Value(entity.ContextID).(int)
 	notification, err := g.getNotificationById(ctx, notf.Id)
 	if err != nil {
@@ -104,28 +101,34 @@ func (g *group) proccessInvitationResponse(ctx context.Context, notf entity.Noti
 	if err != nil {
 		return http.StatusInternalServerError, err
 	}
-	err = g.addGroupMember(ctx, notf.Id, notf.GroupId)
-	return 0, nil
+	status, err := g.addGroupMember(ctx, notf.Id, notf.GroupId)
+	if err != nil {
+		return status, err
+	}
+	return http.StatusOK, nil
 }
 
-func (g *group) requestToJoingGroupService(ctx context.Context, invitation entity.Invitation) (int, error) {
+func (g *group) requestToJoingGroupService(ctx context.Context, invitation entity.Invitation) (int, int, error) {
 	userId := ctx.Value(entity.ContextID).(int)
 	invitedIsAGroupMember, err := g.IsMemberRepository(ctx, userId, invitation.GroupId)
 	if err != nil || invitedIsAGroupMember {
 		if err == nil {
 			err = errors.New("you already a member of the group")
 		}
-		return http.StatusBadRequest, err
+		return 0, http.StatusBadRequest, err
 	}
 
-	_, err = g.GetGroupByIdRepository(ctx, userId, invitation.GroupId)
+	group, err := g.GetGroupByIdRepository(ctx, userId, invitation.GroupId)
 	if err != nil {
-		return http.StatusBadRequest, errors.New("invalid group id")
+		return 0, http.StatusBadRequest, errors.New("invalid group id")
 	}
-
+	invitation.InvitedID = group.Admin
+	notificationID, status, err := g.CreateRequestJoiningNotification(ctx, invitation)
+	if err != nil {
+		return 0, status, err
+	}
 	// now after getting group information send to the admin via websocket
-	// add the notificatin to the db
-	return http.StatusOK, nil
+	return notificationID, http.StatusOK, nil
 }
 
 func (g *group) processRequestToJoinResponse(ctx context.Context, notf entity.Notification) (int, error) {

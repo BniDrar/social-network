@@ -383,3 +383,21 @@ func (g *group) RemoveNotificationById(ctx context.Context, id int) error {
 	}
 	return nil
 }
+
+func (g *group) CreateRequestJoiningNotification(ctx context.Context, invt entity.Invitation) (int, int, error) {
+	query:= `INCERT INTO notification (type, sender_id, group_id)
+	VALUES (?, ?)`
+	stmt, err := g.db.PrepareContext(ctx, query)
+	if err != nil {
+		return 0, http.StatusInternalServerError, err
+	}
+	defer stmt.Close()
+	result, err := stmt.ExecContext(ctx, entity.GroupParticipationNotification, invt.InviterID, invt.GroupId)
+	if err != nil {
+		return 0, http.StatusBadRequest, err
+	}
+	eventID, err := result.LastInsertId()
+	if err != nil {
+		return 0, http.StatusInternalServerError, err
+	}
+	return int(eventID), http.StatusOK, nil}
