@@ -174,6 +174,9 @@ func (g *group) CreateEventService(ctx context.Context, event entity.Event) (int
 	if err != nil {
 		return 0, status, err
 	}
+	notificationID, status, err := g.CreateEventNotification(ctx, event)
+	//upstreat the notificationId and there information in the websocket
+	print(notificationID)
 	return eventId, status, nil
 }
 

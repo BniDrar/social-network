@@ -211,7 +211,7 @@ func (g *group) addGroupMember(ctx context.Context, userID, groupID int) (int, e
 		return http.StatusInternalServerError, err
 	}
 	defer stmt.Close()
-	_, err = stmt.ExecContext(ctx, )
+	_, err = stmt.ExecContext(ctx)
 	if err != nil {
 		return http.StatusBadRequest, err
 	}
@@ -239,8 +239,8 @@ WHERE member_id = ?
 	return count > 0, nil
 }
 
-//--------------------events----------------------------
-//--------------------events----------------------------
+// --------------------events----------------------------
+// --------------------events----------------------------
 func (g *group) CreateEventRepository(ctx context.Context, event entity.Event) (int, int, error) {
 	query := `
 		INSERT INTO events (user_id, group_id, title, description, event_time)
@@ -345,10 +345,48 @@ func (g *group) CreateInvitationNotification(ctx context.Context, invt entity.In
 	return int(eventID), http.StatusOK, nil
 }
 
+func (g *group) CreateRequestJoiningNotification(ctx context.Context, invt entity.Invitation) (int, int, error) {
+	query := `INCERT INTO notification (type, sender_id, group_id)
+	VALUES (?, ?)`
+	stmt, err := g.db.PrepareContext(ctx, query)
+	if err != nil {
+		return 0, http.StatusInternalServerError, err
+	}
+	defer stmt.Close()
+	result, err := stmt.ExecContext(ctx, entity.GroupParticipationNotification, invt.InviterID, invt.GroupId)
+	if err != nil {
+		return 0, http.StatusBadRequest, err
+	}
+	eventID, err := result.LastInsertId()
+	if err != nil {
+		return 0, http.StatusInternalServerError, err
+	}
+	return int(eventID), http.StatusOK, nil
+}
+
+func (g *group) CreateEventNotification(ctx context.Context, event entity.Event) (int, int, error) {
+	query:= `INSERT INTO notification (type, sender_id, group_id, event_id)
+	VALUES (?, ?, ?, ?)`
+	stmt, err:= g.db.PrepareContext(ctx, query)
+	if err != nil {
+		return 0, http.StatusInternalServerError, err
+	}
+	res, err:= stmt.ExecContext(ctx, entity.EventNotification, ctx.Value(entity.ContextID), event.GroupID, event.ID)
+	if err != nil {
+		return 0, http.StatusBadRequest, errors.New("invalid event credentials")
+	}
+	id, err:= res.LastInsertId()
+	if err != nil {
+		return 0, http.StatusInternalServerError, err
+	}
+
+	return int(id), http.StatusOK, nil
+}
+
 func (g *group) getNotificationById(ctx context.Context, id int) (entity.Notification, error) {
 	query := `
-	SELECT * FROM notification WHERE id = ?
-`
+		SELECT * FROM notification WHERE id = ?
+	`
 	var notification entity.Notification
 	stmt, err := g.db.PrepareContext(ctx, query)
 	if err != nil {
@@ -371,8 +409,8 @@ func (g *group) getNotificationById(ctx context.Context, id int) (entity.Notific
 }
 
 func (g *group) RemoveNotificationById(ctx context.Context, id int) error {
-	query:= `
-	DELETE FROM notification WHERE id = ?`
+	query := `
+		DELETE FROM notification WHERE id = ?`
 	stmt, err := g.db.PrepareContext(ctx, query)
 	if err != nil {
 		return err
@@ -383,21 +421,3 @@ func (g *group) RemoveNotificationById(ctx context.Context, id int) error {
 	}
 	return nil
 }
-
-func (g *group) CreateRequestJoiningNotification(ctx context.Context, invt entity.Invitation) (int, int, error) {
-	query:= `INCERT INTO notification (type, sender_id, group_id)
-	VALUES (?, ?)`
-	stmt, err := g.db.PrepareContext(ctx, query)
-	if err != nil {
-		return 0, http.StatusInternalServerError, err
-	}
-	defer stmt.Close()
-	result, err := stmt.ExecContext(ctx, entity.GroupParticipationNotification, invt.InviterID, invt.GroupId)
-	if err != nil {
-		return 0, http.StatusBadRequest, err
-	}
-	eventID, err := result.LastInsertId()
-	if err != nil {
-		return 0, http.StatusInternalServerError, err
-	}
-	return int(eventID), http.StatusOK, nil}
