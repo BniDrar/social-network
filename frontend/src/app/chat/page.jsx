@@ -1,26 +1,33 @@
-"use client"
+"use client";
 // components/SocketComponent.js
-import { useEffect } from 'react';
-
+import styles from "./style.module.css";
+import { useContext, useEffect } from "react";
+import { Context } from "../../context/context.js";
 
 const SocketComponent = () => {
+  // useEffect(() => {
+  //   const ws = new WebSocket("ws://localhost:8080/api/ws");
+  //   ws.onopen = () => {
+  //     console.log("Connected to WebSocket");
+  //     ws.send("Hello, WebSocket!");
+  //   };
+  //   ws.onmessage = (event) => {
+  //     console.log("Message received:", event.data);
+  //   };
+  //   ws.onclose = () => {
+  //     console.log("WebSocket connection closed");
+  //   };
+  //   return () => {
+  //     ws.close();
+  //   };
+  // }, []);
+  const { username } = useContext(Context);
+
   useEffect(() => {
-    const ws = new WebSocket('ws://localhost:8080/api/ws');
-    ws.onopen = () => {
-      console.log('Connected to WebSocket');
-      ws.send('Hello, WebSocket!');
-    };
-    ws.onmessage = (event) => {
-      console.log('Message received:', event.data);
-    };
-    ws.onclose = () => {
-      console.log('WebSocket connection closed');
-    };
-    return () => {
-      ws.close();
-    };
-  }, []);
-  return <div>WebSocket Example</div>;
+    console.log("Username in context has been set:", username); // This will log the updated username
+  }, [username]); // Track username changes
+
+  return <div>Current Username: {username}</div>;
 };
 
 export default SocketComponent;
