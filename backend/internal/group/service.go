@@ -3,7 +3,6 @@ package group
 import (
 	"context"
 	"errors"
-	"fmt"
 	"net/http"
 
 	"socialNetwork/entity"
@@ -175,7 +174,7 @@ func (g *group) CreateEventService(ctx context.Context, event entity.Event) (int
 		return 0, status, err
 	}
 	notificationID, status, err := g.CreateEventNotification(ctx, event)
-	//upstreat the notificationId and there information in the websocket
+	// upstreat the notificationId and there information in the websocket
 	print(notificationID)
 	return eventId, status, nil
 }
@@ -201,13 +200,12 @@ func (g *group) VoteEventService(ctx context.Context, vote entity.Engagement) (i
 	if err != nil {
 		return 0, http.StatusBadRequest, err
 	}
-	fmt.Println(event.UserID, event.GroupID)
 	isMember, err := g.IsMemberRepository(ctx, ctx.Value(entity.ContextID).(int), event.GroupID)
 	if err != nil || !isMember {
 		if err == nil {
 			err = errors.New("user is not a member of the group")
 		}
-		return 0, http.StatusBadRequest, err
+		return 0, http.StatusForbidden, err
 	}
 	eventId, status, err := g.VoteEventRepository(ctx, event.ID, vote.Status)
 	if err != nil {

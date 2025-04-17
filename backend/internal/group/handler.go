@@ -314,7 +314,7 @@ func (g *group) VoteEvent(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Invalid request body"})
 		return
 	}
-	// create the event in the database
+	// create the vote for event in the database
 	eventId, status, err := g.VoteEventService(r.Context(), vote)
 	if err != nil {
 		w.WriteHeader(status)
