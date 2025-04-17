@@ -37,13 +37,7 @@ var upgrader = websocket.Upgrader{
 }
 
 func (c *chat) WebSocket(w http.ResponseWriter, r *http.Request) {
-	// upgrade
 	log.Println("WebSocket endpoint hit")
-	var upgrader = websocket.Upgrader{
-		CheckOrigin: func(r *http.Request) bool {
-			return true // Allow all origins (use cautiously in production)
-		},
-	}
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		c.loger.Error.Println("Error while upgrading connection:", err)
@@ -52,15 +46,10 @@ func (c *chat) WebSocket(w http.ResponseWriter, r *http.Request) {
 	}
 	defer conn.Close()
 	log.Println("Client connected")
-	//get user id from session
-	userId := r.Context().Value(entity.ContextID)
-	if userId == nil {
-		c.loger.Error.Println("User ID not found in session")
-		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "you are not authorized"})
-		w.WriteHeader(http.StatusUnauthorized)
-		return
-	}
+	// get user id from session
+	userId := r.Context().Value(entity.ContextID).(int)
 	c.loger.Info.Println("user Id", userId)
+	c.loger.Info.Println("user Ip", conn.RemoteAddr().String())
 	WsListing(conn, r.Context())
 	c.loger.Info.Println("Client disconnected")
 }

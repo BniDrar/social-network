@@ -5,15 +5,17 @@ import (
 	"context"
 	"errors"
 	"log"
+
 	"socialNetwork/entity"
 	ws "socialNetwork/pkg/websocket"
 
 	"github.com/gorilla/websocket"
 )
 
+var Manager = ws.NewManager()
+
 func WsListing(conn *websocket.Conn, ctx context.Context) error {
 	defer conn.Close()
-	m := ws.NewManager()
 	val := ctx.Value(entity.ContextID)
 	idInt, ok := val.(int)
 	id := uint(idInt) // convert after
@@ -21,8 +23,8 @@ func WsListing(conn *websocket.Conn, ctx context.Context) error {
 		// handle the error: not found or wrong type
 		return errors.New("user ID missing or invalid in context")
 	}
-	m.AddClient(id, conn)
-	defer m.RemoveClient(id)
+	Manager.AddClient(id, conn)
+	defer Manager.RemoveClient(id)
 	log.Printf("Client %d connected", id)
 	// Listen for messages from the client
 	for {
@@ -35,7 +37,7 @@ func WsListing(conn *websocket.Conn, ctx context.Context) error {
 			return err
 		}
 		message = bytes.TrimSpace(bytes.Replace(message, []byte("\n"), []byte(" "), -1))
-		m.SendMessage(id, message)
+		Manager.SendMessage(id, message)
 		log.Printf("received message from Client %d: %s", id, message)
 	}
 }
