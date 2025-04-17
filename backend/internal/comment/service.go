@@ -1,24 +1,40 @@
 package comment
 
-func (c *comment) CanSeePost(userid, postid int) bool {
-	prep, err := c.db.Prepare(`SELECT
-		    1
-		FROM posts AS post 
-		INNER JOIN users AS user ON user.id = post.user_id
-		LEFT JOIN group_members AS gm ON gm.group_id=post.group_id AND gm.member_id = $1
-		LEFT JOIN follows AS follow ON follow.followed_id = post.user_id AND follow.follower_id = 1
-		WHERE
-		    (post.group_id IS NOT NULL AND gm.member_id = $1 AND post.id=$2)
-		    OR 
-		    (post.group_id IS NULL AND follow.follower_id = $1 AND post.id=$2);`)
+import (
+	"context"
+	"encoding/json"
+	"errors"
+	"io"
+	"net/http"
+
+	"socialNetwork/entity"
+)
+
+func (c *comment) ServiceGetComments(ctx context.Context, body io.ReadCloser) (err error) {
+	UserID := ctx.Value(entity.ContextID).(int)
+	var Comment entity.Comment
+	err = json.NewDecoder(body).Decode(&Comment)
 	if err != nil {
-		return false
+		return
 	}
-	row := prep.QueryRow(userid, postid)
-	var res bool
-	err = row.Scan(&res)
+	Comment.UserID = UserID
+	// add get comments repo
+	return
+}
+
+
+func (c *comment) CreateCommentService(ctx context.Context, commnt entity.Comment) (int, int, error) {
+	userId:= ctx.Value(entity.ContextID).(int)
+	if !c.CanSeePost(userId, commnt.PostID) {
+		return 0, http.StatusForbidden, errors.New("you don't allowed for this action")
+	}
+	commnt.UserID = userId
+	commentId, status, err := c.CreateCommentRepo(ctx, commnt)
 	if err != nil {
-		return false
+		if status != http.StatusBadRequest {
+			err = nil
+		}
+		return 0, status, err
 	}
-	return res
+	return commentId, http.StatusCreated, nil
 }

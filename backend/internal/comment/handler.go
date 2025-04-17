@@ -28,7 +28,32 @@ func NewComment(dep *config.Dependencies) Comment {
 	return &comment{db: dep.DB, loger: *dep.Loger, Hub: dep.Hub}
 }
 
-func (c *comment) AddComment(w http.ResponseWriter, r *http.Request) {}
+func (c *comment) AddComment(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+	var commnt entity.Comment
+	err := json.NewDecoder(r.Body).Decode(&commnt)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Invalid request body"})
+		return
+	}
+	commentId, status, err := c.CreateCommentService(r.Context(), commnt)
+	if err != nil {
+		w.WriteHeader(status)
+		if status == http.StatusBadRequest {
+			json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
+		}
+		return
+	}
+	json.NewEncoder(w).Encode(struct {
+		ID int `json:"id"`
+	}{
+		ID: commentId,
+	})
+}
 
 func (c *comment) GetComments(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
