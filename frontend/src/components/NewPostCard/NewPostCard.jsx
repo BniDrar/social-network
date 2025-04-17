@@ -1,8 +1,12 @@
+"use client"
 import styles from './NewPostCard.module.css'
 import avatar from '@/assets/images/no-face.jpg'
+import { GlobalContext } from '@/contexts/GlobalContext';
 import Image from 'next/image';
+import { useContext } from 'react';
 
 const NewPostCard = () => {
+    const {setOverlay, setShowCreatePost} = useContext(GlobalContext)
     return (
         <div className={styles.card}>
             <div className={styles.cardHeader}>
@@ -12,7 +16,10 @@ const NewPostCard = () => {
                 </form>
             </div>
             <div className={styles.cardBody}>
-                <button className={styles.editBtn}>Create Post</button>
+                <button className={styles.editBtn} onClick={()=> {
+                    setOverlay(true);
+                    setShowCreatePost(true);
+                }}>Create Post</button>
                 <button className={styles.editBtn}>Create Event</button>
             </div>
         </div>

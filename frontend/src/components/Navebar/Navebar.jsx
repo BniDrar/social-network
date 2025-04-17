@@ -1,5 +1,5 @@
 "use client"
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import styles from './Navbar.module.css'
 import Image from 'next/image';
 import Logo from "@/assets/logo.png"
@@ -15,13 +15,13 @@ import NotifIcon from '@/assets/icons/notification.png'
 import MenuIcon from '@/assets/icons/menu.png'
 import CloseIcon from '@/assets/icons/close.png'
 import Link from 'next/link';
-import Overlay from '../Overlay/Overlay';
+import { GlobalContext } from '@/contexts/GlobalContext';
 
 const Navebar = () => {
     const [isAuth, setIsAuth] = useState(true)
-    const [showNav, setShowNav] = useState(false)
     const [scWidth, setScWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 0);
     const [showMenu, setShowMenu] = useState('')
+    const {setOverlay,showNav, setShowNav} = useContext(GlobalContext)
 
     useEffect(() => {
         showNav ? setShowMenu('block') : scWidth < 960 ? setShowMenu('none') : setShowMenu('flex')
@@ -48,12 +48,14 @@ const Navebar = () => {
                     <Image src={Logo} className={styles.logo} width={60} height={50} alt='logo' />
                 </Link>
             </div>
-            <Overlay display={showNav} />
             <menu className={styles.menu} style={{display: showMenu}}>
-                <button className={styles.closeBtn} onClick={() => setShowNav(false)}>
+                <button className={styles.closeBtn} onClick={() => {
+                    setShowNav(false);
+                    setOverlay(false);
+                }}>
                     <Image src={CloseIcon} width={20} height={20} alt='close button' />
                 </button>
-                <nav className={styles.navbar_middle} style={showNav ? { display: "block" } : { display: "flex" }} onClick={() => showNav ? setShowNav(false) : ''}>
+                <nav className={styles.navbar_middle} style={showNav ? { display: "block" } : { display: "flex" }} onClick={() => showNav ? (setShowNav(false), setOverlay(false)) : ''}>
                     {/* [home - groups - followers - events] */}
                     <Link href={'/'} className={styles.link}>
                         <Image className={styles.pageIcon} src={HomeIcon} width={36} height={36} alt='home icon link' />
@@ -72,7 +74,7 @@ const Navebar = () => {
                         <span className={styles.pageName}>Followers</span>
                     </Link>
                 </nav>
-                <div className={styles.navbar_end} style={showNav ? { display: "block" } : { display: "flex" }} onClick={() => showNav ? setShowNav(false) : ''}>
+                <div className={styles.navbar_end} style={showNav ? { display: "block" } : { display: "flex" }} onClick={() => showNav ? (setShowNav(false), setOverlay(false)) : ''}>
                     {/* [login - register] OR [profile - logout] */}
                     {isAuth ?
                         <>
@@ -101,7 +103,10 @@ const Navebar = () => {
                         </>}
                 </div>
             </menu>
-            <button className={styles.bergerMenu} onClick={(e) => setShowNav(true)}>
+            <button className={styles.bergerMenu} onClick={(e) => {
+                setShowNav(true);
+                setOverlay(true);
+            }}>
                 <Image className={styles.bergerMenuIcon} src={MenuIcon} width={30} height={30} alt='menu button icon' />
             </button>
         </header>

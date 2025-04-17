@@ -1,8 +1,8 @@
 "use client"
-import { useState } from "react"
+import { useContext, useState } from "react"
 import styles from "./CreatePost.module.css"
 import Form  from "next/form"
-import Overlay from "../Overlay/Overlay"
+import { GlobalContext } from "@/contexts/GlobalContext"
 // import { HandleForm } from "@/services/CreatePost"
 /*
     - content
@@ -15,6 +15,7 @@ const CreatePost = () => {
     const [status,setStatus] = useState("public")
     const [friends,setFriends] = useState(["yassine","oussama","elfihry","brahim","naytderhm","ghost"])
     const [viewers,setViewers] = useState([])
+    const {showCreatePost} = useContext(GlobalContext)
     const HandleForm = async (event) => {
         event.preventDefault()
         const formData = new FormData(event.target)
@@ -29,8 +30,7 @@ const CreatePost = () => {
 
     return (
         <>
-            <Overlay display={false} />
-            <div className={styles.card}>
+            <div className={styles.card} style={{display: `${showCreatePost ? 'block' : 'none'}`}}>
                 <h3 className={styles.cardTitle}>Create Post</h3>
                 <div className={styles.cardBody}>
                     <Form onSubmit={HandleForm}>
