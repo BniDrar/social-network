@@ -6,6 +6,7 @@ import NewPostCard from "@/components/NewPostCard/NewPostCard";
 import ProfileFriends from "@/components/ProfileFriends/ProfileFriends";
 import PostList from "@/components/PostList/PostList";
 import CreatePost from "@/components/CreatePost/CreatePost";
+import Navebar from '@/components/Navebar/Navebar';
 
 
 export async function generateMetadata({ params }) {
@@ -17,7 +18,8 @@ export async function generateMetadata({ params }) {
 const ProfilePage = async ({ params }) => {
     const { username } = await params;
     return (
-        <>
+      <>
+        <Navebar />
             <div className={styles.header}>
                 <Image className={styles.coverImg} src={coverImg} width={1200} height={500} alt="" />
                 <div className={styles.headerInfo}>

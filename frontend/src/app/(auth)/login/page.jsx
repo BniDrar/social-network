@@ -1,123 +1,82 @@
-'use client'
+'use client';
 
-import React, { useEffect, useState } from 'react'
-import styles from './page.module.css'
-"use client";
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import styles from './login.module.css';
+import { login } from '@/services/auth';
 
-import styles from "./style.module.css";
+export default function Login() {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const router = useRouter();
 
-import { useEffect } from "react";
-
-export default function page() {
-  const [formData, setFormData] = useState({
-    username: "",
-    password: "",
-  })
-
-  const handleChange = (e) => {
-    const { id, value } = e.target;
-    console.log("id : ", id);
-    console.log("value : ", value);
-    
-    
-    setFormData(prevData => ({
-      ...prevData,
-      [id]: value
-    }));
-  }
-
-  const handleSubmit = () => {
-    useEffect(() => {
-      console.log(formData);
-      // const response = await fetch("/api/Auth", {
-      // body: formData,
-      // });
-      // const JsonRes = await response.json();
-      // if (!JsonRes.error) {
-      // location.href = "/";
-      // }
-    })
-  }
-
-export default function LoginPage() {
-  useEffect(() => {
-    const form = document.getElementById("login-form");
-    const errorMsg = document.getElementById("error-message");
-
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-
-      const nickname = form.nickname.value;
-      const password = form.password.value;
-
-      console.log(nickname, password);
-      try {
-        const response = await fetch("http://localhost:8080/api/login", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ nickname, password }),
-          credentials: "include", // Correctly sends cookies
-        });
-
-        if (response.ok) {
-          // Wait briefly to ensure cookies are processed
-          setTimeout(() => {
-            console.log("Cookies:", document.cookie);
-            window.location.href = "/";
-          }, 100);
-        }
-      } catch (err) {
-        console.error(err.message);
-        errorMsg.textContent = err.message; // Display error message to the user
-      }
-    });
-  }, []);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const loginData = {
+      username: username,
+      password: password,
+    };
+    let resp = await login(loginData);
+    if (resp.status === 200) {
+      router.push('/');
+    } else {
+      let errorForm = document.querySelector('#errorForm');
+      errorForm.innerHTML = resp.error || 'An error occurred';
+      setPassword('');
+    }
+  };
 
   return (
     <div className={styles.container}>
-      <h1 className={styles.bigTitle}>zellcode</h1>
-      <form className={styles.form} onSubmit={handleSubmit}>
-        <input className={styles.input} id='username' placeholder='enter email or username' required onChange={handleChange} />
-        <input className={styles.input} type='password' placeholder='enter your password' required onChange={handleChange} />
-        <button className={styles.button} type='submit'>Login</button>
-    <div className={styles.loginContainer}>
-      <h1>Login</h1>
-      <form id="login-form" className={styles.loginForm}>
-        <label htmlFor="nickname" className={styles.label}>
-          nickname:
-        </label>
-        <input
-          type="nickname"
-          id="nickname"
-          name="nickname"
-          required
-          className={styles.input}
-        />
+      <div className={styles.formWrapper}>
+        <h1 className={styles.title}>Welcome Back</h1>
+        <p className={styles.subtitle}>Please enter your details to sign in</p>
 
-        <label htmlFor="password" className={styles.label}>
-          Password:
-        </label>
-        <input
-          type="password"
-          id="password"
-          name="password"
-          required
-          className={styles.input}
-        />
+        <form onSubmit={handleSubmit} className={styles.form}>
+          <div className={styles.inputGroup}>
+            <input
+              type='text'
+              placeholder='Email or Username'
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              className={styles.input}
+              required
+            />
+          </div>
 
-        <button type="submit" className={styles.button}>
-          Login
-        </button>
-        <p className={styles.linkText}>
-          Don't have an account?{" "}
-          <a href="/register" className={styles.link}>
-            Register here
-          </a>
+          <div className={styles.inputGroup}>
+            <input
+              type='password'
+              placeholder='Password'
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className={styles.input}
+              required
+            />
+          </div>
+
+          <div className={styles.options}>
+            <label className={styles.remember}>
+              <input type='checkbox' disabled /> Remember me
+            </label>
+            <Link href='/forgot-password' className={styles.forgot}>
+              Forgot password?
+            </Link>
+          </div>
+          <div className={styles.error} id='errorForm'></div>
+          <button type='submit' className={styles.button}>
+            Sign in
+          </button>
+        </form>
+
+        <p className={styles.register}>
+          Don't have an account?{' '}
+          <Link href='/register' className={styles.link}>
+            Sign up
+          </Link>
         </p>
-        <p id="error-message" style={{ color: "red" }}></p>
-      </form>
+      </div>
     </div>
   );
 }

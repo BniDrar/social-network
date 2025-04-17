@@ -1,103 +1,231 @@
 'use client';
-import { useEffect } from 'react';
-import styles from './style.module.css';
 
-export default function RegisterPage() {
-  useEffect(() => {
-    const form = document.getElementById('register-form');
-    const errorMsg = document.getElementById('error-message');
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import styles from './register.module.css';
+import { register } from '@/services/auth';
 
-    // Set max date for date_of_birth input to today
-    const today = new Date().toISOString().split('T')[0];
-    const dobInput = form.date_of_birth;
-    if (dobInput) {
-      dobInput.max = today;
+export default function Register() {
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+    confirmPassword: '',
+    first: '',
+    last: '',
+    date_of_birth: '',
+    nickname: '',
+    about_me: '',
+    avatar: null,
+  });
 
-    }
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
+  const [avatarPreview, setAvatarPreview] = useState('');
+  const router = useRouter();
 
-      if (form.password.value !== form.confirm_password.value) {
-        errorMsg.textContent = 'Passwords do not match';
-        return;
-      }
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
 
-      if (form.password.value !== form.confirm_password.value) {
-        errorMsg.textContent = 'Passwords do not match';
-        return;
-      }
-
-      const userData = {
-        nickname: form.nickname.value,
-        email: form.email.value,
-        password: form.password.value,
-        first: form.first.value,
-        last: form.last.value,
-        date_of_birth: form.date_of_birth.value,
-        about_me: form.about_me.value,
-        status: 0,
+  const handleAvatarChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setFormData((prev) => ({
+        ...prev,
+        avatar: file,
+      }));
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setAvatarPreview(reader.result);
       };
+      reader.readAsDataURL(file);
+    }
+  };
 
-      try {
-        const response = await fetch('http://localhost:8080/api/register', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(userData),
-        });
-
-        if (response.ok) {
-          console.log('Registration successful');
-          window.location.href = '/login';
-        } else {
-          const errorData = await response.text();
-          throw new Error(errorData || 'Registration failed');
-        }
-      } catch (err) {
-        console.error(err.message);
-        errorMsg.textContent = err.message;
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    // Here you would typically send the data to your backend
+    const formDataToSend = new FormData();
+    Object.keys(formData).forEach((key) => {
+      if (formData[key] !== null) {
+        formDataToSend.append(key, formData[key]);
       }
     });
-  }, []);
+    let resp = await register(formDataToSend);
+    if (resp.status === 200) {
+      router.push('/login');
+    } else {
+      let errorForm = document.querySelector('#errorForm');
+      console.log(resp);
+      errorForm.innerHTML = resp.error || 'An error occurred';
+      setPassword('');
+    }
+  };
 
   return (
     <div className={styles.container}>
-      <h1>Register</h1>
-      <form id="register-form" className={styles.form}>
-        <label htmlFor="nickname" className={styles.label}>Nickname:</label>
-        <input type="text" name="nickname" required className={styles.input} />
+      <div className={styles.formWrapper}>
+        <h1 className={styles.title}>Create Account</h1>
+        <p className={styles.subtitle}>Join us today! Please enter your details</p>
 
-        <label htmlFor="email" className={styles.label}>Email:</label>
-        <input type="email" name="email" required className={styles.input} />
+        <form onSubmit={handleSubmit} className={styles.form}>
+          <div className={styles.avatarSection}>
+            <div className={styles.avatarPreview}>
+              {avatarPreview ? (
+                <img src={avatarPreview} alt='Avatar preview' className={styles.avatarImage} />
+              ) : (
+                <div className={styles.avatarPlaceholder}>
+                  <span>Upload Photo</span>
+                </div>
+              )}
+            </div>
+            <input
+              type='file'
+              id='avatar'
+              name='avatar'
+              accept='image/*'
+              onChange={handleAvatarChange}
+              className={styles.avatarInput}
+            />
+            <label htmlFor='avatar' className={styles.avatarLabel}>
+              Choose Avatar (Optional)
+            </label>
+          </div>
 
-        <label htmlFor="password" className={styles.label}>Password:</label>
-        <input type="password" name="password" required className={styles.input} />
+          <div className={styles.nameGroup}>
+            <div className={styles.inputGroup}>
+              <input
+                type='text'
+                name='first'
+                placeholder='First Name'
+                value={formData.first}
+                onChange={handleChange}
+                className={styles.input}
+                required
+              />
+            </div>
 
-        <label htmlFor="confirm_password" className={styles.label}>Confirm Password:</label>
-        <input type="password" name="confirm_password" required className={styles.input} />
+            <div className={styles.inputGroup}>
+              <input
+                type='text'
+                name='last'
+                placeholder='Last Name'
+                value={formData.last}
+                onChange={handleChange}
+                className={styles.input}
+                required
+              />
+            </div>
+          </div>
 
-        <label htmlFor="first" className={styles.label}>First Name:</label>
-        <input type="text" name="first" required className={styles.input} />
+          <div className={styles.inputGroup}>
+            <input
+              type='email'
+              name='email'
+              placeholder='Email'
+              value={formData.email}
+              onChange={handleChange}
+              className={styles.input}
+              required
+            />
+          </div>
+          <div className={styles.passwordGroup}>
+            <div className={styles.inputGroup}>
+              <input
+                type='password'
+                name='password'
+                placeholder='Password'
+                value={formData.password}
+                onChange={handleChange}
+                className={styles.input}
+                required
+              />
+            </div>
 
-        <label htmlFor="last" className={styles.label}>Last Name:</label>
-        <input type="text" name="last" required className={styles.input} />
+            <div className={styles.inputGroup}>
+              <input
+                type='password'
+                name='confirmPassword'
+                placeholder='Confirm Password'
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                className={styles.input}
+                required
+              />
+            </div>
+          </div>
 
-        <label htmlFor="date_of_birth" className={styles.label}>Date of Birth:</label>
-        <input type="date" name="date_of_birth" required className={styles.input} max={new Date().toISOString().split('T')[0]} />
+          <div className={styles.inputGroup}>
+            <input
+              type='date'
+              name='date_of_birth'
+              value={formData.date_of_birth}
+              onChange={handleChange}
+              className={styles.input}
+              required
+            />
+          </div>
 
-        <label htmlFor="about_me" className={styles.label}>About Me:</label>
-        <textarea name="about_me" rows="3" className={styles.textarea}></textarea>
+          <div className={styles.inputGroup}>
+            <input
+              type='text'
+              name='nickname'
+              placeholder='Nickname (Optional)'
+              value={formData.nickname}
+              onChange={handleChange}
+              className={styles.input}
+            />
+          </div>
 
-        <button type="submit" className={styles.button}>Register</button>
+          <div className={styles.inputGroup}>
+            <textarea
+              name='about_me'
+              placeholder='About Me (Optional)'
+              value={formData.about_me}
+              onChange={handleChange}
+              className={`${styles.input} ${styles.textarea}`}
+              rows={4}
+            />
+          </div>
 
-        <p className={styles.linkText}>
+          <div className={styles.terms}>
+            <label>
+              <input type='checkbox' required /> I agree to the{' '}
+              <Link href='/terms' className={styles.link}>
+                Terms of Service
+              </Link>{' '}
+              and{' '}
+              <Link href='/privacy' className={styles.link}>
+                Privacy Policy
+              </Link>
+            </label>
+          </div>
+
+          <button type='submit' className={styles.button}>
+            Create Account
+          </button>
+        </form>
+
+        <p className={styles.login}>
           Already have an account?{' '}
-          <a href="/login" className={styles.link}>Login here</a>
+          <Link href='/login' className={styles.link}>
+            Sign in
+          </Link>
         </p>
-
-        <p id="error-message" className={styles.errorMessage}></p>
-      </form>
+      </div>
     </div>
   );
 }
+
+//  const userData = {
+//    nickname: form.nickname.value,
+//    email: form.email.value,
+//    password: form.password.value,
+//    first: form.first.value,
+//    last: form.last.value,
+//    date_of_birth: form.date_of_birth.value,
+//    status: 0, // private by default 1 public
+//  };
