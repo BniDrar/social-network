@@ -203,6 +203,21 @@ func (g *group) GetGroupMembersRepository(ctx context.Context, groupID int) ([]e
 	return groupMembers, nil
 }
 
+func (g *group) addGroupMember(ctx context.Context, userID, groupID int) (int, error) {
+	query := `INSERT INTO group_members (member_id, group_id)
+	VALUES (?, ?)`
+	stmt, err := g.db.PrepareContext(ctx, query)
+	if err != nil {
+		return http.StatusInternalServerError, err
+	}
+	defer stmt.Close()
+	_, err = stmt.ExecContext(ctx, )
+	if err != nil {
+		return http.StatusBadRequest, err
+	}
+	return http.StatusOK, nil
+}
+
 // CHECK IF THE USER IS A MEMBER OF THE GROUP
 func (g *group) IsMemberRepository(ctx context.Context, userID, groupID int) (bool, error) {
 	query := `
@@ -224,6 +239,8 @@ WHERE member_id = ?
 	return count > 0, nil
 }
 
+//--------------------events----------------------------
+//--------------------events----------------------------
 func (g *group) CreateEventRepository(ctx context.Context, event entity.Event) (int, int, error) {
 	query := `
 		INSERT INTO events (user_id, group_id, title, description, event_time)
@@ -231,7 +248,6 @@ func (g *group) CreateEventRepository(ctx context.Context, event entity.Event) (
 	`
 	stmt, err := g.db.PrepareContext(ctx, query)
 	if err != nil {
-		fmt.Println("Error preparing query:", err)
 		return 0, http.StatusInternalServerError, err
 	}
 	defer stmt.Close()
@@ -305,3 +321,83 @@ func (g *group) VoteEventRepository(ctx context.Context, eventId, status int) (i
 	}
 	return int(eventID), status, nil
 }
+
+/*-------------------notification--------------------*/
+
+func (g *group) CreateInvitationNotification(ctx context.Context, invt entity.Invitation) (int, int, error) {
+	query := `
+		INSERT INTO notification (type, sender_id, receiver_id)
+		VALUES (?, ?, ?)
+	`
+	stmt, err := g.db.PrepareContext(ctx, query)
+	if err != nil {
+		return 0, http.StatusInternalServerError, err
+	}
+	defer stmt.Close()
+	result, err := stmt.ExecContext(ctx, entity.GroupInvitationNotification, invt.InviterID, invt.InvitedID)
+	if err != nil {
+		return 0, http.StatusBadRequest, err
+	}
+	eventID, err := result.LastInsertId()
+	if err != nil {
+		return 0, http.StatusInternalServerError, err
+	}
+	return int(eventID), http.StatusOK, nil
+}
+
+func (g *group) getNotificationById(ctx context.Context, id int) (entity.Notification, error) {
+	query := `
+	SELECT * FROM notification WHERE id = ?
+`
+	var notification entity.Notification
+	stmt, err := g.db.PrepareContext(ctx, query)
+	if err != nil {
+		return notification, err
+	}
+	defer stmt.Close()
+	row := stmt.QueryRowContext(ctx, id)
+	err = row.Scan(
+		&notification.Id,
+		&notification.Type,
+		&notification.GroupId,
+		&notification.SenderId,
+		&notification.ReceiverID,
+		&notification.Accepted,
+	)
+	if err != nil {
+		return notification, err
+	}
+	return notification, nil
+}
+
+func (g *group) RemoveNotificationById(ctx context.Context, id int) error {
+	query:= `
+	DELETE FROM notification WHERE id = ?`
+	stmt, err := g.db.PrepareContext(ctx, query)
+	if err != nil {
+		return err
+	}
+	_, err = stmt.ExecContext(ctx, id)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (g *group) CreateRequestJoiningNotification(ctx context.Context, invt entity.Invitation) (int, int, error) {
+	query:= `INCERT INTO notification (type, sender_id, group_id)
+	VALUES (?, ?)`
+	stmt, err := g.db.PrepareContext(ctx, query)
+	if err != nil {
+		return 0, http.StatusInternalServerError, err
+	}
+	defer stmt.Close()
+	result, err := stmt.ExecContext(ctx, entity.GroupParticipationNotification, invt.InviterID, invt.GroupId)
+	if err != nil {
+		return 0, http.StatusBadRequest, err
+	}
+	eventID, err := result.LastInsertId()
+	if err != nil {
+		return 0, http.StatusInternalServerError, err
+	}
+	return int(eventID), http.StatusOK, nil}
