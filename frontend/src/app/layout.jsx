@@ -1,6 +1,8 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { ContextProvider } from "../context/context.js";
+import Navebar from "@/components/Navebar/Navebar";
+import { GlobalProvider } from "@/contexts/GlobalContext";
+import Overlay from "@/components/Overlay/Overlay";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -23,7 +25,11 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
-        <ContextProvider>{children}</ContextProvider>
+        <GlobalProvider>
+          <Navebar />
+          <Overlay />
+          {children}
+        </GlobalProvider>
       </body>
     </html>
   );

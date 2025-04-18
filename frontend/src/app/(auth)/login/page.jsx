@@ -1,14 +1,13 @@
 "use client";
 
 import styles from "./style.module.css";
-import { useEffect, useContext } from "react";
-import { Context } from "@/context/context";
+import { useEffect} from "react";
 import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
   console.log('login page ')
-  const { username, setUsername } = useContext(Context);
-  console.log('we started with this username:', username )
+  // const { username, setUsername } = useContext(Context);
+  // console.log('we started with this username:', username )
   const router = useRouter();
 
   useEffect(() => {
@@ -34,8 +33,8 @@ export default function LoginPage() {
         });
 
         if (response.ok) {
-          setUsername(nickname); 
-          localStorage.setItem('username', nickname); // Persist to localStorage
+          //setUsername(nickname); 
+          //localStorage.setItem('username', nickname); // Persist to localStorage
           router.push("/"); // Use client-side navigation // navigat is for server side
         }
       } catch (err) {

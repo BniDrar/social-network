@@ -14,5 +14,5 @@ export function middleware(request) {
 }
 
 export const config = {
-  matcher: ["/"], // Protect these routes
+  matcher: ["/", "/chat"], // Protect these routes
 };

@@ -21,11 +21,11 @@ const ChatComponent = () => {
   //     ws.close();
   //   };
   // }, []);
-  const { username } = useContext(Context);
+  // const { username } = useContext(Context);
 
-  useEffect(() => {
-    console.log("Username in context has been set:", username); // This will log the updated username
-  }, [username]); // Track username changes
+  // useEffect(() => {
+    // console.log("Username in context has been set:", username); // This will log the updated username
+  // }, [username]); // Track username changes
 
   // return <div>Current Username: {username}</div>;
   return (
