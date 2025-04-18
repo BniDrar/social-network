@@ -9,8 +9,9 @@ import CreatePost from "@/components/CreatePost/CreatePost";
 
 
 export async function generateMetadata({ params }) {
+    const { username } = await params;
     return {
-        title: params.username,
+        title: username,
     }
 }
 
