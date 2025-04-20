@@ -131,3 +131,7 @@
         height: max-content;
     }
 }
+.navBox {
+    height: 80px;
+    width: 100%;
+}

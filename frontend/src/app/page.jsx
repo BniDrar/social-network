@@ -9,7 +9,6 @@ import {LeftSideBar, RightSideBar} from "@/components/SideBar/SideBar";
 export default function Home() {
   return (
     <>
-      <Navebar />
       <div className={styles.home}>
       <LeftSideBar />
        <main className={styles.container}>

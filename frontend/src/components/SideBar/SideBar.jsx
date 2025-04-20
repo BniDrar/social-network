@@ -9,6 +9,6 @@ export const LeftSideBar  = () => {
 
 export const RightSideBar  = () => {
     return(
-        <div className={styles.rightSideBar}>Side Bar</div>
+        <div className={styles.rightSideBar}></div>
     );
 }

@@ -13,7 +13,6 @@ export default async function GroupPage() {
   return (
     <>
       <div>
-        <Navebar />
         <CreatePost />
         <NewPostCard />
       </div>
