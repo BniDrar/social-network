@@ -1,10 +1,14 @@
 
 import styles from '@/components/SideBar/style.module.css'
 
-const SideBar  = () => {
+export const LeftSideBar  = () => {
     return (
-        <div className={styles.sideBar}>Side Bar</div>
+        <div className={styles.leftSideBar}>Side Bar</div>
     );
 }
 
-export default SideBar;
+export const RightSideBar  = () => {
+    return(
+        <div className={styles.rightSideBar}>Side Bar</div>
+    );
+}

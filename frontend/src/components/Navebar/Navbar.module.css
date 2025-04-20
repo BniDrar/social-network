@@ -6,6 +6,7 @@
     align-items: center;
     justify-content: space-between;
     padding: 0 50px;
+    position: absolute;
 }
 
 .navbar_start {
