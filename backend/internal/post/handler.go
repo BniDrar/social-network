@@ -8,6 +8,7 @@ import (
 	"socialNetwork/entity"
 	"socialNetwork/pkg/config"
 	"socialNetwork/pkg/loger"
+	"socialNetwork/pkg/utils"
 	"socialNetwork/pkg/websocket"
 
 	"github.com/google/uuid"
@@ -71,7 +72,7 @@ func (p *post) CreatePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	File, FileHeader, err := r.FormFile("image")
-	err = FileUpload(NewFileName, File, FileHeader, err)
+	err = utils.FileUpload(NewFileName, File, FileHeader, err)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "File Not Uploaded"})

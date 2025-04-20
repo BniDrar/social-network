@@ -8,7 +8,10 @@ import (
 	"socialNetwork/entity"
 	"socialNetwork/pkg/config"
 	"socialNetwork/pkg/loger"
+	"socialNetwork/pkg/utils"
 	"socialNetwork/pkg/websocket"
+
+	"github.com/google/uuid"
 )
 
 type comment struct {
@@ -33,6 +36,7 @@ func (c *comment) AddComment(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
+
 	var commnt entity.Comment
 	err := json.NewDecoder(r.Body).Decode(&commnt)
 	if err != nil {
@@ -40,6 +44,14 @@ func (c *comment) AddComment(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Invalid request body"})
 		return
 	}
+
+	fileName := uuid.NewString()
+	file, fileHeader, err := r.FormFile("image")
+	err = utils.FileUpload(fileName, file, fileHeader, err)
+	if err == nil {
+		commnt.Image = fileName
+	}
+
 	commentId, status, err := c.CreateCommentService(r.Context(), commnt)
 	if err != nil {
 		w.WriteHeader(status)
