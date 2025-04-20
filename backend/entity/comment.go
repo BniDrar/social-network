@@ -5,6 +5,5 @@ type Comment struct {
 	PostID  int    `json:"post_id"`
 	UserID  int    `json:"user_id"`
 	Content string `json:"content"`
-	Image []byte `json:"image"`
+	Image   string `json:"image"`
 }
-
