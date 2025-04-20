@@ -291,7 +291,7 @@ func (g *group) CreateEvent(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
 		return
 	}
-	// send the created event to the client
+	// send the created event id to the client
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(struct {
@@ -314,7 +314,7 @@ func (g *group) VoteEvent(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Invalid request body"})
 		return
 	}
-	// create the event in the database
+	// create the vote for event in the database
 	eventId, status, err := g.VoteEventService(r.Context(), vote)
 	if err != nil {
 		w.WriteHeader(status)
