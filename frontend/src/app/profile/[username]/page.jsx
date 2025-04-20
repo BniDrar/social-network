@@ -10,8 +10,9 @@ import Navebar from '@/components/Navebar/Navebar';
 
 
 export async function generateMetadata({ params }) {
+    const { username } = await params;
     return {
-        title: params.username,
+        title: username,
     }
 }
 

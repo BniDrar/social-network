@@ -12,7 +12,10 @@ import (
 )
 
 func WsListing(conn *websocket.Conn, ctx context.Context) error {
-	defer conn.Close()
+	// defer conn.Close() i don't see why closing the connection here ?
+	// and also closing it in the parent function
+	// so for now i removed it from here ?
+
 	m := ws.NewManager()
 	val := ctx.Value(entity.ContextID)
 	idInt, ok := val.(int)
@@ -23,7 +26,6 @@ func WsListing(conn *websocket.Conn, ctx context.Context) error {
 	}
 	m.AddClient(id, conn)
 	defer m.RemoveClient(id)
-	log.Printf("Client %d connected", id)
 	// Listen for messages from the client
 	for {
 		_, message, err := conn.ReadMessage()
