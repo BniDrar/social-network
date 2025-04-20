@@ -5,8 +5,8 @@ import styles from './page.module.css'
 "use client";
 
 import styles from "./style.module.css";
-
-import { useEffect } from "react";
+import { useEffect} from "react";
+import { useRouter } from "next/navigation";
 
 export default function page() {
   const [formData, setFormData] = useState({
@@ -40,6 +40,11 @@ export default function page() {
   }
 
 export default function LoginPage() {
+  console.log('login page ')
+  // const { username, setUsername } = useContext(Context);
+  // console.log('we started with this username:', username )
+  const router = useRouter();
+
   useEffect(() => {
     const form = document.getElementById("login-form");
     const errorMsg = document.getElementById("error-message");
@@ -50,7 +55,8 @@ export default function LoginPage() {
       const nickname = form.nickname.value;
       const password = form.password.value;
 
-      console.log(nickname, password);
+      console.warn(nickname, password);
+
       try {
         const response = await fetch("http://localhost:8080/api/login", {
           method: "POST",
@@ -62,11 +68,9 @@ export default function LoginPage() {
         });
 
         if (response.ok) {
-          // Wait briefly to ensure cookies are processed
-          setTimeout(() => {
-            console.log("Cookies:", document.cookie);
-            window.location.href = "/";
-          }, 100);
+          //setUsername(nickname); 
+          //localStorage.setItem('username', nickname); // Persist to localStorage
+          router.push("/"); // Use client-side navigation // navigat is for server side
         }
       } catch (err) {
         console.error(err.message);

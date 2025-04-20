@@ -111,6 +111,11 @@ func (app *App) createRoutes() []Route {
 			handler: app.CreatePost,
 			Role:    Auth,
 		},
+		{
+			Path:    "/api/ws",
+			handler: app.WebSocket,
+			Role:    User,
+		},
 		// {
 		// 	Path:    "/api/event/create",
 		// 	handler: app.CreateEvent,
