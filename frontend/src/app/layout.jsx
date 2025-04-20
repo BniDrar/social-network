@@ -28,6 +28,11 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         <GlobalProvider>
+<<<<<<< HEAD
+=======
+          <Navebar />
+          {/* <SideBar />  */}
+>>>>>>> yrahhaou
           <Overlay />
           {children}
         </GlobalProvider>
