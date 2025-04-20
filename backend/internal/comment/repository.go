@@ -48,3 +48,50 @@ func (c *comment) CreateCommentRepo(ctx context.Context, commnt entity.Comment) 
 	}
 	return int(id), http.StatusCreated, nil
 }
+
+func (c *comment) getPostComments(ctx context.Context, postId int) (int, []entity.Comment, error) {
+	query := `
+		SELECT 
+			comments.id,
+			users.nickname AS creater_name,
+			comments.post_id,
+			comments.user_id,
+			comments.content,
+			comments.image
+		FROM comments
+		JOIN users ON users.id = comments.user_id
+		WHERE comments.post_id = $1
+		ORDER BY comments.id ASC
+	`
+
+	rows, err := c.db.QueryContext(ctx, query, postId)
+	if err != nil {
+		return http.StatusInternalServerError, nil, err
+	}
+	defer rows.Close()
+
+	var comments []entity.Comment
+
+	for rows.Next() {
+		var comment entity.Comment
+		err := rows.Scan(
+			&comment.ID,
+			&comment.CreaterName,
+			&comment.PostID,
+			&comment.UserID,
+			&comment.Content,
+			&comment.Image,
+		)
+		if err != nil {
+			return http.StatusInternalServerError, nil, err
+		}
+		comments = append(comments, comment)
+	}
+
+	if err = rows.Err(); err != nil {
+		return http.StatusInternalServerError, nil, err
+	}
+
+	return http.StatusOK, comments, nil
+}
+

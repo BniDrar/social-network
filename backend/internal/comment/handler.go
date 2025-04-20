@@ -23,7 +23,6 @@ type comment struct {
 type Comment interface {
 	AddComment(w http.ResponseWriter, r *http.Request)
 	GetComments(w http.ResponseWriter, r *http.Request)
-	VoteComment(w http.ResponseWriter, r *http.Request)
 }
 
 /*               app     */
@@ -36,7 +35,7 @@ func (c *comment) AddComment(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
-
+	w.Header().Set("Content-Type", "application/json")
 	var commnt entity.Comment
 	err := json.NewDecoder(r.Body).Decode(&commnt)
 	if err != nil {
@@ -68,23 +67,25 @@ func (c *comment) AddComment(w http.ResponseWriter, r *http.Request) {
 }
 
 func (c *comment) GetComments(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodGet {
-		UserID := r.Context().Value(entity.ContextID).(int)
-		var Comment entity.Comment
-		err := json.NewDecoder(r.Body).Decode(&Comment)
-		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Invalid request body"})
-			return
-		}
-		Comment.UserID = UserID
-		// ---------------------------------- Service Add Comment ---------------------------------------
-
-	} else {
+	if r.Method != http.MethodGet {
 		w.WriteHeader(http.StatusMethodNotAllowed)
-		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Method Not Allowed"})
 		return
 	}
+	w.Header().Set("Content-Type", "application/json")
+	var post entity.Post
+	err := json.NewDecoder(r.Body).Decode(&post)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Invalid request body"})
+	}
+	status, commnts, err:= c.GetCommentsService(r.Context(), post)
+	if err != nil {
+		w.WriteHeader(status)
+		if status == http.StatusBadRequest {
+			json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
+		}
+		return
+	}
+	json.NewEncoder(w).Encode(commnts)
+	w.WriteHeader(status)
 }
-
-func (c *comment) VoteComment(w http.ResponseWriter, r *http.Request) {}

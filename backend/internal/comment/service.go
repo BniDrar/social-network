@@ -2,29 +2,21 @@ package comment
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
-	"io"
 	"net/http"
 
 	"socialNetwork/entity"
 )
 
-func (c *comment) ServiceGetComments(ctx context.Context, body io.ReadCloser) (err error) {
-	UserID := ctx.Value(entity.ContextID).(int)
-	var Comment entity.Comment
-	err = json.NewDecoder(body).Decode(&Comment)
-	if err != nil {
-		return
+func (c *comment) GetCommentsService(ctx context.Context, post entity.Post) (int, []entity.Comment, error) {
+	if !c.CanSeePost(ctx.Value(entity.ContextID).(int), post.ID) {
+		return http.StatusForbidden, nil, errors.New("you don't allowed for this action")
 	}
-	Comment.UserID = UserID
-	// add get comments repo
-	return
+	return c.getPostComments(ctx, post.ID)
 }
 
-
 func (c *comment) CreateCommentService(ctx context.Context, commnt entity.Comment) (int, int, error) {
-	userId:= ctx.Value(entity.ContextID).(int)
+	userId := ctx.Value(entity.ContextID).(int)
 	if !c.CanSeePost(userId, commnt.PostID) {
 		return 0, http.StatusForbidden, errors.New("you don't allowed for this action")
 	}
