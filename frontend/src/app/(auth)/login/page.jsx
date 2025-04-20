@@ -14,16 +14,21 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const loginData = {
-      username: username,
+      nickname: username,
       password: password,
     };
     let resp = await login(loginData);
     if (resp.status === 200) {
       router.push('/');
+      console.log('Login successful');
     } else {
       let errorForm = document.querySelector('#errorForm');
+      console.log(resp);
       errorForm.innerHTML = resp.error || 'An error occurred';
-      setPassword('');
+      setInterval(() => {
+        errorForm.innerHTML = '';
+      }
+      , 2000);
     }
   };
 

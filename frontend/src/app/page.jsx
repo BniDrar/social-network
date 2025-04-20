@@ -7,6 +7,7 @@ import Navebar from "@/components/Navebar/Navebar";
 import {LeftSideBar, RightSideBar} from "@/components/SideBar/SideBar";
 
 export default function Home() {
+  console.log('home page');
   return (
     <>
       <Navebar />
