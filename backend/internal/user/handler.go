@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -57,6 +58,7 @@ func (u *user) Register(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
 		return
 	}
+	log.Println(User)
 	status, err := u.RegisterService(User)
 	if err != nil {
 		w.WriteHeader(status)
@@ -82,6 +84,7 @@ func (u *user) Login(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
 		return
 	}
+	log.Println(User)
 	id, err := u.authenticateService(User.Username, User.Password)
 	if err != nil {
 		if errors.Is(err, config.ErrInvalidCredentials) {
