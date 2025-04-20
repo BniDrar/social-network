@@ -6,7 +6,6 @@ import NewPostCard from "@/components/NewPostCard/NewPostCard";
 import ProfileFriends from "@/components/ProfileFriends/ProfileFriends";
 import PostList from "@/components/PostList/PostList";
 import CreatePost from "@/components/CreatePost/CreatePost";
-import Navebar from '@/components/Navebar/Navebar';
 
 
 export async function generateMetadata({ params }) {

@@ -2,7 +2,6 @@
 import React from 'react';
 import CreatePost from '@/components./CreatePost/CreatePost';
 import NewPostCard from '@/components./NewPostCard/NewPostCard';
-import Navebar from '@/components/Navebar/Navebar';
 
 export default async function GroupPage() {
   //logic

@@ -2,7 +2,6 @@
 
 import PostList from "@/components/PostList/PostList";
 import styles from "./page.module.css";
-import Navebar from "@/components/Navebar/Navebar";
 
 import {LeftSideBar, RightSideBar} from "@/components/SideBar/SideBar";
 
