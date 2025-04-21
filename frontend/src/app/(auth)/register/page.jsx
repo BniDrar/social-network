@@ -48,20 +48,18 @@ export default function Register() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     // Here you would typically send the data to your backend
-    const formDataToSend = new FormData();
-    Object.keys(formData).forEach((key) => {
-      if (formData[key] !== null) {
-        formDataToSend.append(key, formData[key]);
-      }
-    });
+    const formDataToSend = {
+      ...formData,
+      status: 0, // private by default
+      avatar: formData.avatar,
+    }
     let resp = await register(formDataToSend);
-    if (resp.status === 200) {
+    if (resp.status === 201) {
       router.push('/login');
     } else {
       let errorForm = document.querySelector('#errorForm');
       console.log(resp);
       errorForm.innerHTML = resp.error || 'An error occurred';
-      setPassword('');
     }
   };
 
@@ -203,6 +201,7 @@ export default function Register() {
               </Link>
             </label>
           </div>
+          <div id='errorForm' className={styles.error}></div>
 
           <button type='submit' className={styles.button}>
             Create Account

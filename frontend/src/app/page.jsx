@@ -6,6 +6,7 @@ import styles from "./page.module.css";
 import {LeftSideBar, RightSideBar} from "@/components/SideBar/SideBar";
 
 export default function Home() {
+  console.log('home page');
   return (
     <>
       <div className={styles.home}>
