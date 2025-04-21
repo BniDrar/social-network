@@ -24,6 +24,7 @@
     display: block;
     /* height: 50px; */
     background-color: #0f041ac2;
+    color: var(--color-light);
     font-size: 16px;
     padding: 8px; 
     margin: 20px 0;
