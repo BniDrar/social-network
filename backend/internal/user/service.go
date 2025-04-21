@@ -50,8 +50,9 @@ func (u *user) authenticateService(email, password string) (int, error) {
 func (u *user) UserProfile(ctx context.Context, targetId int) (int, entity.User, error) {
 	user, err := u.GetUserProfileById(ctx, targetId)
 	if err != nil {
-		return http.StatusInternalServerError, user, errors.New(fmt.Sprintf("erro while getting the profile from the database, err: %v", err))
+		return http.StatusInternalServerError, user, fmt.Errorf("erro while getting the profile from the database, err: %v", err)
 	}
+	user.ProfileOwner = int(user.ID) == ctx.Value(entity.ContextID).(int)
 	if user.Status == entity.PublicUser {
 		return http.StatusOK, user, nil
 	}
@@ -59,12 +60,30 @@ func (u *user) UserProfile(ctx context.Context, targetId int) (int, entity.User,
 	exists, err := u.isFollowedBy(userId, int(user.ID))
 	if err != nil || !exists {
 		if err == nil {
-			return http.StatusUnauthorized, user, errors.New(fmt.Sprintf("you can't access to the user profile"))
+			return http.StatusUnauthorized, entity.User{},  errors.New("you can't access to the user profile")
 		}
-		return http.StatusInternalServerError, user, err
+		return http.StatusInternalServerError, entity.User{}, err
 	}
 	return http.StatusOK, user, nil
 }
+
+func (u *user) FollowersAndFollowedService(ctx context.Context, id int) (int, entity.Follows, error) {
+	var (
+		follows entity.Follows
+		err error
+	)
+	follows.Followers, err= u.GetFollowers(ctx, id)
+	if err != nil {
+		return http.StatusInternalServerError, follows, errors.New("invalid user id")
+	}
+	follows.Following, err= u.GetFollowing(ctx, id)
+	if err != nil {
+		return http.StatusInternalServerError, follows, err
+	}
+
+	return http.StatusOK, follows, nil
+}
+
 
 func (u *user) FollowService(ctx context.Context, followedID int) (int, error) {
 	userId := ctx.Value(entity.ContextID).(int)
@@ -78,17 +97,25 @@ func (u *user) FollowService(ctx context.Context, followedID int) (int, error) {
 	}
 	if user.Status == entity.PrivateUser {
 		// create notification in data base 
+		id, err := u.CreateFollowNotification(ctx, userId, int(user.ID))
+		if err != nil {
+			return http.StatusInternalServerError, err
+		}
+		print(id)
 		// notify the user by websocket
 		return http.StatusOK, nil
 	}
-    err = u.FollowRepository(userId, followedID)
+    notify, err := u.FollowRepository(userId, followedID)
     if err != nil {
         return http.StatusInternalServerError, err
     }
-    // go u.hub.SendMessage(websocket.Message{
-    //     UserID: userId,
-    //     Text:   fmt.Sprintf("%d started following %d", userId, followedID),
-    // })
+	if notify {
+		// go u.hub.SendMessage(websocket.Message{
+		//     UserID: userId,
+		//     Text:   fmt.Sprintf("%d started following %d", userId, followedID),
+		// })
+	}
+
     return http.StatusOK, nil
 }
 
@@ -100,15 +127,12 @@ func (u *user) FollowersService(ctx context.Context, followedId int) error {
 func (u *user) processRequestResponse(ctx context.Context, notification entity.Notification) (int, error) {
 	userId := ctx.Value(entity.ContextID).(int)
 	// this user is contained in the group
-	exist, err := u.GroupContainsMember(notification.GroupId, userId)
-	if !exist || err != nil {
-		if err!= nil {
-			return http.StatusInternalServerError, err
-		}
+	if notification.ReceiverID != userId {
+
 		return http.StatusForbidden, errors.New("forbidden access to this action")
 	}
 	if notification.Accepted {
-		err = u.FollowRepository(notification.SenderId, userId)
+		_, err := u.FollowRepository(notification.SenderId, userId)
 		if err != nil {
 			return http.StatusInternalServerError, err
 		}
