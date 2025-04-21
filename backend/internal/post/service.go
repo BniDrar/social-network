@@ -9,7 +9,6 @@ import (
 	"io"
 	"mime/multipart"
 	"net/http"
-	"os"
 	"strconv"
 	"strings"
 
@@ -18,7 +17,11 @@ import (
 	_ "image/gif"
 	_ "image/jpeg"
 	_ "image/png"
+
+	"github.com/google/uuid"
 )
+
+var CompletePath = "./media/"
 
 func (p *post) Service_GetAll(ctx context.Context) (data []byte, err error) {
 	id := 1 // ctx.Value(entity.ContextID).(int)
@@ -88,9 +91,10 @@ func (p *post) GetPostsByUserService(ctx context.Context, username string) (data
 	return
 }
 
-func FileUpload(NeWFileName string, File multipart.File, FileHeader *multipart.FileHeader, err error) error {
-	if err != nil {
-		return err
+func FileUpload(File multipart.File, FileHeader *multipart.FileHeader, backErr error) (FilePath string, err error) {
+	if backErr != nil {
+		err = backErr
+		return
 	}
 	fmt.Println((FileHeader.Size / 1024))
 	var FileContent []byte
@@ -102,16 +106,18 @@ func FileUpload(NeWFileName string, File multipart.File, FileHeader *multipart.F
 		}
 	}
 	if !FileIsAccepted {
-		return errors.New("file type is not accepted")
+		err = errors.New("file type is not accepted")
+		return
 	}
 	switch FileHeader.Filename[len(FileHeader.Filename)-3:] {
 	case "gif":
 		if (FileHeader.Size/1024) > 1024 || (FileHeader.Size/1024) < 10 {
-			return errors.New("file size unmatched our conditions")
+			err = errors.New("file size unmatched our conditions")
 		}
 	default:
 		if (FileHeader.Size/1024) > 500 || (FileHeader.Size/1024) < 10 {
-			return errors.New("file size unmatched our conditions")
+			err = errors.New("file size unmatched our conditions")
+			return
 		}
 	}
 	FileIsAccepted = false
@@ -126,8 +132,10 @@ func FileUpload(NeWFileName string, File multipart.File, FileHeader *multipart.F
 		fmt.Println(FileIsAccepted, " : ", Type, " == ", FileType)
 	}
 	if !FileIsAccepted {
-		return errors.New("file type not matched")
+		err = errors.New("file type not matched")
 	}
-	os.WriteFile("../"+NeWFileName+".png", FileContent, 0o444)
-	return nil
+	if err == nil {
+		FilePath = CompletePath + uuid.NewString()
+	}
+	return
 }
