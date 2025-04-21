@@ -18,7 +18,6 @@ type Invitation struct {
 	GroupId int `json:"group_id"`
 	InviterID int `json:"inviter_id"`
 	InvitedID int `json:"invited_id"`
-	RequesterId int `json:"requested_id"`
 }
 
 const (

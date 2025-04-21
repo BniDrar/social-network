@@ -1,0 +1,11 @@
+.leftSideBar {
+    background-color: white;
+    justify-content: start;
+    width: 20%;
+}
+
+.rightSideBar{
+    background-color: white;
+    justify-content: end;
+    width: 20%;
+}

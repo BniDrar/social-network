@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import Post from "../Post/Post";
 import { validbackendUrl } from "@/utils/ustil";
+import styles from "./posts.module.css"
 
 const PostList = () => {
   const [posts, setPosts] = useState([]);
@@ -36,7 +37,7 @@ const PostList = () => {
   console.log('fetched posts:', posts)
  
   return (
-    <section>
+    <section className={styles.section}>
       {posts.map((post) => (
         <Post key={post.id} data={post} />
       ))}

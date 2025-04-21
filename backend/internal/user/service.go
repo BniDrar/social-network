@@ -9,8 +9,6 @@ import (
 	"socialNetwork/entity"
 	"socialNetwork/pkg/config"
 	"socialNetwork/pkg/utils"
-
-	"golang.org/x/crypto/bcrypt"
 )
 
 func (s *user) RegisterService(user entity.User) (int, error) {
@@ -19,11 +17,12 @@ func (s *user) RegisterService(user entity.User) (int, error) {
 		return http.StatusBadRequest, err
 	}
 	// hash password
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+	hashedPassword, err := utils.HashPassword(user.Password)
 	if err != nil {
 		return http.StatusInternalServerError, err
 	}
-	user.Password = string(hashedPassword)
+	user.Password = hashedPassword
+	// chek if user Email already exists
 	_, err = s.GetUserByUsername(user.Email)
 	if err != nil {
 		return http.StatusBadRequest, errors.New("email already exists")
@@ -44,19 +43,14 @@ func (s *user) RegisterService(user entity.User) (int, error) {
 	return http.StatusCreated, nil
 }
 
-func (u *user) LogoutService(user entity.User) error {
-	// do something
-	return nil
-}
-
 func (u *user) authenticateService(email, password string) (int, error) {
 	return u.authenticateRepo(email, password)
-}
+} 
 
 func (u *user) UserProfile(ctx context.Context, targetId int) (int, entity.User, error) {
 	user, err := u.GetUserProfileById(ctx, targetId)
 	if err != nil {
-		return http.StatusInternalServerError, user, fmt.Errorf("erro while getting the profile from the database, err: %v", err)
+		return http.StatusInternalServerError, user, errors.New(fmt.Sprintf("erro while getting the profile from the database, err: %v", err))
 	}
 	if user.Status == entity.PublicUser {
 		return http.StatusOK, user, nil

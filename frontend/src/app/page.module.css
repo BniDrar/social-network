@@ -1,4 +1,14 @@
+.home {
+    width:100%;
+    display: flex;
+}
+
 .postsContainer {
     max-width: 600px;
     margin: 0 auto;
+}
+
+.container{
+    background-color: rgb(29, 29, 29);
+    width:100%
 }

@@ -121,22 +121,6 @@ func (app *App) createRoutes() []Route {
 			handler: app.GetPosts,
 			Role:    User,
 		},
-
-		{
-			Path:    "/api/posts/{username}",
-			handler: app.GetPostByUsername,
-			Role:    User,
-		},
-		{
-			Path:    "/api/post/{id}",
-			handler: app.GetPost,
-			Role:    User,
-		},
-		{
-			Path:    "/api/create/post",
-			handler: app.CreatePost,
-			Role:    User,
-		},
 		{
 			Path:    "/api/ws",
 			handler: app.WebSocket,

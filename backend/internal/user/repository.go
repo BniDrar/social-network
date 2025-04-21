@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"log"
 
 	"socialNetwork/entity"
 	"socialNetwork/pkg/config"
@@ -17,7 +16,7 @@ import (
 
 func (r *user) GetUserProfileById(ctx context.Context, targetId int) (entity.User, error) {
 	var user entity.User
-	requesterId := ctx.Value(entity.ContextID)
+	requesterId := ctx.Value(entity.ContextID).(int)
 	query := `
 		SELECT 
 			u.id, u.nickname, u.email, u.password, u.avatar, 
@@ -39,6 +38,7 @@ func (r *user) GetUserProfileById(ctx context.Context, targetId int) (entity.Use
 		&user.First, &user.Last, &user.DateOfBirth, &user.AboutMe, &user.Status,
 		&user.FollowersCount, &user.FollowingCount, &user.FollowingState,
 	)
+
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return user, fmt.Errorf("user not found")
@@ -48,6 +48,7 @@ func (r *user) GetUserProfileById(ctx context.Context, targetId int) (entity.Use
 
 	return user, nil
 }
+
 
 // this function is used to get user by username
 func (r *user) GetUserByUsername(username string) (entity.User, error) {
@@ -203,7 +204,7 @@ func (u *user) authenticateRepo(email, password string) (int, error) {
 	// Retrieve the id and hashed password associated with the given email. If
 	// no matching email exists we return the ErrInvalidCredentials error.
 	var id int
-	var hashedPassword string
+	var hashedPassword []byte
 	stmt := "SELECT id, password FROM users WHERE email = ? OR nickname  = ?"
 	err := u.db.QueryRow(stmt, email, email).Scan(&id, &hashedPassword)
 	if err != nil {
@@ -215,11 +216,9 @@ func (u *user) authenticateRepo(email, password string) (int, error) {
 	}
 	// Check whether the hashed password and plain-text password provided match.
 	// If they don't, we return the ErrInvalidCredentials error.
-	
-	err = bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
+	err = bcrypt.CompareHashAndPassword(hashedPassword, []byte(password))
 	if err != nil {
 		if errors.Is(err, bcrypt.ErrMismatchedHashAndPassword) {
-			log.Println("password is not correct", hashedPassword, password)
 			return 0, config.ErrInvalidCredentials
 		} else {
 			return 0, err
@@ -276,7 +275,7 @@ func (u *user) isFollowedBy(follower, followed int) (bool, error) {
 	return exists, nil
 }
 
-func (u *user) IsFollowingEither(follower, followed int) (bool, error) {
+func (u *user) isFollowingEither(follower, followed int) (bool, error) {
 	query := `SELECT EXISTS(
                 SELECT 1 FROM follows WHERE (follower_id = $1 AND followed_id = $2) 
                 OR (follower_id = $2 AND followed_id = $1)

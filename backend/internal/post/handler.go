@@ -3,15 +3,15 @@ package post
 import (
 	"database/sql"
 	"encoding/json"
+	"io"
 	"net/http"
+	"os"
 
 	"socialNetwork/entity"
 	"socialNetwork/pkg/config"
 	"socialNetwork/pkg/loger"
 	"socialNetwork/pkg/utils"
 	"socialNetwork/pkg/websocket"
-
-	"github.com/google/uuid"
 )
 
 type Post interface {
@@ -61,23 +61,24 @@ func (p *post) ReactPost(w http.ResponseWriter, r *http.Request) {
 }
 
 func (p *post) CreatePost(w http.ResponseWriter, r *http.Request) {
-	NewFileName := uuid.NewString()
-	post := entity.Post{
-		Image: NewFileName,
-	}
-	err := p.Service_CreateOne(r.Context(), r.Body, r.Form["users"], post)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Invalid request body"})
-		return
-	}
 	File, FileHeader, err := r.FormFile("image")
-	err = utils.FileUpload(NewFileName, File, FileHeader, err)
+	FilePath, err := FileUpload(File, FileHeader, err)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "File Not Uploaded"})
 		return
 	}
+	post := entity.Post{
+		Image: FilePath,
+	}
+	err = p.Service_CreateOne(r.Context(), r.Body, r.Form["users"], post)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Invalid request body"})
+		return
+	}
+	Content, _ := io.ReadAll(File)
+	os.WriteFile(FilePath, Content, 0o444)
 }
 
 func (p *post) GetPost(w http.ResponseWriter, r *http.Request) {

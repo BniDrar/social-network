@@ -30,6 +30,7 @@ type Group interface {
 type group struct {
 	Hub   *websocket.Hub
 	db    *sql.DB
+	ws websocket.WsManager
 	loger loger.CstmLogger
 }
 
@@ -152,7 +153,7 @@ func (g *group) GetAllGroups(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(groups)
 }
 
-func (g *group)	GetGroupMembers(w http.ResponseWriter, r *http.Request){
+func (g *group) GetGroupMembers(w http.ResponseWriter, r *http.Request) {
 	groupID, err := strconv.Atoi(r.URL.Query().Get("id"))
 	if err != nil || groupID <= 0 {
 		w.WriteHeader(http.StatusBadRequest)
@@ -206,14 +207,14 @@ func (g *group) InvitationResponse(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Invalid request body"})
 	}
-	status, err:= g.proccessInvitationResponse(r.Context(), notf) 
+	status, err := g.proccessInvitationResponse(r.Context(), notf)
 	if err != nil {
 		w.WriteHeader(status)
 		g.loger.Error.Println(err)
 		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
 		return
 	}
-	w.WriteHeader(status)	
+	w.WriteHeader(status)
 }
 
 func (g *group) RequestToJoinGroup(w http.ResponseWriter, r *http.Request) {
@@ -231,13 +232,17 @@ func (g *group) RequestToJoinGroup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	status, err := g.requestToJoingGroupService(r.Context(), invitation)
+	notificationID, status, err := g.requestToJoingGroupService(r.Context(), invitation)
 	if err != nil {
 		if status == http.StatusBadRequest {
 			json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "invalid request data"})
 		}
 	}
 	w.WriteHeader(status)
+	type notification struct {
+		ID int `json:"id"`
+	}
+	json.NewEncoder(w).Encode(notification{ID: notificationID})
 }
 
 func (g *group) RequestToJoinResponse(w http.ResponseWriter, r *http.Request) {
@@ -247,13 +252,22 @@ func (g *group) RequestToJoinResponse(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Content-Type", "application/json")
 
-	var invitation entity.Invitation
-	err := json.NewDecoder(r.Body).Decode(&invitation)
+	var notif entity.Notification
+	err := json.NewDecoder(r.Body).Decode(&notif)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "invalid request body"})
 		return
 	}
+
+	status, err := g.processRequestToJoinResponse(r.Context(), notif)
+	if err != nil {
+		w.WriteHeader(status)
+		g.loger.Error.Println(err)
+		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
+		return
+	}
+	w.WriteHeader(status)
 }
 
 /*------------- events things ---------------*/
@@ -277,7 +291,7 @@ func (g *group) CreateEvent(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
 		return
 	}
-	// send the created event to the client
+	// send the created event id to the client
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(struct {
@@ -300,7 +314,7 @@ func (g *group) VoteEvent(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Invalid request body"})
 		return
 	}
-	// create the event in the database
+	// create the vote for event in the database
 	eventId, status, err := g.VoteEventService(r.Context(), vote)
 	if err != nil {
 		w.WriteHeader(status)

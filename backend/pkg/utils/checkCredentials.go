@@ -10,6 +10,7 @@ import (
 	"socialNetwork/entity"
 
 	"github.com/google/uuid"
+	"golang.org/x/crypto/bcrypt"
 )
 
 // this function is used to validate the user credentials before saving to the database
@@ -112,6 +113,24 @@ func isValidNickName(name string) bool {
 
     // Check for consecutive periods
     return !strings.Contains(name, "..")
+}
+
+// this function is used to compare the hashed password with the plain password
+func ComparePasswords(hashedPassword, password string) error {
+	err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
+	if err != nil {
+		return fmt.Errorf("invalid password %v", err)
+	}
+	return nil
+}
+
+// this function is used to hash the password
+func HashPassword(password string) (string, error) {
+	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return "", fmt.Errorf("error while hashing the password %v", err)
+	}
+	return string(hash), nil
 }
 
 // this function is used to generate the token

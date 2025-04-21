@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"mime/multipart"
+	"net/http"
 	"strconv"
 
 	"socialNetwork/entity"
@@ -12,7 +14,11 @@ import (
 	_ "image/gif"
 	_ "image/jpeg"
 	_ "image/png"
+
+	"github.com/google/uuid"
 )
+
+var CompletePath = "./media/"
 
 func (p *post) Service_GetAll(ctx context.Context) (data []byte, err error) {
 	id := 1 // ctx.Value(entity.ContextID).(int)
@@ -78,6 +84,55 @@ func (p *post) GetPostsByUserService(ctx context.Context, username string) (data
 	data, err = json.Marshal(posts)
 	if err != nil {
 		return
+	}
+	return
+}
+
+func FileUpload(File multipart.File, FileHeader *multipart.FileHeader, backErr error) (FilePath string, err error) {
+	if backErr != nil {
+		err = backErr
+		return
+	}
+	fmt.Println((FileHeader.Size / 1024))
+	var FileContent []byte
+	var FileIsAccepted bool
+	AcceptedTypes := []string{"png", "gif", "jpg", "jpeg"}
+	for _, Type := range AcceptedTypes {
+		if strings.HasSuffix(FileHeader.Filename, Type) {
+			FileIsAccepted = true
+		}
+	}
+	if !FileIsAccepted {
+		err = errors.New("file type is not accepted")
+		return
+	}
+	switch FileHeader.Filename[len(FileHeader.Filename)-3:] {
+	case "gif":
+		if (FileHeader.Size/1024) > 1024 || (FileHeader.Size/1024) < 10 {
+			err = errors.New("file size unmatched our conditions")
+		}
+	default:
+		if (FileHeader.Size/1024) > 500 || (FileHeader.Size/1024) < 10 {
+			err = errors.New("file size unmatched our conditions")
+			return
+		}
+	}
+	FileIsAccepted = false
+	reader := bufio.NewReader(File)
+	FileContent, _ = io.ReadAll(reader)
+	AcceptedTypes = []string{"image/png", "image/jpg", "image/jpeg", "image/gif"}
+	FileType := http.DetectContentType((FileContent))
+	for _, Type := range AcceptedTypes {
+		if Type == FileType {
+			FileIsAccepted = true
+		}
+		fmt.Println(FileIsAccepted, " : ", Type, " == ", FileType)
+	}
+	if !FileIsAccepted {
+		err = errors.New("file type not matched")
+	}
+	if err == nil {
+		FilePath = CompletePath + uuid.NewString()
 	}
 	return
 }
