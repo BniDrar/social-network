@@ -12,6 +12,7 @@ func (c *comment) GetCommentsService(ctx context.Context, post entity.Post) (int
 	if !c.CanSeePost(ctx.Value(entity.ContextID).(int), post.ID) {
 		return http.StatusForbidden, nil, errors.New("you don't allowed for this action")
 	}
+	
 	return c.getPostComments(ctx, post.ID)
 }
 

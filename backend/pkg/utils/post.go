@@ -7,12 +7,15 @@ import (
 	"io"
 	"mime/multipart"
 	"net/http"
-	"os"
 	"strings"
 	"unicode"
 
 	"socialNetwork/entity"
+
+	"github.com/google/uuid"
 )
+
+var CompletePath = "./media/"
 
 func CheckCommentsCredentials(comnt entity.Comment) bool {
 	return len(removeAllWhitespace(comnt.Content)) > 0 &&
@@ -29,9 +32,10 @@ func removeAllWhitespace(s string) string {
 	}, s)
 }
 
-func FileUpload(NeWFileName string, File multipart.File, FileHeader *multipart.FileHeader, err error) error {
-	if err != nil {
-		return err
+func FileUpload(File multipart.File, FileHeader *multipart.FileHeader, backErr error) (FilePath string, err error) {
+	if backErr != nil {
+		err = backErr
+		return
 	}
 	fmt.Println((FileHeader.Size / 1024))
 	var FileContent []byte
@@ -43,16 +47,18 @@ func FileUpload(NeWFileName string, File multipart.File, FileHeader *multipart.F
 		}
 	}
 	if !FileIsAccepted {
-		return errors.New("file type is not accepted")
+		err = errors.New("file type is not accepted")
+		return
 	}
 	switch FileHeader.Filename[len(FileHeader.Filename)-3:] {
 	case "gif":
 		if (FileHeader.Size/1024) > 1024 || (FileHeader.Size/1024) < 10 {
-			return errors.New("file size unmatched our conditions")
+			err = errors.New("file size unmatched our conditions")
 		}
 	default:
 		if (FileHeader.Size/1024) > 500 || (FileHeader.Size/1024) < 10 {
-			return errors.New("file size unmatched our conditions")
+			err = errors.New("file size unmatched our conditions")
+			return
 		}
 	}
 	FileIsAccepted = false
@@ -67,8 +73,10 @@ func FileUpload(NeWFileName string, File multipart.File, FileHeader *multipart.F
 		fmt.Println(FileIsAccepted, " : ", Type, " == ", FileType)
 	}
 	if !FileIsAccepted {
-		return errors.New("file type not matched")
+		err = errors.New("file type not matched")
 	}
-	os.WriteFile("../"+NeWFileName+".png", FileContent, 0o444)
-	return nil
+	if err == nil {
+		FilePath = CompletePath + uuid.NewString()
+	}
+	return
 }

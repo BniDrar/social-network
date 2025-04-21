@@ -10,6 +10,7 @@ import (
 	"socialNetwork/entity"
 	"socialNetwork/pkg/config"
 	"socialNetwork/pkg/loger"
+	"socialNetwork/pkg/utils"
 	"socialNetwork/pkg/websocket"
 )
 
@@ -61,7 +62,7 @@ func (p *post) ReactPost(w http.ResponseWriter, r *http.Request) {
 
 func (p *post) CreatePost(w http.ResponseWriter, r *http.Request) {
 	File, FileHeader, err := r.FormFile("image")
-	FilePath, err := FileUpload(File, FileHeader, err)
+	FilePath, err := utils.FileUpload(File, FileHeader, err)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "File Not Uploaded"})
