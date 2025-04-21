@@ -4,11 +4,11 @@ import (
 	"database/sql"
 	"encoding/json"
 	"net/http"
-	"time"
 
 	"socialNetwork/entity"
 	"socialNetwork/pkg/config"
 	"socialNetwork/pkg/loger"
+	"socialNetwork/pkg/utils"
 	"socialNetwork/pkg/websocket"
 )
 
@@ -19,9 +19,8 @@ type comment struct {
 }
 
 type Comment interface {
-	Post(w http.ResponseWriter, r *http.Request)
-	Get(w http.ResponseWriter, r *http.Request)
-	Vote(w http.ResponseWriter, r *http.Request)
+	AddComment(w http.ResponseWriter, r *http.Request)
+	GetComments(w http.ResponseWriter, r *http.Request)
 }
 
 /*               app     */
@@ -29,73 +28,65 @@ func NewComment(dep *config.Dependencies) Comment {
 	return &comment{db: dep.DB, loger: *dep.Loger, Hub: dep.Hub}
 }
 
-func (c *comment) Post(w http.ResponseWriter, r *http.Request) {
-	id := r.Context().Value(entity.ContextID).(int)
-	prep, err := c.db.PrepareContext(r.Context(), ``)
-	if err != nil {
+func (c *comment) AddComment(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
-	comment := entity.Comment{}
-	err = json.NewDecoder(r.Body).Decode(&comment)
+	w.Header().Set("Content-Type", "application/json")
+	var commnt entity.Comment
+	err := json.NewDecoder(r.Body).Decode(&commnt)
 	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Invalid request body"})
 		return
 	}
-	_, err = prep.ExecContext(r.Context(), id, comment.Content, comment.PostID, time.Now())
-	if err != nil {
-		return
-	}
-	w.Write([]byte(`{
-		result:"done"
-	}`))
-}
 
-func (c *comment) Get(w http.ResponseWriter, r *http.Request) {
-	id := r.Context().Value(entity.ContextID).(int)
-	prep, err := c.db.PrepareContext(r.Context(), ``)
-	if err != nil {
-		return
-	}
-	comment := entity.Comment{}
-	err = json.NewDecoder(r.Body).Decode(&comment)
-	if err != nil {
-		return
-	}
-	comments := []entity.Comment{}
-	res, err := prep.QueryContext(r.Context(), id, comment.PostID)
-	if err != nil {
-		return
-	}
-	for res.Next() {
-		comment := entity.Comment{}
-		err = res.Scan(&comment.ID, &comment.UserID, &comment.Content, &comment.PostID)
+	file, fileHeader, err := r.FormFile("image")
+	if err == nil {
+
+		commnt.Image, err = utils.FileUpload(file, fileHeader, err)
 		if err != nil {
-			return
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
 		}
-		comments = append(comments, comment)
 	}
-	data, err := json.Marshal(comments)
+
+	commentId, status, err := c.CreateCommentService(r.Context(), commnt)
 	if err != nil {
+		w.WriteHeader(status)
+		if status == http.StatusBadRequest {
+			json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
+		}
 		return
 	}
-	w.Write(data)
+	json.NewEncoder(w).Encode(struct {
+		ID int `json:"id"`
+	}{
+		ID: commentId,
+	})
 }
 
-func (c *comment) Vote(w http.ResponseWriter, r *http.Request) {
-	id := r.Context().Value(entity.ContextID).(int)
-	prep, err := c.db.PrepareContext(r.Context(), ``)
-	if err != nil {
+func (c *comment) GetComments(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
-	react := entity.Reaction{}
-	err = json.NewDecoder(r.Body).Decode(&react)
+	w.Header().Set("Content-Type", "application/json")
+	var post entity.Post
+	err := json.NewDecoder(r.Body).Decode(&post)
 	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Invalid request body"})
+	}
+	status, commnts, err := c.GetCommentsService(r.Context(), post)
+	if err != nil {
+		w.WriteHeader(status)
+		if status == http.StatusBadRequest {
+			json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
+		}
 		return
 	}
-	_, err = prep.Exec(id, react.ID, react.Status)
-	if err != nil {
-		return
-	}
-	w.Write([]byte(`{
-		result: "done"
-	}`))
+	json.NewEncoder(w).Encode(commnts)
+	w.WriteHeader(status)
 }

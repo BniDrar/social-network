@@ -2,51 +2,82 @@ package post
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
+	"io"
+	"strconv"
+
 	"socialNetwork/entity"
+
+	_ "image/gif"
+	_ "image/jpeg"
+	_ "image/png"
 )
 
-// func (p *post) CreatePostService(post entity.Post, id int) (int, int, error) {
-// 	var (
-// 		status, GroupID int
-// 		err error
-// 	)
-// 	switch post.Status {
-// 	case 0:
-// 		//repo => create group
-// 		GroupID, status, err = p.CreateGroup(post, id)
-// 		post.GroupID = GroupID
-// 		if err != nil {
-// 			return 0, status, err
-// 		}
-// 	default:
-// 		if !(post.Status == 1 || post.Status == 2) {
-// 			return 0, http.StatusBadRequest, errors.New("invalid post status")
-// 		}
-// 	}
-
-// 	// repo => create post
-// 	return p.CreatePostRepo(post, id)
-// }
-
-// get
-// 0 => table(group) contains user id
-// 1 => table(follows) contains user id
-// 2 => get direct
-
-// react
-// 0 => table(group) contains user id
-// 1 => table(follows) contains user id
-// if not status forbidden
-
-func (p *post) GetPostsByUserService(ctx context.Context, limit, offset int) ([]entity.Post, error) {
-	userID, ok := ctx.Value(entity.ContextID).(int)
-	if !ok {
-		return nil, errors.New("user id not found in context")
-	}
-	groups, err := p.GetPostsByUserID(ctx, userID, limit, offset)
+func (p *post) Service_GetAll(ctx context.Context) (data []byte, err error) {
+	id := 1 // ctx.Value(entity.ContextID).(int)
+	posts, err := p.Repo_GetAll(ctx, id)
 	if err != nil {
-		return nil, err
+		return
 	}
-	return groups, nil
+	data, err = json.Marshal(posts)
+	return
+}
+
+func (p *post) Service_GetOne(ctx context.Context, post_str string) (data []byte, err error) {
+	id := 1 // ctx.Value(entity.ContextID).(int)
+	post_id, err := strconv.Atoi(post_str)
+	if err != nil {
+		return
+	}
+	if p.Repo_UserCanPost(ctx, id, post_id) {
+		var post entity.Post
+		post, err = p.Repo_GetOne(ctx, post_id)
+		if err != nil {
+			return
+		}
+		data, err = json.Marshal(post)
+		return
+	} else {
+		err = errors.New("you can't see post")
+		return
+	}
+}
+
+func (p *post) Service_CreateOne(ctx context.Context, body io.ReadCloser, users []string, post entity.Post) error {
+	id := 1 // ctx.Value(entity.ContextID).(int)
+	ImageFileName := post.Image
+	json.NewDecoder(body).Decode(&post)
+	post.Image = ImageFileName
+	err := post.Validate(users)
+	if err != nil {
+		return errors.New(string("{ error: " + err.Error() + " }"))
+	}
+	p.Repo_CreatePost(ctx, id, post)
+	return nil
+}
+
+func (p *post) Service_React(ctx context.Context, body io.ReadCloser) (err error) {
+	id := 1 // ctx.Value(entity.ContextID).(int)
+	react := entity.Vote{}
+	json.NewDecoder(body).Decode(&react)
+	if p.Repo_UserCanPost(ctx, id, react.ID) {
+		err = p.Repo_React(ctx, id, react)
+	} else {
+		err = errors.New("you can't see the post")
+	}
+	return
+}
+
+func (p *post) GetPostsByUserService(ctx context.Context, username string) (data []byte, err error) {
+	userID := 1 // ctx.Value(entity.ContextID).(int)
+	posts, err := p.GetPostsByUserID(ctx, userID, username)
+	if err != nil {
+		return
+	}
+	data, err = json.Marshal(posts)
+	if err != nil {
+		return
+	}
+	return
 }

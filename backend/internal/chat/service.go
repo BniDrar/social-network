@@ -5,11 +5,14 @@ import (
 	"context"
 	"errors"
 	"log"
+
 	"socialNetwork/entity"
 	ws "socialNetwork/pkg/websocket"
 
 	"github.com/gorilla/websocket"
 )
+
+var Manager = ws.NewManager()
 
 func WsListing(conn *websocket.Conn, ctx context.Context) error {
 	// defer conn.Close() i don't see why closing the connection here ?
@@ -37,7 +40,7 @@ func WsListing(conn *websocket.Conn, ctx context.Context) error {
 			return err
 		}
 		message = bytes.TrimSpace(bytes.Replace(message, []byte("\n"), []byte(" "), -1))
-		m.SendMessage(id, message)
+		Manager.SendMessage(id, message)
 		log.Printf("received message from Client %d: %s", id, message)
 	}
 }
