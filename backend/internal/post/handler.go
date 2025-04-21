@@ -10,7 +10,6 @@ import (
 	"socialNetwork/entity"
 	"socialNetwork/pkg/config"
 	"socialNetwork/pkg/loger"
-	"socialNetwork/pkg/utils"
 	"socialNetwork/pkg/websocket"
 )
 
