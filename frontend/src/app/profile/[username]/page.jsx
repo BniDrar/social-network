@@ -26,10 +26,6 @@ const ProfilePage = async ({ params }) => {
                         <Image className={styles.avatar} src={avatar} width={150} height={150} alt="" />
                         <h1 className={styles.headerInfoUsername}>{username}</h1>
                     </div>
-                    {/* <div className={styles.headerInfoEnd}>
-                        <button className={styles.editBtn}>Edit Profile</button>
-                        <button className={styles.editBtn}>Create Post</button>
-                    </div> */}
                 </div>
                 <CreatePost />
             </div>

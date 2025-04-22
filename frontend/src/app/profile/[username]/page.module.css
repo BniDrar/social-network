@@ -1,6 +1,6 @@
 .header {
-    background: #0f0f0f;
-    background: linear-gradient(0deg, #252525 0%, #070707 100%);
+    background: var(--cl-bg-primary);
+    background: linear-gradient(0deg, var(--cl-bg-primary) 0%, var(--cl-bg-secondary) 100%);
 }
 
 .coverImg {
@@ -34,6 +34,7 @@
 .headerInfoUsername {
     position: relative;
     left: calc(150px + 20px);
+    color: var(--cl-text-primary);
     @media(max-width: 720px) {
         left: calc(120px + 20px);
         font-size: 22px;
@@ -45,27 +46,11 @@
     top: -50px;
     left: 50px;
     border-radius: 50%;
-    border: 7px solid #252525;
+    border: 7px solid var(--cl-bg-secondary);
     @media(max-width: 720px) {
         width: 120px;
         height: 120px;
     }
-}
-
-.editBtn {
-    font-size: 18px;
-    font-weight: 700;
-    color: white;
-    background-color: #1976D2;
-    padding: 8px 18px;
-    margin: 0 10px;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-}
-
-.editBtn:hover {
-    background-color: #1565C0;
 }
 
 .content {

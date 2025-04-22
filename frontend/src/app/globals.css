@@ -21,7 +21,36 @@
   --lg: 960px;
   --xl: 1140px;
   --xxl: 1320px;
+
+
+  /* --------- theme --------- */
+  --cl-text-primary: #0d2065;
+  --cl-text-secondary: #67739e;
+  --cl-bg-primary: #f0ede6;
+  --cl-bg-secondary: #e2f0ff;
+  /* ------------------------- */
+
+  /* -------- static colors -------- */
+  --cl-primary: #0e2065;
+  --cl-secondary: #015f9a;
+  --cl-danger: #f42929;
+  --cl-warning: #f9fb07;
+  --cl-success: #41fb3a;
+  --cl-light: #fff;
+  --cl-dark: #000;
+  /* ------------------------------- */
 }
+
+:root.dark {
+  --cl-text-primary: #FFFFFF;
+  --cl-text-secondary: #E4E4E4;
+  --cl-bg-primary: #121212;
+  --cl-bg-secondary: #1A1A1A;
+}
+
+
+
+
 
 /* the new theam */
 /* :root {
@@ -41,12 +70,7 @@
 
 
 
-/* @media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --color-dark2: #ededed;
-  }
-} */
+
 
 html,
 body {
@@ -56,12 +80,11 @@ body {
 
 body {
   color: #ffffff;
-  background: #0a0a0a;
+  background: #000000;
   font-family: Arial, Helvetica, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   height: 100vh;
-
 }
 
 * {
