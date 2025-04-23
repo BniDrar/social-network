@@ -1,18 +1,23 @@
 import styles from "./contacs.module.css";
 import profile from "@/assets/images/profile.webp";
-import Image from 'next/image';
+import Image from "next/image";
+import GetLastChats from "@/services/lastChats";
 
+ function Contacs() {
+  const contacts =  GetLastChats();
 
-function Contacs() {
+  console.log("Contacts container:", contacts);
+
   return (
     <div className={styles.contacts}>
-      {Array.from({ length: 10 }).map((_, i) => (
-        <Contact key={i} />
+      {Array.from({ length: 10 }).map((user, i) => (
+        <Contact user={user} key={i} />
       ))}
     </div>
   );
 }
-function Contact() {
+function Contact({user}) {
+  console.log(user.name)
   return (
     <div className={styles.contact}>
       <div className={styles.picContainer}>
