@@ -6,20 +6,9 @@
     height: calc(100vh - 80px);
 }
 
-.search {
-    background-color: aqua;
-    height: 20%;
-    border-bottom: 1px solid white;
-}
-
-.contacts {
-    background-color: orangered;
-    height: 60%;
-    border-bottom: 1px solid white;
-}
 
 .events {
-    background-color: rgb(255, 2, 242);
-    height: 30%;
+    background-color: var(--primary-color) ;
+    height: 150px;
     border-bottom: 1px solid white;
 }

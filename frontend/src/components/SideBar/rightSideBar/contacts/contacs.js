@@ -23,8 +23,6 @@ function Contact() {
           src={profile}
           className={styles.img}
         />
-        :
-        <img src="profile.webp" alt="profile" className={styles.img} />
       </div>
       <div className={styles.info}>
         <p>user name</p>
