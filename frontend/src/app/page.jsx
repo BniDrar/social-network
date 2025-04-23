@@ -2,23 +2,21 @@
 
 import PostList from "@/components/PostList/PostList";
 import styles from "./page.module.css";
-import Navebar from "@/components/Navebar/Navebar";
-
-import {LeftSideBar, RightSideBar} from "@/components/SideBar/SideBar";
+import { LeftSideBar } from "@/components/SideBar/leftSideBar/leftSideBar";
+import { RightSideBar } from "@/components/SideBar/rightSideBar/rightSideBar";
 
 export default function Home() {
-  console.log('home page');
+  console.log("home page");
   return (
     <>
-      <Navebar />
       <div className={styles.home}>
-      <LeftSideBar />
-       <main className={styles.container}>
+        <LeftSideBar />
+        <main className={styles.container}>
           <div className={styles.postsContainer}>
             <PostList />
           </div>
         </main>
-      <RightSideBar/>
+        <RightSideBar />
       </div>
     </>
   );

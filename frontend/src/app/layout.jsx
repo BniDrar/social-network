@@ -2,7 +2,6 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Navebar from "@/components/Navebar/Navebar";
-import SideBar from "@/components/SideBar/SideBar";
 import { GlobalProvider } from "@/contexts/GlobalContext";
 import Overlay from "@/components/Overlay/Overlay";
 
