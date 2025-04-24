@@ -29,7 +29,7 @@ const Post = ({ data }) => {
                 {/* <img src="" className={styles.post_image} alt="post image" /> */}
                 <br />
                 {data.image.length > 0 ? 
-                <Image width={600} height={600} alt='post' src={postImage} className={styles.post_image} />: 
+                <Image /*width={600} height={600}*/ alt='post' src={postImage} className={styles.post_image} />: 
                 ''}
                 
                 <div className={styles.postInfo}>

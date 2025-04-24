@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import styles from './login.module.css';
-import { login } from '@/services/auth';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import styles from "./login.module.css";
+import { login } from "@/services/auth";
 
 export default function Login() {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const router = useRouter();
 
   const handleSubmit = async (e) => {
@@ -18,17 +18,15 @@ export default function Login() {
       password: password,
     };
     let resp = await login(loginData);
-    if (resp.status === 200) {
-      router.push('/');
-      console.log('Login successful');
+    if (resp.ok) {
+      window.location.href = "/";
     } else {
-      let errorForm = document.querySelector('#errorForm');
+      let errorForm = document.querySelector("#errorForm");
       console.log(resp);
-      errorForm.innerHTML = resp.error || 'An error occurred';
+      errorForm.innerHTML = resp.error || "An error occurred";
       setInterval(() => {
-        errorForm.innerHTML = '';
-      }
-      , 2000);
+        errorForm.innerHTML = "";
+      }, 2000);
     }
   };
 
@@ -41,8 +39,8 @@ export default function Login() {
         <form onSubmit={handleSubmit} className={styles.form}>
           <div className={styles.inputGroup}>
             <input
-              type='text'
-              placeholder='Email or Username'
+              type="text"
+              placeholder="Email or Username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               className={styles.input}
@@ -52,8 +50,8 @@ export default function Login() {
 
           <div className={styles.inputGroup}>
             <input
-              type='password'
-              placeholder='Password'
+              type="password"
+              placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className={styles.input}
@@ -63,21 +61,21 @@ export default function Login() {
 
           <div className={styles.options}>
             <label className={styles.remember}>
-              <input type='checkbox' disabled /> Remember me
+              <input type="checkbox" disabled /> Remember me
             </label>
-            <Link href='/forgot-password' className={styles.forgot}>
+            <Link href="/forgot-password" className={styles.forgot}>
               Forgot password?
             </Link>
           </div>
-          <div className={styles.error} id='errorForm'></div>
-          <button type='submit' className={styles.button}>
+          <div className={styles.error} id="errorForm"></div>
+          <button type="submit" className={styles.button}>
             Sign in
           </button>
         </form>
 
         <p className={styles.register}>
-          Don't have an account?{' '}
-          <Link href='/register' className={styles.link}>
+          Don't have an account?{" "}
+          <Link href="/register" className={styles.link}>
             Sign up
           </Link>
         </p>
