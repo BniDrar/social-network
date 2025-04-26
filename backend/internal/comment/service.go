@@ -8,12 +8,12 @@ import (
 	"socialNetwork/entity"
 )
 
-func (c *comment) GetCommentsService(ctx context.Context, post entity.Post) (int, []entity.Comment, error) {
-	if !c.CanSeePost(ctx.Value(entity.ContextID).(int), post.ID) {
+func (c *comment) GetCommentsService(ctx context.Context, postId int) (int, []entity.Comment, error) {
+	if !c.CanSeePost(ctx.Value(entity.ContextID).(int), postId) {
 		return http.StatusForbidden, nil, errors.New("you don't allowed for this action")
 	}
 	
-	return c.getPostComments(ctx, post.ID)
+	return c.getPostComments(ctx, postId)
 }
 
 func (c *comment) CreateCommentService(ctx context.Context, commnt entity.Comment) (int, int, error) {

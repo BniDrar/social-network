@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"net/http"
+	"strconv"
 
 	"socialNetwork/entity"
 	"socialNetwork/pkg/config"
@@ -73,13 +74,14 @@ func (c *comment) GetComments(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
-	var post entity.Post
-	err := json.NewDecoder(r.Body).Decode(&post)
-	if err != nil {
+
+	postId, err := strconv.Atoi(r.URL.Query().Get("id"))
+	if err != nil || postId <= 0{
 		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Invalid request body"})
+		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Invalid post id"})
 	}
-	status, commnts, err := c.GetCommentsService(r.Context(), post)
+	w.Header().Set("Content-Type", "application/json")
+	status, commnts, err := c.GetCommentsService(r.Context(), postId)
 	if err != nil {
 		w.WriteHeader(status)
 		if status == http.StatusBadRequest {
