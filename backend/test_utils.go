@@ -127,6 +127,6 @@ func (ts *testServer) login(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	code, _, _ := ts.postJSON(t, "/api/login", jsonBody)
+	code, _, _ := ts.postJSON(t, "/api/user/login", jsonBody)
 	assert.Equal(t, code, http.StatusOK)
 }

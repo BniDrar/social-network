@@ -3,12 +3,12 @@ package main
 import (
 	"log"
 	"net/http"
-	"socialNetwork/pkg/assert"
 	"testing"
+
+	"socialNetwork/pkg/assert"
 )
 
 func TestGetPosts(t *testing.T) {
-
 	/*_________________THE FIRST STEP IS TO LOGIN_______________*/
 	t.Run("Loging For Posts Test", ts.login)
 	/*___________MAKE A TEST TABLE OF ALL POSSIBLE CASES_________*/
@@ -35,7 +35,6 @@ func TestGetPosts(t *testing.T) {
 			log.Println("body:", body)
 			assert.Equal(t, code, tt.wantCode)
 		})
-
 	}
 }
 

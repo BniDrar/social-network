@@ -146,7 +146,7 @@ func TestRegister(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			code, _, _ := ts.postJSON(t, "/api/register", jsonBody)
+			code, _, _ := ts.postJSON(t, "/api/user/register", jsonBody)
 
 			assert.Equal(t, code, tt.wantCode)
 			if tt.nickname != existNeckName {
@@ -225,7 +225,7 @@ func TestLogin(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			code, _, _ := ts.postJSON(t, "/api/login", jsonBody)
+			code, _, _ := ts.postJSON(t, "/api/user/login", jsonBody)
 			assert.Equal(t, code, tt.wantCode)
 		})
 	}
@@ -261,7 +261,7 @@ func TestUserPing(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			code, _, _ := ts.postJSON(t, "/api/login", jsonBody)
+			code, _, _ := ts.postJSON(t, "/api/user/login", jsonBody)
 			assert.Equal(t, code, tt.wantCode)
 
 			Req, _ := http.NewRequest(http.MethodGet, ts.URL+"/ping/user", nil) // Use GET instead of POST
@@ -303,11 +303,11 @@ func TestUserLogout(t *testing.T) {
 			}
 
 			jsonBody, _ := json.Marshal(loginBody)
-			loginCode, _, _ := ts.postJSON(t, "/api/login", jsonBody)
+			loginCode, _, _ := ts.postJSON(t, "/api/user/login", jsonBody)
 			assert.Equal(t, loginCode, tt.wantCode) // Ensure login succeeds
 
 			// --- Logout Phase ---
-			logoutReq, _ := http.NewRequest(http.MethodPost, ts.URL+"/api/logout", nil)
+			logoutReq, _ := http.NewRequest(http.MethodPost, ts.URL+"/api/user/logout", nil)
 			logoutResp, err := ts.Client().Do(logoutReq)
 			if err != nil {
 				t.Fatal(err)
@@ -342,7 +342,7 @@ func TestProfile(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			code, _, _ := ts.JSONRequest(t, "/api/profile?userid=1", nil, http.MethodGet)
+			code, _, _ := ts.JSONRequest(t, "/api/user/profile?userid=1", nil, http.MethodGet)
 			assert.Equal(t, code, tt.wantCode)
 		})
 	}
