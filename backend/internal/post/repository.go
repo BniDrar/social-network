@@ -41,8 +41,8 @@ func (p *post) Repo_UserCanPost(ctx context.Context, id, postid int) bool {
 		LEFT JOIN group_members AS gm ON gm.group_id = post.group_id
 			AND gm.member_id = $1
 		WHERE
-		    (post.group_id IS NOT NULL AND gm.member_id IS NOT NULL AND post.id = $2)
-		    OR (post.group_id IS NULL AND follow.follower_id = $1 AND post.id = $2)
+		    (post.status = 0 AND gm.member_id IS NOT NULL AND post.id = $2)
+		    OR (post.status = 1 AND follow.follower_id = $1 AND post.id = $2)
 			OR (post.status = 2 AND post.id = $2)
 			OR (post.user_id = $1);`
 	smtp, err := p.db.PrepareContext(ctx, query)
@@ -77,13 +77,10 @@ func (p *post) Repo_GetAll(ctx context.Context, id int) (posts []entity.Post, er
 		        post.status = 0 AND 
 		        post.group_id IS NULL)
 		WHERE
-			    (post.group_id IS NOT NULL AND gm.member_id IS NOT NULL)
-		    OR
-		    	(post.group_id IS NULL AND follow.follower_id = $1)
-			OR
-				(post.status = 2)
-			OR
-				(post.user_id = $1);`)
+		    (post.status = 0 AND gm.member_id IS NOT NULL AND post.id = $2)
+		    OR (post.status = 1 AND follow.follower_id = $1 AND post.id = $2)
+			OR (post.status = 2 AND post.id = $2)
+			OR (post.user_id = $1);`)
 	if err != nil {
 		return
 	}
@@ -174,13 +171,10 @@ func (p *post) GetPostsByUserID(ctx context.Context, user_id int, username strin
 		        post.status = 0 AND 
 		        post.group_id IS NULL)
 		WHERE
-			    (post.group_id IS NOT NULL AND gm.member_id IS NOT NULL AND user.nickname = $2)
-		    OR
-		    	(post.group_id IS NULL AND follow.follower_id = $1 AND user.nickname = $2)
-			OR
-				(post.status = 2 AND user.nickname = $2)
-			OR
-				(post.user_id = $1 AND user.nickname = $2)`)
+		    (post.status = 0 AND gm.member_id IS NOT NULL AND post.id = $2 AND user.nickname = $2)
+		    OR (post.status = 1 AND follow.follower_id = $1 AND post.id = $2 AND user.nickname = $2)
+			OR (post.status = 2 AND post.id = $2 AND user.nickname = $2)
+			OR (post.user_id = $1 AND user.nickname = $2)`)
 	if err != nil {
 		return
 	}
