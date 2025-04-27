@@ -336,6 +336,7 @@ func (g *group) GetEvent(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
+	w.Header().Set("Content-Type", "application/json")
 	// get the event data from the request body
 	eventID, err := strconv.Atoi(r.URL.Query().Get("id"))
 	if err != nil || eventID <= 0 {
@@ -351,7 +352,6 @@ func (g *group) GetEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// send the created event to the client
-	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
 	json.NewEncoder(w).Encode(event)
 }
