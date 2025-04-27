@@ -40,7 +40,6 @@ func NewGroup(dep *config.Dependencies) Group {
 
 // this handler is used to get all groups
 func (g *group) GetUserGroups(w http.ResponseWriter, r *http.Request) {
-	g.loger.Info.Println("In Get Groups")
 	// get the limit and offset from the request body
 	var requestBody struct {
 		Limit  int `json:"limit"`
