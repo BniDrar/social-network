@@ -28,27 +28,15 @@ func (g *group) GetGroupByIdService(ctx context.Context, groupID int) (entity.Gr
 
 // CreateGroupService creates a new group.
 func (g *group) CreateGroupService(ctx context.Context, group entity.Group) (entity.Group, error) {
-	group, err := g.CreateGroupRepository(ctx, group)
-	if err != nil {
-		return entity.Group{}, err
-	}
-	return group, nil
+	return g.CreateGroupRepository(ctx, group)
 }
 
 func (g *group) GetAllGroupsService(ctx context.Context, limit, offset, typeGroup int) (entity.Groups, error) {
-	groups, err := g.GetAllGroupsRepository(ctx, limit, offset, typeGroup)
-	if err != nil {
-		return nil, err
-	}
-	return groups, nil
+	return g.GetAllGroupsRepository(ctx, limit, offset, typeGroup)
 }
 
 func (g *group) GetGroupMembersService(ctx context.Context, groupID int) ([]entity.User, error) {
-	group, err := g.GetGroupMembersRepository(ctx, groupID)
-	if err != nil {
-		return nil, err
-	}
-	return group, nil
+	return g.GetGroupMembersRepository(ctx, groupID)
 }
 
 /*---------------notification related functions ---------------------*/
