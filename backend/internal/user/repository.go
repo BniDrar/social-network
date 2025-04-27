@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"net/http"
 
 	"socialNetwork/entity"
 	"socialNetwork/pkg/config"
@@ -38,7 +39,6 @@ func (r *user) GetUserProfileById(ctx context.Context, targetId int) (entity.Use
 		&user.First, &user.Last, &user.DateOfBirth, &user.AboutMe, &user.Status,
 		&user.FollowersCount, &user.FollowingCount, &user.FollowingState,
 	)
-
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return user, fmt.Errorf("user not found")
@@ -48,7 +48,6 @@ func (r *user) GetUserProfileById(ctx context.Context, targetId int) (entity.Use
 
 	return user, nil
 }
-
 
 // this function is used to get user by username
 func (r *user) GetUserByUsername(username string) (entity.User, error) {
@@ -323,13 +322,13 @@ func (u *user) FollowRepository(followerId, followedId int) (bool, error) {
 }
 
 func (u *user) CreateFollowNotification(ctx context.Context, senderId, receiverId int) (int, error) {
-	query:= `INSERT INTO notification (sender_id, receiver_id, type) 
+	query := `INSERT INTO notification (sender_id, receiver_id, type) 
 	VALUES (?, ?, ?)`
-	stmt, err:= u.db.PrepareContext(ctx, query)
+	stmt, err := u.db.PrepareContext(ctx, query)
 	if err != nil {
 		return 0, err
 	}
-	res, err:= stmt.ExecContext(ctx, senderId, receiverId, entity.FollowingNotification)
+	res, err := stmt.ExecContext(ctx, senderId, receiverId, entity.FollowingNotification)
 	if err != nil {
 		return 0, err
 	}
@@ -364,7 +363,7 @@ func (u *user) GetFollowers(ctx context.Context, id int) ([]entity.User, error) 
 		FROM users
 		INNER JOIN follows ON users.id = follows.follower_id
 		WHERE follows.followed_id = $1`
-		
+
 	rows, err := u.db.QueryContext(ctx, query, id)
 	if err != nil {
 		return nil, err
@@ -382,7 +381,6 @@ func (u *user) GetFollowers(ctx context.Context, id int) ([]entity.User, error) 
 
 	return followers, nil
 }
-
 
 // this function is used to get following by user id
 func (u *user) GetFollowing(ctx context.Context, id int) ([]entity.User, error) {
@@ -391,7 +389,7 @@ func (u *user) GetFollowing(ctx context.Context, id int) ([]entity.User, error) 
 		FROM users
 		INNER JOIN follows ON users.id = follows.followed_id 
 		WHERE follows.follower_id = $1`
-		
+
 	rows, err := u.db.QueryContext(ctx, query, id)
 	if err != nil {
 		return nil, err
@@ -410,13 +408,56 @@ func (u *user) GetFollowing(ctx context.Context, id int) ([]entity.User, error) 
 	return followers, nil
 }
 
+func (u *user) userNotificationRepo(ctx context.Context) ([]entity.Notification, int, error) {
+    query := `SELECT 
+                n.id,
+                n.type,
+                n.group_id,
+                n.sender_id,
+                n.receiver_id,
+                n.event_id
+              FROM notification n
+              WHERE n.receiver_id = $1
+              OR (
+                  n.group_id IS NOT NULL 
+                  AND EXISTS (
+                      SELECT 1 FROM group_members gm
+                      JOIN groups g ON gm.group_id = g.id
+                      WHERE gm.member_id = $1
+                      AND gm.group_id = n.group_id
+                  )
+              )
+              ORDER BY n.id DESC`  
 
+    rows, err := u.db.QueryContext(ctx, query, ctx.Value(entity.ContextID).(int))
+    if err != nil {
+        return nil, http.StatusInternalServerError, 
+               fmt.Errorf("error querying notifications: %w", err)
+    }
+    defer rows.Close()
 
-// this function is used to follow user
-// func (r *user) Follow(follower, following uint) error {}
-// this function is used to unfollow user
-// func (r *user) Unfollow(follower, following uint) error {}
-// this function is used to get followers count
-// func (r *user) GetFollowersCount(id uint) (uint, error) {}
-// this function is used to get following count
-// func (r *user) GetFollowingCount(id uint) (uint, error) {}
+    var notifications []entity.Notification
+    for rows.Next() {
+        var n entity.Notification
+        err = rows.Scan(
+            &n.Id,
+            &n.Type,
+            &n.GroupId,
+            &n.SenderId,
+            &n.ReceiverID,
+            &n.EventID,
+        )
+        if err != nil {
+            return nil, http.StatusInternalServerError, 
+                   fmt.Errorf("error scanning notification: %w", err)
+        }
+        notifications = append(notifications, n)
+    }
+
+    if err = rows.Err(); err != nil {
+        return nil, http.StatusInternalServerError, 
+               fmt.Errorf("rows iteration error: %w", err)
+    }
+
+    return notifications, http.StatusOK, nil
+}

@@ -137,6 +137,10 @@ func (u *user) processRequestResponse(ctx context.Context, notification entity.N
 			return http.StatusInternalServerError, err
 		}
 	}
-
+	
 	return http.StatusOK, nil
+}
+
+func (u *user) userNotificationSerice(ctx context.Context) ([]entity.Notification, int, error) {
+	return u.userNotificationRepo(ctx)
 }

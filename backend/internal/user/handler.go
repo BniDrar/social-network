@@ -29,6 +29,8 @@ type User interface {
 	Logout(w http.ResponseWriter, r *http.Request)
 	Profile(w http.ResponseWriter, r *http.Request)
 	Follow(w http.ResponseWriter, r *http.Request)
+	GetUserNotification(w http.ResponseWriter, r *http.Request)
+	HandleFollowRequestResponse(w http.ResponseWriter, r *http.Request)
 	FollowersAndFollowed(w http.ResponseWriter, r *http.Request)
 	DeleteUserByNickName(Nickname string) error
 	IsUserExist(id uint) (bool, error)
@@ -44,6 +46,7 @@ func NewUser(dep *config.Dependencies) User {
 }
 
 func (u *user) Register(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
 	if r.Method != http.MethodPost {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Method not allowed"})
@@ -52,27 +55,26 @@ func (u *user) Register(w http.ResponseWriter, r *http.Request) {
 	User := entity.User{}
 	err := json.NewDecoder(r.Body).Decode(&User)
 	if err != nil {
-		u.loger.Info.Println("error here ", err)
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
 		return
 	}
-	log.Println(User)
 	status, err := u.RegisterService(User)
 	if err != nil {
+		u.loger.Error.Println(err)
 		w.WriteHeader(status)
 		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
 		return
 	}
-	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
 }
 
 func (u *user) Login(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
+	w.Header().Set("Content-Type", "application/json")
 
 	// get user data from request
 	var User entity.Credentials
@@ -103,15 +105,13 @@ func (u *user) Login(w http.ResponseWriter, r *http.Request) {
 	}
 	u.sessionManager.Put(r.Context(), "authenticatedUserID", id)
 
-	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	u.loger.Info.Println(User, ": is logged in")
 }
 
 func (u *user) Logout(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		// app.clientError(w, http.StatusMethodNotAllowed)
-		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
 	// Use the RenewToken() method on the current session to change the session
@@ -120,7 +120,6 @@ func (u *user) Logout(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		u.loger.Error.Println(err) // that's for registering error in log file
 		w.WriteHeader(http.StatusInternalServerError)
-		// app.serverError(w, err)
 		return
 	}
 	// Remove the authenticatedUserID from the session data so that the user is
@@ -129,10 +128,8 @@ func (u *user) Logout(w http.ResponseWriter, r *http.Request) {
 	// Add a flash message to the session to confirm to the user that they've been
 	// logged out.
 	u.sessionManager.Put(r.Context(), "flash", "You've been logged out successfully!")
-	// Redirect the user to the application home page.
-	// http.Redirect(w, r, "/", http.StatusSeeOther)
+
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("Logged out successfully"))
 }
 
 func (u *user) Profile(w http.ResponseWriter, r *http.Request) {
@@ -140,6 +137,8 @@ func (u *user) Profile(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
+	w.Header().Set("Content-Type", "application/json")
+
 	target := r.URL.Query().Get("userid")
 	id, err := strconv.Atoi(target)
 	if err != nil || id <= 0 {
@@ -161,6 +160,7 @@ func (u *user) Profile(w http.ResponseWriter, r *http.Request) {
 }
 
 func (u *user) Follow(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
 	followed := r.URL.Query().Get("followed")
 	followedID, err := strconv.Atoi(followed)
 	if err != nil {
@@ -170,6 +170,10 @@ func (u *user) Follow(w http.ResponseWriter, r *http.Request) {
 	}
 	status, err := u.FollowService(r.Context(), followedID)
 	if err != nil {
+		w.WriteHeader(status)
+		if status == http.StatusBadRequest {
+			json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
+		}
 		u.loger.Error.Println(err)
 	}
 	w.WriteHeader(status)
@@ -180,6 +184,8 @@ func (u *user) HandleFollowRequestResponse(w http.ResponseWriter, r *http.Reques
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
+	w.Header().Set("Content-Type", "application/json")
+
 	var notf entity.Notification
 	err := json.NewDecoder(r.Body).Decode(&notf)
 	if err != nil {
@@ -201,6 +207,7 @@ func (u *user) FollowersAndFollowed(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
+	w.Header().Set("Content-Type", "application/json")
 
 	target := r.URL.Query().Get("userid")
 	id, err := strconv.Atoi(target)
@@ -221,4 +228,24 @@ func (u *user) FollowersAndFollowed(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(status)
 	json.NewEncoder(w).Encode(follows)
+}
+
+
+func (u *user) GetUserNotification(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	notifications, status, err:= u.userNotificationSerice(r.Context())
+	if err != nil {
+		u.loger.Error.Println(err)
+		w.WriteHeader(status)
+		if status == http.StatusBadRequest {
+			json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
+		}
+		return
+	}
+	json.NewEncoder(w).Encode(&notifications)
+	w.WriteHeader(status)
 }
