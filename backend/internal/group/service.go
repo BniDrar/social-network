@@ -9,15 +9,8 @@ import (
 )
 
 func (g *group) GetGroupsByUserService(ctx context.Context, limit, offset int) (entity.Groups, error) {
-	userID, ok := ctx.Value(entity.ContextID).(int)
-	if !ok {
-		return nil, errors.New("user id not found in context")
-	}
-	groups, err := g.GetGroupsByUserID(ctx, userID, limit, offset)
-	if err != nil {
-		return nil, err
-	}
-	return groups, nil
+	return g.GetGroupsByUserID(ctx, ctx.Value(entity.ContextID).(int), limit, offset)
+
 }
 
 // GetGroupByIdService returns a group by its ID.
