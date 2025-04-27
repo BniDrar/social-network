@@ -45,7 +45,6 @@ func (c *comment) AddComment(w http.ResponseWriter, r *http.Request) {
 
 	file, fileHeader, err := r.FormFile("image")
 	if err == nil {
-
 		commnt.Image, err = utils.FileUpload(file, fileHeader, err)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
@@ -55,6 +54,7 @@ func (c *comment) AddComment(w http.ResponseWriter, r *http.Request) {
 
 	commentId, status, err := c.CreateCommentService(r.Context(), commnt)
 	if err != nil {
+		c.loger.Error.Println(err)
 		w.WriteHeader(status)
 		if status == http.StatusBadRequest {
 			json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
@@ -83,6 +83,7 @@ func (c *comment) GetComments(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	status, commnts, err := c.GetCommentsService(r.Context(), postId)
 	if err != nil {
+		c.loger.Error.Println(err)
 		w.WriteHeader(status)
 		if status == http.StatusBadRequest {
 			json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
