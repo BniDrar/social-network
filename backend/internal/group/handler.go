@@ -63,6 +63,7 @@ func (g *group) GetUserGroups(w http.ResponseWriter, r *http.Request) {
 
 	groups, err := g.GetGroupsByUserService(r.Context(), limit, offset)
 	if err != nil {
+		g.loger.Error.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
 		return
@@ -82,6 +83,7 @@ func (g *group) GetGroupById(w http.ResponseWriter, r *http.Request) {
 	}
 	group, err := g.GetGroupByIdService(r.Context(), groupID)
 	if err != nil {
+		g.loger.Error.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
 		return
@@ -109,6 +111,7 @@ func (g *group) CreateGroup(w http.ResponseWriter, r *http.Request) {
 	// create the group in the database
 	createdGroup, err := g.CreateGroupService(r.Context(), group)
 	if err != nil {
+		g.loger.Error.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
 		return
@@ -147,6 +150,7 @@ func (g *group) GetAllGroups(w http.ResponseWriter, r *http.Request) {
 	}
 	groups, err := g.GetAllGroupsService(r.Context(), limit, offset, entity.RealGroup)
 	if err != nil {
+		g.loger.Error.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
 		return
@@ -169,6 +173,7 @@ func (g *group) GetGroupMembers(w http.ResponseWriter, r *http.Request) {
 	}
 	members, err := g.GetGroupMembersService(r.Context(), groupID)
 	if err != nil {
+		g.loger.Error.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
 		return
@@ -194,6 +199,7 @@ func (g *group) InviteToJoinGroup(w http.ResponseWriter, r *http.Request) {
 	}
 	status, err := g.inviteToJoinGroupService(r.Context(), invitation)
 	if err != nil {
+		g.loger.Error.Println(err)
 		if status == http.StatusBadRequest {
 			json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "invalid request data"})
 		}
@@ -240,15 +246,14 @@ func (g *group) RequestToJoinGroup(w http.ResponseWriter, r *http.Request) {
 
 	notificationID, status, err := g.requestToJoingGroupService(r.Context(), invitation)
 	if err != nil {
+		g.loger.Error.Println(err)
 		if status == http.StatusBadRequest {
 			json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "invalid request data"})
 		}
 	}
+	//upstream the notification to the admin of the group
+	g.loger.Info.Println(notificationID)
 	w.WriteHeader(status)
-	type notification struct {
-		ID int `json:"id"`
-	}
-	json.NewEncoder(w).Encode(notification{ID: notificationID})
 }
 
 func (g *group) RequestToJoinResponse(w http.ResponseWriter, r *http.Request) {
@@ -268,8 +273,8 @@ func (g *group) RequestToJoinResponse(w http.ResponseWriter, r *http.Request) {
 
 	status, err := g.processRequestToJoinResponse(r.Context(), notif)
 	if err != nil {
-		w.WriteHeader(status)
 		g.loger.Error.Println(err)
+		w.WriteHeader(status)
 		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
 		return
 	}
@@ -294,6 +299,7 @@ func (g *group) CreateEvent(w http.ResponseWriter, r *http.Request) {
 	// create the event in the database
 	eventId, status, err := g.CreateEventService(r.Context(), event)
 	if err != nil {
+		g.loger.Error.Println(err)
 		w.WriteHeader(status)
 		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
 		return
@@ -324,6 +330,7 @@ func (g *group) VoteEvent(w http.ResponseWriter, r *http.Request) {
 	// create the vote for event in the database
 	eventId, status, err := g.VoteEventService(r.Context(), vote)
 	if err != nil {
+		g.loger.Error.Println(err)
 		w.WriteHeader(status)
 		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
 		return
@@ -353,6 +360,7 @@ func (g *group) GetEvent(w http.ResponseWriter, r *http.Request) {
 	// create the event in the database
 	event, status, err := g.GetEventService(r.Context(), eventID)
 	if err != nil {
+		g.loger.Error.Println(err)
 		w.WriteHeader(status)
 		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
 		return

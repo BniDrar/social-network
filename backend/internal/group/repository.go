@@ -211,7 +211,7 @@ func (g *group) addGroupMember(ctx context.Context, userID, groupID int) (int, e
 		return http.StatusInternalServerError, err
 	}
 	defer stmt.Close()
-	_, err = stmt.ExecContext(ctx)
+	_, err = stmt.ExecContext(ctx, userID, groupID)
 	if err != nil {
 		return http.StatusBadRequest, err
 	}

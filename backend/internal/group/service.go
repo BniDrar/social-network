@@ -155,8 +155,11 @@ func (g *group) CreateEventService(ctx context.Context, event entity.Event) (int
 		return 0, status, err
 	}
 	notificationID, status, err := g.CreateEventNotification(ctx, event)
-	// upstreat the notificationId and there information in the websocket
-	print(notificationID)
+	if err != nil {
+		return 0, status, err
+	}
+	// upstreat the notificationId and there information in the websocket to all the group members
+	g.loger.Info.Println("the notification id is", notificationID)
 	return eventId, status, nil
 }
 
