@@ -152,6 +152,11 @@ func (app *App) createRoutes() []Route {
 			handler: app.GetPosts,
 			Role:    User,
 		},
+		{
+			Path:    "/api/post/create",
+			handler: app.CreatePost,
+			Role:    User,
+		},
 		// comments handlers
 		{
 			Path:    "/api/comment/add",
