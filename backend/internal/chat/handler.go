@@ -35,6 +35,14 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
+func (c *chat) GetUserContacts(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+	
+}
+
 func (c *chat) WebSocket(w http.ResponseWriter, r *http.Request) {
 	// upgrade
 	c.loger.Info.Println("0")

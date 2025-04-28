@@ -45,28 +45,43 @@ func (app *App) createRoutes() []Route {
 		},
 		/*user handlers*/
 		{
-			Path:    "/api/register",
+			Path:    "/api/user/register",
 			handler: app.User.Register,
 			Role:    Auth,
 		},
 		{
-			Path:    "/api/login",
+			Path:    "/api/user/login",
 			handler: app.User.Login,
 			Role:    Auth,
 		},
 		{
-			Path:    "/api/logout",
+			Path:    "/api/user/logout",
 			handler: app.Logout,
 			Role:    User,
 		},
 		{
-			Path:    "/api/follow/",
+			Path:    "/api/user/follow/",
 			handler: app.Follow,
 			Role:    User,
 		},
 		{
-			Path:    "/api/profile",
+			Path:    "/api/user/profile",
 			handler: app.Profile,
+			Role:    User,
+		},
+		{
+			Path:    "api/user/follow/response",
+			handler: app.HandleFollowRequestResponse,
+			Role:    User,
+		},
+		{
+			Path:    "api/user/follower_and_followed",
+			handler: app.FollowersAndFollowed,
+			Role:    User,
+		},
+		{
+			Path:    "api/user/notifications",
+			handler: app.GetUserNotification,
 			Role:    User,
 		},
 		/*group handlers*/
@@ -96,24 +111,40 @@ func (app *App) createRoutes() []Route {
 			Role:    User,
 		},
 		{
-			Path: "/api/group/invite/response",
+			Path:    "/api/group/invite/response",
 			handler: app.InvitationResponse,
 			Role:    User,
 		},
 		{
-			Path: "/api/group/invite/request",
+			Path:    "/api/group/invite/request",
 			handler: app.InviteToJoinGroup,
 			Role:    User,
 		},
 		{
-			Path: "/api/group/join/request",
+			Path:    "/api/group/join/request",
 			handler: app.RequestToJoinGroup,
 			Role:    User,
 		},
 		{
-			Path: "/api/group/join/response",
+			Path:    "/api/group/join/response",
 			handler: app.RequestToJoinResponse,
-			Role:		User,
+			Role:    User,
+		},
+		// events handlers
+		{
+			Path:    "/api/event/create",
+			handler: app.CreateEvent,
+			Role:    User,
+		},
+		{
+			Path:    "/api/event/vote",
+			handler: app.VoteEvent,
+			Role:    User,
+		},
+		{
+			Path:    "/api/event/get",
+			handler: app.GetEvent,
+			Role:    User,
 		},
 		/*post handlers*/
 		{
@@ -122,25 +153,27 @@ func (app *App) createRoutes() []Route {
 			Role:    User,
 		},
 		{
+			Path:    "/api/post/create",
+			handler: app.CreatePost,
+			Role:    User,
+		},
+		// comments handlers
+		{
+			Path:    "/api/comment/add",
+			handler: app.AddComment,
+			Role:    User,
+		},
+		{
+			Path:    "api/comment/get",
+			handler: app.GetComments,
+			Role:    User,
+		},
+		// ws handlers
+		{
 			Path:    "/api/ws",
 			handler: app.WebSocket,
 			Role:    User,
 		},
-		// {
-		// 	Path:    "/api/event/create",
-		// 	handler: app.CreateEvent,
-		// 	Role:    User,
-		// },
-		// {
-		// 	Path:    "/api/event/vote",
-		// 	handler: app.VoteEvent,
-		// 	Role:    User,
-		// },
-		// {
-		// 	Path:    "/api/event/get",
-		// 	handler: app.GetEvent,
-		// 	Role:    User,
-		// },
 		/*... handlers*/
 	}
 }

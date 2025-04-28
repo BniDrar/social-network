@@ -65,7 +65,7 @@ func (p *post) CreatePost(w http.ResponseWriter, r *http.Request) {
 	FilePath, err := utils.FileUpload(File, FileHeader, err)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "File Not Uploaded"})
+		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
 		return
 	}
 	post := entity.Post{
@@ -74,7 +74,7 @@ func (p *post) CreatePost(w http.ResponseWriter, r *http.Request) {
 	err = p.Service_CreateOne(r.Context(), r.Body, r.Form["users"], post)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Invalid request body"})
+		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
 		return
 	}
 	Content, _ := io.ReadAll(File)

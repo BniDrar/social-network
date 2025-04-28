@@ -37,7 +37,10 @@ func FileUpload(File multipart.File, FileHeader *multipart.FileHeader, backErr e
 		err = backErr
 		return
 	}
-	fmt.Println((FileHeader.Size / 1024))
+	fmt.Println(FileHeader.Filename)
+	fmt.Println(FileHeader.Size)
+	fmt.Println(FileHeader.Header)
+	fmt.Println(FileHeader.Size/1024, "KB")
 	var FileContent []byte
 	var FileIsAccepted bool
 	AcceptedTypes := []string{"png", "gif", "jpg", "jpeg"}
@@ -50,22 +53,16 @@ func FileUpload(File multipart.File, FileHeader *multipart.FileHeader, backErr e
 		err = errors.New("file type is not accepted")
 		return
 	}
-	switch FileHeader.Filename[len(FileHeader.Filename)-3:] {
-	case "gif":
-		if (FileHeader.Size/1024) > 1024 || (FileHeader.Size/1024) < 10 {
-			err = errors.New("file size unmatched our conditions")
-		}
-	default:
-		if (FileHeader.Size/1024) > 500 || (FileHeader.Size/1024) < 10 {
-			err = errors.New("file size unmatched our conditions")
-			return
-		}
+	if (FileHeader.Size/1024) > 1024 || (FileHeader.Size/1024) < 10 {
+		err = errors.New("file size unmatched our conditions")
+		return
 	}
 	FileIsAccepted = false
 	reader := bufio.NewReader(File)
 	FileContent, _ = io.ReadAll(reader)
 	AcceptedTypes = []string{"image/png", "image/jpg", "image/jpeg", "image/gif"}
 	FileType := http.DetectContentType((FileContent))
+	fmt.Println("FileType : ", FileType)
 	for _, Type := range AcceptedTypes {
 		if Type == FileType {
 			FileIsAccepted = true

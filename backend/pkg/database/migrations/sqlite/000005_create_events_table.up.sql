@@ -3,6 +3,7 @@ CREATE TABLE IF NOT EXISTS events (
     group_id INTEGER,
     user_id INTEGER,
     title TEXT NOT NULL,
+    image TEXT  DEFAULT 'media/events/default.png',
     description TEXT,
     event_time TIMESTAMP,
     create_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

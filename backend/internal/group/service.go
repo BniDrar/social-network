@@ -9,15 +9,8 @@ import (
 )
 
 func (g *group) GetGroupsByUserService(ctx context.Context, limit, offset int) (entity.Groups, error) {
-	userID, ok := ctx.Value(entity.ContextID).(int)
-	if !ok {
-		return nil, errors.New("user id not found in context")
-	}
-	groups, err := g.GetGroupsByUserID(ctx, userID, limit, offset)
-	if err != nil {
-		return nil, err
-	}
-	return groups, nil
+	return g.GetGroupsByUserID(ctx, ctx.Value(entity.ContextID).(int), limit, offset)
+
 }
 
 // GetGroupByIdService returns a group by its ID.
@@ -35,27 +28,15 @@ func (g *group) GetGroupByIdService(ctx context.Context, groupID int) (entity.Gr
 
 // CreateGroupService creates a new group.
 func (g *group) CreateGroupService(ctx context.Context, group entity.Group) (entity.Group, error) {
-	group, err := g.CreateGroupRepository(ctx, group)
-	if err != nil {
-		return entity.Group{}, err
-	}
-	return group, nil
+	return g.CreateGroupRepository(ctx, group)
 }
 
 func (g *group) GetAllGroupsService(ctx context.Context, limit, offset, typeGroup int) (entity.Groups, error) {
-	groups, err := g.GetAllGroupsRepository(ctx, limit, offset, typeGroup)
-	if err != nil {
-		return nil, err
-	}
-	return groups, nil
+	return g.GetAllGroupsRepository(ctx, limit, offset, typeGroup)
 }
 
 func (g *group) GetGroupMembersService(ctx context.Context, groupID int) ([]entity.User, error) {
-	group, err := g.GetGroupMembersRepository(ctx, groupID)
-	if err != nil {
-		return nil, err
-	}
-	return group, nil
+	return g.GetGroupMembersRepository(ctx, groupID)
 }
 
 /*---------------notification related functions ---------------------*/
@@ -174,8 +155,11 @@ func (g *group) CreateEventService(ctx context.Context, event entity.Event) (int
 		return 0, status, err
 	}
 	notificationID, status, err := g.CreateEventNotification(ctx, event)
-	// upstreat the notificationId and there information in the websocket
-	print(notificationID)
+	if err != nil {
+		return 0, status, err
+	}
+	// upstreat the notificationId and there information in the websocket to all the group members
+	g.loger.Info.Println("the notification id is", notificationID)
 	return eventId, status, nil
 }
 

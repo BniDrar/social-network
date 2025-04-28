@@ -40,7 +40,6 @@ func NewGroup(dep *config.Dependencies) Group {
 
 // this handler is used to get all groups
 func (g *group) GetUserGroups(w http.ResponseWriter, r *http.Request) {
-	g.loger.Info.Println("In Get Groups")
 	// get the limit and offset from the request body
 	var requestBody struct {
 		Limit  int `json:"limit"`
@@ -64,6 +63,7 @@ func (g *group) GetUserGroups(w http.ResponseWriter, r *http.Request) {
 
 	groups, err := g.GetGroupsByUserService(r.Context(), limit, offset)
 	if err != nil {
+		g.loger.Error.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
 		return
@@ -75,14 +75,15 @@ func (g *group) GetUserGroups(w http.ResponseWriter, r *http.Request) {
 // this handler is used to get the group by id
 func (g *group) GetGroupById(w http.ResponseWriter, r *http.Request) {
 	groupID, err := strconv.Atoi(r.URL.Query().Get("id"))
+	w.Header().Set("Content-Type", "application/json")
 	if err != nil || groupID <= 0 {
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Invalid group ID"})
 		return
 	}
-	w.Header().Set("Content-Type", "application/json")
 	group, err := g.GetGroupByIdService(r.Context(), groupID)
 	if err != nil {
+		g.loger.Error.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
 		return
@@ -110,6 +111,7 @@ func (g *group) CreateGroup(w http.ResponseWriter, r *http.Request) {
 	// create the group in the database
 	createdGroup, err := g.CreateGroupService(r.Context(), group)
 	if err != nil {
+		g.loger.Error.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
 		return
@@ -121,7 +123,10 @@ func (g *group) CreateGroup(w http.ResponseWriter, r *http.Request) {
 
 // this handler is used to get all groups
 func (g *group) GetAllGroups(w http.ResponseWriter, r *http.Request) {
-	g.loger.Info.Println("In Get All Groups")
+	if r.Method != http.MethodGet {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
 	// get the limit and offset from the request body
 	var requestBody struct {
 		Limit  int `json:"limit"`
@@ -145,6 +150,7 @@ func (g *group) GetAllGroups(w http.ResponseWriter, r *http.Request) {
 	}
 	groups, err := g.GetAllGroupsService(r.Context(), limit, offset, entity.RealGroup)
 	if err != nil {
+		g.loger.Error.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
 		return
@@ -154,15 +160,20 @@ func (g *group) GetAllGroups(w http.ResponseWriter, r *http.Request) {
 }
 
 func (g *group) GetGroupMembers(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
 	groupID, err := strconv.Atoi(r.URL.Query().Get("id"))
 	if err != nil || groupID <= 0 {
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Invalid group ID"})
 		return
 	}
-	w.Header().Set("Content-Type", "application/json")
 	members, err := g.GetGroupMembersService(r.Context(), groupID)
 	if err != nil {
+		g.loger.Error.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
 		return
@@ -188,6 +199,7 @@ func (g *group) InviteToJoinGroup(w http.ResponseWriter, r *http.Request) {
 	}
 	status, err := g.inviteToJoinGroupService(r.Context(), invitation)
 	if err != nil {
+		g.loger.Error.Println(err)
 		if status == http.StatusBadRequest {
 			json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "invalid request data"})
 		}
@@ -234,15 +246,14 @@ func (g *group) RequestToJoinGroup(w http.ResponseWriter, r *http.Request) {
 
 	notificationID, status, err := g.requestToJoingGroupService(r.Context(), invitation)
 	if err != nil {
+		g.loger.Error.Println(err)
 		if status == http.StatusBadRequest {
 			json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "invalid request data"})
 		}
 	}
+	//upstream the notification to the admin of the group
+	g.loger.Info.Println(notificationID)
 	w.WriteHeader(status)
-	type notification struct {
-		ID int `json:"id"`
-	}
-	json.NewEncoder(w).Encode(notification{ID: notificationID})
 }
 
 func (g *group) RequestToJoinResponse(w http.ResponseWriter, r *http.Request) {
@@ -262,8 +273,8 @@ func (g *group) RequestToJoinResponse(w http.ResponseWriter, r *http.Request) {
 
 	status, err := g.processRequestToJoinResponse(r.Context(), notif)
 	if err != nil {
-		w.WriteHeader(status)
 		g.loger.Error.Println(err)
+		w.WriteHeader(status)
 		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
 		return
 	}
@@ -276,6 +287,7 @@ func (g *group) CreateEvent(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
+	w.Header().Set("Content-Type", "application/json")
 	// get the event data from the request body
 	var event entity.Event
 	err := json.NewDecoder(r.Body).Decode(&event)
@@ -287,12 +299,12 @@ func (g *group) CreateEvent(w http.ResponseWriter, r *http.Request) {
 	// create the event in the database
 	eventId, status, err := g.CreateEventService(r.Context(), event)
 	if err != nil {
+		g.loger.Error.Println(err)
 		w.WriteHeader(status)
 		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
 		return
 	}
 	// send the created event id to the client
-	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(struct {
 		EventId int `json:"event_id"`
@@ -306,6 +318,7 @@ func (g *group) VoteEvent(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
+	w.Header().Set("Content-Type", "application/json")
 	// get the event data from the request body
 	var vote entity.Engagement
 	err := json.NewDecoder(r.Body).Decode(&vote)
@@ -317,12 +330,12 @@ func (g *group) VoteEvent(w http.ResponseWriter, r *http.Request) {
 	// create the vote for event in the database
 	eventId, status, err := g.VoteEventService(r.Context(), vote)
 	if err != nil {
+		g.loger.Error.Println(err)
 		w.WriteHeader(status)
 		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
 		return
 	}
 	// send the created event to the client
-	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(struct {
 		EventID int `json:"event_id"`
@@ -336,6 +349,7 @@ func (g *group) GetEvent(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
+	w.Header().Set("Content-Type", "application/json")
 	// get the event data from the request body
 	eventID, err := strconv.Atoi(r.URL.Query().Get("id"))
 	if err != nil || eventID <= 0 {
@@ -346,12 +360,12 @@ func (g *group) GetEvent(w http.ResponseWriter, r *http.Request) {
 	// create the event in the database
 	event, status, err := g.GetEventService(r.Context(), eventID)
 	if err != nil {
+		g.loger.Error.Println(err)
 		w.WriteHeader(status)
 		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
 		return
 	}
 	// send the created event to the client
-	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
 	json.NewEncoder(w).Encode(event)
 }
