@@ -131,13 +131,24 @@ func (p *post) CreatePost(w http.ResponseWriter, r *http.Request) {
 }
 
 func (p *post) GetPost(w http.ResponseWriter, r *http.Request) {
-	data, err := p.Service_GetOne(r.Context(), r.FormValue("id"))
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
+	if r.Method != http.MethodGet {
+		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
-	w.Write(data)
+	postId, err := strconv.Atoi(r.URL.Query().Get("post_id"))
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	post, status, err := p.GetPostService(r.Context(), postId)
+	w.WriteHeader(status)
+	if err != nil {
+		if status == http.StatusBadRequest {
+			json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
+		}
+		return
+	}
+	json.NewEncoder(w).Encode(&post)
 }
 
 func (p *post) GetPostByUsername(w http.ResponseWriter, r *http.Request) {

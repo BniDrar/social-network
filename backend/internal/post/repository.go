@@ -105,7 +105,7 @@ func (p *post) Repo_GetAll(ctx context.Context, id int) (posts []entity.Post, er
 	return
 }
 
-func (p *post) Repo_GetOne(ctx context.Context, post_id int) (post entity.Post, err error) {
+func (p *post) GetPostRepo(ctx context.Context, post_id int) (entity.Post, int, error) {
 	prep, err := p.db.PrepareContext(ctx, `SELECT
 		    post.id,
 		    user.avatar,
@@ -116,11 +116,15 @@ func (p *post) Repo_GetOne(ctx context.Context, post_id int) (post entity.Post, 
 		INNER JOIN users AS user ON user.id = post.user_id
 		WHERE (post.id=$1);`)
 	if err != nil {
-		return
+		return entity.Post{}, http.StatusInternalServerError, err
 	}
+	var post entity.Post
 	res := prep.QueryRowContext(ctx, post_id)
 	err = res.Scan(&post.ID, &post.Avatar, &post.Content, &post.Image, &post.UserName)
-	return
+	if err != nil {
+		return entity.Post{}, http.StatusInternalServerError, err
+	}
+	return post, http.StatusOK, nil
 }
 
 func (r *post) SavePost(ctx context.Context, userID int, post entity.Post) (int, int, error) {

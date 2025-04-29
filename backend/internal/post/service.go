@@ -7,7 +7,6 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"strconv"
 
 	"socialNetwork/entity"
 
@@ -27,38 +26,26 @@ func (p *post) Service_GetAll(ctx context.Context) (data []byte, err error) {
 }
 
 func (p *post) GetPostsService(ctx context.Context, limit, offset int) ([]entity.Post, int, error) {
-	userId:= ctx.Value(entity.ContextID).(int)
+	userId := ctx.Value(entity.ContextID).(int)
 	posts, err := p.Repo_GetAll(ctx, userId)
 	if err != nil {
 		return nil, http.StatusBadRequest, err
 	}
-	for _, post:= range posts {
+	for _, post := range posts {
 		if post.Image != "" {
-			//get the image and send it
+			// get the image and send it
 		}
-		//check if the user has avatar then send it
+		// check if the user has avatar then send it
 	}
 	return nil, http.StatusOK, nil
 }
 
-func (p *post) Service_GetOne(ctx context.Context, post_str string) (data []byte, err error) {
+func (p *post) GetPostService(ctx context.Context, postID int) (entity.Post, int, error) {
 	id := ctx.Value(entity.ContextID).(int)
-	post_id, err := strconv.Atoi(post_str)
-	if err != nil {
-		return
+	if !p.Repo_UserCanPost(ctx, id, postID) {
+		return entity.Post{}, http.StatusUnauthorized, errors.New("you don't have the permision")
 	}
-	if p.Repo_UserCanPost(ctx, id, post_id) {
-		var post entity.Post
-		post, err = p.Repo_GetOne(ctx, post_id)
-		if err != nil {
-			return
-		}
-		data, err = json.Marshal(post)
-		return
-	} else {
-		err = errors.New("you can't see post")
-		return
-	}
+	return p.GetPostRepo(ctx, postID)
 }
 
 func (p *post) CreatePostService(ctx context.Context, post entity.Post, imageContent []byte) (int, int, error) {
