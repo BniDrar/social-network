@@ -6,9 +6,11 @@ import (
 	"errors"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 
 	scs "socialNetwork/pkg/sessions"
+	"socialNetwork/pkg/utils"
 
 	"socialNetwork/entity"
 	"socialNetwork/pkg/config"
@@ -46,14 +48,34 @@ func NewUser(dep *config.Dependencies) User {
 }
 
 func (u *user) Register(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
 	if r.Method != http.MethodPost {
 		w.WriteHeader(http.StatusMethodNotAllowed)
-		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Method not allowed"})
 		return
 	}
-	User := entity.User{}
-	err := json.NewDecoder(r.Body).Decode(&User)
+	w.Header().Set("Content-Type", "application/json")
+
+	file, fileHeader, err := r.FormFile("avatar")
+	if err != nil && err != http.ErrMissingFile {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Error reading uploaded file"})
+		return
+	}
+	var (
+		User        entity.User
+		fileContent []byte
+	)
+	if err != nil {
+		User.Avatar = ""
+	} else {
+		fileContent, User.Avatar, err = utils.ValidateImage(file, fileHeader)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
+			return
+		}
+	}
+
+	err = json.NewDecoder(r.Body).Decode(&User)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
@@ -65,6 +87,13 @@ func (u *user) Register(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(status)
 		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
 		return
+	}
+	if User.Avatar != "" {
+		err = os.WriteFile(User.Avatar, fileContent, 0444)
+		if err != nil {
+			u.loger.Error.Println("error while create the avatar", err)
+			w.WriteHeader(http.StatusInternalServerError)
+		}
 	}
 	w.WriteHeader(status)
 }
@@ -230,14 +259,13 @@ func (u *user) FollowersAndFollowed(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(follows)
 }
 
-
 func (u *user) GetUserNotification(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
-	notifications, status, err:= u.userNotificationSerice(r.Context())
+	notifications, status, err := u.userNotificationSerice(r.Context())
 	if err != nil {
 		u.loger.Error.Println(err)
 		w.WriteHeader(status)

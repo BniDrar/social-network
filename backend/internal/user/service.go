@@ -45,7 +45,7 @@ func (s *user) RegisterService(user entity.User) (int, error) {
 
 func (u *user) authenticateService(email, password string) (int, error) {
 	return u.authenticateRepo(email, password)
-} 
+}
 
 func (u *user) UserProfile(ctx context.Context, targetId int) (int, entity.User, error) {
 	user, err := u.GetUserProfileById(ctx, targetId)
@@ -60,7 +60,7 @@ func (u *user) UserProfile(ctx context.Context, targetId int) (int, entity.User,
 	exists, err := u.isFollowedBy(userId, int(user.ID))
 	if err != nil || !exists {
 		if err == nil {
-			return http.StatusUnauthorized, entity.User{},  errors.New("you can't access to the user profile")
+			return http.StatusUnauthorized, entity.User{}, errors.New("you can't access to the user profile")
 		}
 		return http.StatusInternalServerError, entity.User{}, err
 	}
@@ -70,13 +70,13 @@ func (u *user) UserProfile(ctx context.Context, targetId int) (int, entity.User,
 func (u *user) FollowersAndFollowedService(ctx context.Context, id int) (int, entity.Follows, error) {
 	var (
 		follows entity.Follows
-		err error
+		err     error
 	)
-	follows.Followers, err= u.GetFollowers(ctx, id)
+	follows.Followers, err = u.GetFollowers(ctx, id)
 	if err != nil {
 		return http.StatusInternalServerError, follows, errors.New("invalid user id")
 	}
-	follows.Following, err= u.GetFollowing(ctx, id)
+	follows.Following, err = u.GetFollowing(ctx, id)
 	if err != nil {
 		return http.StatusInternalServerError, follows, err
 	}
@@ -84,19 +84,18 @@ func (u *user) FollowersAndFollowedService(ctx context.Context, id int) (int, en
 	return http.StatusOK, follows, nil
 }
 
-
 func (u *user) FollowService(ctx context.Context, followedID int) (int, error) {
 	userId := ctx.Value(entity.ContextID).(int)
 	if userId == followedID {
-        return http.StatusBadRequest, errors.New("you can't follow yourself")
-    }
+		return http.StatusBadRequest, errors.New("you can't follow yourself")
+	}
 	//check if the followed account is private
 	user, err := u.GetUserProfileById(ctx, userId)
 	if err != nil {
 		return http.StatusBadRequest, errors.New("unvailable user")
 	}
 	if user.Status == entity.PrivateUser {
-		// create notification in data base 
+		// create notification in data base
 		id, err := u.CreateFollowNotification(ctx, userId, int(user.ID))
 		if err != nil {
 			return http.StatusInternalServerError, err
@@ -105,10 +104,10 @@ func (u *user) FollowService(ctx context.Context, followedID int) (int, error) {
 		// notify the user by websocket
 		return http.StatusOK, nil
 	}
-    notify, err := u.FollowRepository(userId, followedID)
-    if err != nil {
-        return http.StatusInternalServerError, err
-    }
+	notify, err := u.FollowRepository(userId, followedID)
+	if err != nil {
+		return http.StatusInternalServerError, err
+	}
 	if notify {
 		// go u.hub.SendMessage(websocket.Message{
 		//     UserID: userId,
@@ -116,7 +115,7 @@ func (u *user) FollowService(ctx context.Context, followedID int) (int, error) {
 		// })
 	}
 
-    return http.StatusOK, nil
+	return http.StatusOK, nil
 }
 
 func (u *user) FollowersService(ctx context.Context, followedId int) error {
@@ -137,7 +136,7 @@ func (u *user) processRequestResponse(ctx context.Context, notification entity.N
 			return http.StatusInternalServerError, err
 		}
 	}
-	
+
 	return http.StatusOK, nil
 }
 
