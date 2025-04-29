@@ -28,18 +28,6 @@ type post struct {
 	loger loger.CstmLogger
 }
 
-var _ string = `{
-  				  "id": "1",
-  				  "avatar": "/assets/images/no-face.jpg",
-  				  "username": "yrahhaou",
-  				  "content": "🍲🍖 Classic Homestyle Meatloaf with a Tangy Glaze 🍋✨",
-  				  "image": "/assets/images/post1.jpg",
-  				  "likes": "15k",
-  				  "comments": "5k",
-  				  "user_like": false,
-  				  "created_at": "7h"
-  				}`
-
 func Newpost(dep *config.Dependencies) Post {
 	return &post{db: dep.DB, loger: *dep.Loger, Hub: dep.Hub}
 }
