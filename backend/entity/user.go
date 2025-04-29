@@ -5,7 +5,7 @@ type User struct {
 	Nickname       string `json:"nickname,omitempty"`
 	Email          string `json:"email,omitempty"`
 	Password       string `json:"password,omitempty"`
-	Avatar         []byte `json:"avatar,omitempty"`
+	Avatar         string `json:"avatar,omitempty"`
 	First          string `json:"first,omitempty"`
 	Last           string `json:"last,omitempty"`
 	DateOfBirth    string `json:"date_of_birth,omitempty"`
