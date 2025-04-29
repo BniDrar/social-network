@@ -15,7 +15,7 @@ import (
 	"github.com/google/uuid"
 )
 
-var CompletePath = "./media/"
+const CompletePath = "./media/"
 
 func CheckCommentsCredentials(comnt entity.Comment) bool {
 	return len(removeAllWhitespace(comnt.Content)) > 0 &&
@@ -32,20 +32,12 @@ func removeAllWhitespace(s string) string {
 	}, s)
 }
 
-func FileUpload(File multipart.File, FileHeader *multipart.FileHeader, backErr error) (FilePath string, err error) {
-	if backErr != nil {
-		err = backErr
-		return
-	}
-	fmt.Println(FileHeader.Filename)
-	fmt.Println(FileHeader.Size)
-	fmt.Println(FileHeader.Header)
-	fmt.Println(FileHeader.Size/1024, "KB")
+func FileUpload(File multipart.File, FileHeader *multipart.FileHeader) (FilePath string, err error) {
 	var FileContent []byte
 	var FileIsAccepted bool
 	AcceptedTypes := []string{"png", "gif", "jpg", "jpeg"}
 	for _, Type := range AcceptedTypes {
-		if strings.HasSuffix(FileHeader.Filename, Type) {
+		if strings.HasSuffix(strings.ToLower(FileHeader.Filename), Type) {
 			FileIsAccepted = true
 		}
 	}
@@ -76,4 +68,28 @@ func FileUpload(File multipart.File, FileHeader *multipart.FileHeader, backErr e
 		FilePath = CompletePath + uuid.NewString()
 	}
 	return
+}
+
+
+func ValidateImage(file multipart.File, fileHeader *multipart.FileHeader) ([]byte, string, error) {
+	content, err := io.ReadAll(file)
+	if err != nil {
+		return nil, "", err
+	}
+	mimeType := http.DetectContentType(content)
+	allowedMimes := map[string]string{
+		"image/png":  "png",
+		"image/jpeg": "jpg",
+		"image/jpg":  "jpg",
+		"image/gif":  "gif",
+	}
+	ext, ok := allowedMimes[mimeType]
+	if !ok {
+		return nil, "", errors.New("unsupported MIME type")
+	}
+	sizeKB := len(content) / 1024
+	if sizeKB > 1024 || sizeKB < 10 {
+		return nil, "", errors.New("file size invalid")
+	}
+	return content, ext, nil
 }
