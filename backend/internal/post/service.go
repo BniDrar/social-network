@@ -26,6 +26,21 @@ func (p *post) Service_GetAll(ctx context.Context) (data []byte, err error) {
 	return
 }
 
+func (p *post) GetPostsService(ctx context.Context, limit, offset int) ([]entity.Post, int, error) {
+	userId:= ctx.Value(entity.ContextID).(int)
+	posts, err := p.Repo_GetAll(ctx, userId)
+	if err != nil {
+		return nil, http.StatusBadRequest, err
+	}
+	for _, post:= range posts {
+		if post.Image != "" {
+			//get the image and send it
+		}
+		//check if the user has avatar then send it
+	}
+	return nil, http.StatusOK, nil
+}
+
 func (p *post) Service_GetOne(ctx context.Context, post_str string) (data []byte, err error) {
 	id := ctx.Value(entity.ContextID).(int)
 	post_id, err := strconv.Atoi(post_str)
