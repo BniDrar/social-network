@@ -3,6 +3,7 @@ package post
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -78,15 +79,16 @@ func (p *post) Repo_GetAll(ctx context.Context, id int) (posts []entity.Post, er
 		        post.status = 0 AND 
 		        post.group_id IS NULL)
 		WHERE
-		    (post.status = 0 AND gm.member_id IS NOT NULL AND post.id = $2)
-		    OR (post.status = 1 AND follow.follower_id = $1 AND post.id = $2)
-			OR (post.status = 2 AND post.id = $2)
+		    (post.status = 0 AND gm.member_id IS NOT NULL )
+		    OR (post.status = 1 AND follow.follower_id = $1 )
+			OR (post.status = 2 )
 			OR (post.user_id = $1);`)
 	if err != nil {
 		return
 	}
 	res, err := prep.QueryContext(ctx, id)
 	if err != nil {
+		fmt.Println("erro here", err)
 		return
 	}
 	for res.Next() {
@@ -135,7 +137,7 @@ func (r *post) SavePost(ctx context.Context, userID int, post entity.Post) (int,
 		VALUES ($1, $2, $3, $4, $5) RETURNING id`,
 		userID, post.Content, post.Image, post.GroupID, post.Status).Scan(&postID)
 	if err != nil {
-		return 0, http.StatusBadRequest, err
+		return 0, http.StatusBadRequest, errors.New("error in query row: " + err.Error())
 	}
 
 	// Handle custom group creation if status is 'custom'
@@ -155,7 +157,7 @@ func (r *post) SavePost(ctx context.Context, userID int, post entity.Post) (int,
 	// Commit transaction
 	err = tx.Commit()
 	if err != nil {
-		return 0, http.StatusInternalServerError, err
+		return 0, http.StatusInternalServerError, errors.New("error while commiting the transaction" + err.Error())
 	}
 
 	return postID, http.StatusCreated, nil
@@ -173,7 +175,7 @@ func (r *post) createCustomGroup(tx *sql.Tx, viewers []int) (int, error) {
 	for _, viewerID := range viewers {
 		_, err := tx.Exec(`INSERT INTO group_members (group_id, member_id) VALUES ($1, $2)`, groupID, viewerID)
 		if err != nil {
-			return 0, err
+			return 0, errors.New("error while executing the transaction: "+ err.Error())
 		}
 	}
 
