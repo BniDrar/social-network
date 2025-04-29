@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"io"
 	"net/http"
 	"os"
 
@@ -15,29 +14,9 @@ import (
 	_ "image/png"
 )
 
-func (p *post) Service_GetAll(ctx context.Context) (data []byte, err error) {
-	id := ctx.Value(entity.ContextID).(int)
-	posts, err := p.Repo_GetAll(ctx, id)
-	if err != nil {
-		return
-	}
-	data, err = json.Marshal(posts)
-	return
-}
-
 func (p *post) GetPostsService(ctx context.Context, limit, offset int) ([]entity.Post, int, error) {
-	userId := ctx.Value(entity.ContextID).(int)
-	posts, err := p.Repo_GetAll(ctx, userId)
-	if err != nil {
-		return nil, http.StatusBadRequest, err
-	}
-	for _, post := range posts {
-		if post.Image != "" {
-			// get the image and send it
-		}
-		// check if the user has avatar then send it
-	}
-	return nil, http.StatusOK, nil
+	id := ctx.Value(entity.ContextID).(int)
+	return p.Repo_GetAll(ctx, id, limit, offset)
 }
 
 func (p *post) GetPostService(ctx context.Context, postID int) (entity.Post, int, error) {
@@ -60,16 +39,12 @@ func (p *post) CreatePostService(ctx context.Context, post entity.Post, imageCon
 	return postID, http.StatusCreated, nil
 }
 
-func (p *post) Service_React(ctx context.Context, body io.ReadCloser) (err error) {
-	id := ctx.Value(entity.ContextID).(int)
-	react := entity.Vote{}
-	json.NewDecoder(body).Decode(&react)
-	if p.Repo_UserCanPost(ctx, id, react.ID) {
-		err = p.Repo_React(ctx, id, react)
-	} else {
-		err = errors.New("you can't see the post")
+func (p *post) PostEngagementService(ctx context.Context, engagement entity.Engagement) (int, error) {
+	engagement.UserID = ctx.Value(entity.ContextID).(int)
+	if !p.Repo_UserCanPost(ctx, engagement.UserID, engagement.PostID) {
+		return http.StatusUnauthorized, errors.New("you don't have the permission to react")
 	}
-	return
+	return p.PostEngagementRepo(ctx, engagement)
 }
 
 func (p *post) GetPostsByUserService(ctx context.Context, username string) (data []byte, err error) {

@@ -55,6 +55,7 @@ func (p *post) GetPosts(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
+	w.Header().Set("Content-Type", "application/json")
 	limit, err := strconv.Atoi(r.URL.Query().Get("limit"))
 	if err != nil || limit <= 0 {
 		w.WriteHeader(http.StatusBadRequest)
@@ -67,19 +68,34 @@ func (p *post) GetPosts(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "bad query"})
 		return
 	}
-	data, err := p.Service_GetAll(r.Context())
+	posts, status, err := p.GetPostsService(r.Context(), limit, offset)
+	w.WriteHeader(status)
 	if err != nil {
 		p.loger.Error.Println(err)
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Invalid request body"})
+		if status == http.StatusBadRequest {
+			json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
+		}
 		return
 	}
-	w.Write(data)
+	json.NewEncoder(w).Encode(&posts)
 }
 
 func (p *post) ReactPost(w http.ResponseWriter, r *http.Request) {
-	err := p.Service_React(r.Context(), r.Body)
+	if r.Method != http.MethodPost {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+	var engagement entity.Engagement
+	err := json.NewDecoder(r.Body).Decode(&engagement)
 	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Invalid response body"})
+		return
+	}
+	status, err := p.PostEngagementService(r.Context(), engagement)
+	w.WriteHeader(status)
+	if err != nil {
+		p.loger.Error.Println(err)
 	}
 }
 
@@ -135,9 +151,11 @@ func (p *post) GetPost(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
+	w.Header().Set("Content-Type", "application/json")
 	postId, err := strconv.Atoi(r.URL.Query().Get("post_id"))
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "invalid query"})
 		return
 	}
 	post, status, err := p.GetPostService(r.Context(), postId)
