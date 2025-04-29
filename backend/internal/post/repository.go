@@ -61,7 +61,7 @@ func (p *post) Repo_UserCanPost(ctx context.Context, id, postid int) bool {
 	}
 }
 
-func (p *post) Repo_GetAll(ctx context.Context, id int) (posts []entity.Post, err error) {
+func (p *post) Repo_GetAll(ctx context.Context, id, limit, offset int) ([]entity.Post, int, error) {
 	prep, err := p.db.PrepareContext(ctx, `SELECT
 			post.id,
 		    user.avatar,
@@ -82,27 +82,26 @@ func (p *post) Repo_GetAll(ctx context.Context, id int) (posts []entity.Post, er
 		    (post.status = 0 AND gm.member_id IS NOT NULL )
 		    OR (post.status = 1 AND follow.follower_id = $1 )
 			OR (post.status = 2 )
-			OR (post.user_id = $1);`)
+			OR (post.user_id = $1);
+		LIMIT $2 OFFSET $3;`)
 	if err != nil {
-		return
+		return nil, http.StatusInternalServerError, err
 	}
-	res, err := prep.QueryContext(ctx, id)
+	rows, err := prep.QueryContext(ctx, id, limit, offset)
 	if err != nil {
-		fmt.Println("erro here", err)
-		return
+		return nil, http.StatusBadRequest, errors.New("invalid query")
 	}
-	for res.Next() {
-		fmt.Println("Gitted")
-		post := entity.Post{}
-		err := res.Scan(&post.ID, &post.Avatar, &post.Content, &post.Image, &post.UserName)
+	var posts []entity.Post
+	for rows.Next() {
+		var post entity.Post
+		err := rows.Scan(&post.ID, &post.Avatar, &post.Content, &post.Image, &post.UserName)
 		if err != nil {
-			fmt.Println(err)
+			p.loger.Error.Println("error occur while scan post info", err)
 			continue
 		}
-		fmt.Println(post)
 		posts = append(posts, post)
 	}
-	return
+	return posts, http.StatusOK, nil
 }
 
 func (p *post) GetPostRepo(ctx context.Context, post_id int) (entity.Post, int, error) {
@@ -186,16 +185,16 @@ func (r *post) createCustomGroup(tx *sql.Tx, viewers []int) (int, error) {
 	return groupID, nil
 }
 
-func (p *post) Repo_React(ctx context.Context, user_id int, react entity.Vote) (err error) {
+func (p *post) PostEngagementRepo(ctx context.Context, engagement entity.Engagement) (int, error) {
 	prep, err := p.db.PrepareContext(ctx, `INSERT INTO engagements
 			(user_id, post_id, status)
 		VALUES
 			($1, $2, $3)`)
 	if err != nil {
-		return
+		return 0, nil
 	}
-	_, err = prep.ExecContext(ctx, user_id, react.ID, react.Status)
-	return
+	_, err = prep.ExecContext(ctx, engagement.UserID, engagement.PostID, engagement.Status)
+	return 0, nil
 }
 
 func (p *post) GetPostsByUserID(ctx context.Context, user_id int, username string) (posts []entity.Post, err error) {
