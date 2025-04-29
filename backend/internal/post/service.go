@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"net/http"
+	"os"
 	"strconv"
 
 	"socialNetwork/entity"
@@ -44,17 +46,16 @@ func (p *post) Service_GetOne(ctx context.Context, post_str string) (data []byte
 	}
 }
 
-func (p *post) Service_CreateOne(ctx context.Context, body io.ReadCloser, users []string, post entity.Post) error {
-	id := ctx.Value(entity.ContextID).(int)
-	ImageFileName := post.Image
-	json.NewDecoder(body).Decode(&post)
-	post.Image = ImageFileName
-	// err := post.Validate(users)
-	// if err != nil {
-	// return errors.New(string("{ error: " + err.Error() + " }"))
-	// }
-	p.Repo_CreatePost(ctx, id, post)
-	return nil
+func (p *post) CreatePostService(ctx context.Context, post entity.Post, imageContent []byte) (int, int, error) {
+	postID, status, err := p.SavePost(ctx, ctx.Value(entity.ContextID).(int), post)
+	if err != nil {
+		return 0, status, err
+	}
+	err = os.WriteFile(post.Image, imageContent, 0o444)
+	if err != nil {
+		return 0, http.StatusInternalServerError, err
+	}
+	return postID, http.StatusCreated, nil
 }
 
 func (p *post) Service_React(ctx context.Context, body io.ReadCloser) (err error) {
