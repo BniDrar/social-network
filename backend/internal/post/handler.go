@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"net/http"
+	"strconv"
 
 	"socialNetwork/entity"
 	"socialNetwork/pkg/config"
@@ -31,8 +32,25 @@ func Newpost(dep *config.Dependencies) Post {
 }
 
 func (p *post) GetPosts(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+	limit, err:= strconv.Atoi(r.URL.Query().Get("limit"))
+	if err != nil || limit <= 0 {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "bad query"})
+		return
+	}
+	offset, err:= strconv.Atoi(r.URL.Query().Get("offset"))
+	if err != nil || offset < 0 {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "bad query"})
+		return
+	}
 	data, err := p.Service_GetAll(r.Context())
 	if err != nil {
+		p.loger.Error.Println(err)
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Invalid request body"})
 		return
@@ -90,7 +108,7 @@ func (p *post) CreatePost(w http.ResponseWriter, r *http.Request) {
 	}{
 		PostID: postId,
 	})
-	w.WriteHeader(status)	
+	w.WriteHeader(status)
 }
 
 func (p *post) GetPost(w http.ResponseWriter, r *http.Request) {
