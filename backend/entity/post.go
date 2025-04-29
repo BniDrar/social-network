@@ -17,6 +17,7 @@ type Post struct {
 	CreatedAt      time.Time `json:"created_at"`
 	GroupName      string    `json:"groupe_name"`
 	GroupID        uint
+	Engagement     int       `json:"engagement"`
 	Status         int       `json:"status"`
 	AllowedViewers []int     `json:"allowed_viewers"`
 	UpdatedAt      time.Time `json:"updated_at"`
