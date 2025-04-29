@@ -3,7 +3,10 @@ package post
 import (
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strconv"
 
 	"socialNetwork/entity"
@@ -31,18 +34,34 @@ func Newpost(dep *config.Dependencies) Post {
 	return &post{db: dep.DB, loger: *dep.Loger, Hub: dep.Hub}
 }
 
+func (p *post) ServeMedia(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("Serving media file:", r.URL.Path)
+
+	// Clean the path to avoid path traversal
+	path := filepath.Clean("." + r.URL.Path)
+
+	// Check if file exists and is not a directory
+	info, err := os.Stat(path)
+	if err != nil || info.IsDir() {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	http.ServeFile(w, r, path)
+}
+
 func (p *post) GetPosts(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
-	limit, err:= strconv.Atoi(r.URL.Query().Get("limit"))
+	limit, err := strconv.Atoi(r.URL.Query().Get("limit"))
 	if err != nil || limit <= 0 {
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "bad query"})
 		return
 	}
-	offset, err:= strconv.Atoi(r.URL.Query().Get("offset"))
+	offset, err := strconv.Atoi(r.URL.Query().Get("offset"))
 	if err != nil || offset < 0 {
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "bad query"})
