@@ -141,10 +141,13 @@ func (u *user) Profile(w http.ResponseWriter, r *http.Request) {
 
 	target := r.URL.Query().Get("userid")
 	id, err := strconv.Atoi(target)
-	if err != nil || id <= 0 {
+	if err != nil || id < 0 {
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Invalid user ID"})
 		return
+	}
+	if id == 0 {
+		id = r.Context().Value(entity.ContextID).(int)
 	}
 	status, user, err := u.UserProfile(r.Context(), id)
 	if err != nil {

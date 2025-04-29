@@ -53,7 +53,7 @@ func (u *user) UserProfile(ctx context.Context, targetId int) (int, entity.User,
 		return http.StatusInternalServerError, user, fmt.Errorf("erro while getting the profile from the database, err: %v", err)
 	}
 	user.ProfileOwner = int(user.ID) == ctx.Value(entity.ContextID).(int)
-	if user.Status == entity.PublicUser {
+	if user.Status == entity.PublicUser || user.ProfileOwner {
 		return http.StatusOK, user, nil
 	}
 	userId := ctx.Value(entity.ContextID).(int)

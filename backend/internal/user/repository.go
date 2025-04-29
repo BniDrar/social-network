@@ -20,7 +20,7 @@ func (r *user) GetUserProfileById(ctx context.Context, targetId int) (entity.Use
 	requesterId := ctx.Value(entity.ContextID).(int)
 	query := `
 		SELECT 
-			u.id, u.nickname, u.email, u.password, u.avatar, 
+			u.id, u.nickname, u.email, u.avatar, 
 			u.first_name, u.last_name, u.birthday, u.about_me, 
 			u.status,
 			(SELECT COUNT(*) FROM follows WHERE followed_id = u.id) AS followers_count,
@@ -35,7 +35,7 @@ func (r *user) GetUserProfileById(ctx context.Context, targetId int) (entity.Use
 	`
 
 	err := r.db.QueryRowContext(ctx, query, requesterId, targetId).Scan(
-		&user.ID, &user.Nickname, &user.Email, &user.Password, &user.Avatar,
+		&user.ID, &user.Nickname, &user.Email, &user.Avatar,
 		&user.First, &user.Last, &user.DateOfBirth, &user.AboutMe, &user.Status,
 		&user.FollowersCount, &user.FollowingCount, &user.FollowingState,
 	)
