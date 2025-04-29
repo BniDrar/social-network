@@ -82,7 +82,7 @@ func (p *post) Repo_GetAll(ctx context.Context, id, limit, offset int) ([]entity
 		    (post.status = 0 AND gm.member_id IS NOT NULL )
 		    OR (post.status = 1 AND follow.follower_id = $1 )
 			OR (post.status = 2 )
-			OR (post.user_id = $1);
+			OR (post.user_id = $1)
 		LIMIT $2 OFFSET $3;`)
 	if err != nil {
 		return nil, http.StatusInternalServerError, err

@@ -89,7 +89,7 @@ func (u *user) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if User.Avatar != "" {
-		err = os.WriteFile(User.Avatar, fileContent, 0444)
+		err = os.WriteFile(User.Avatar, fileContent, 0o444)
 		if err != nil {
 			u.loger.Error.Println("error while create the avatar", err)
 			w.WriteHeader(http.StatusInternalServerError)
