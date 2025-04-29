@@ -2,8 +2,9 @@ package post
 
 import (
 	"context"
-	"errors"
+	"database/sql"
 	"fmt"
+	"net/http"
 
 	"socialNetwork/entity"
 )
@@ -120,23 +121,63 @@ func (p *post) Repo_GetOne(ctx context.Context, post_id int) (post entity.Post, 
 	return
 }
 
-func (p *post) Repo_CreatePost(ctx context.Context, user_id int, post entity.Post) (err error) {
-	prep, err := p.db.PrepareContext(ctx, `INSERT into posts
-		(user_id, content, image, group_id, status)
-	VALUES
-		($1, $2, $3, $4, $5)`)
+func (r *post) SavePost(ctx context.Context, userID int, post entity.Post) (int, int, error) {
+	// Start a transaction for creating post and group
+	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
-		return
+		return 0, http.StatusInternalServerError, err
 	}
-	res, err := prep.Exec(user_id, post.Content, post.Image, post.GroupID, post.Status)
+	defer tx.Rollback() // Rollback if there is any error
+
+	// Insert post first
+	var postID int
+	err = tx.QueryRow(`INSERT INTO posts (user_id, content, image, group_id, status) 
+		VALUES ($1, $2, $3, $4, $5) RETURNING id`,
+		userID, post.Content, post.Image, post.GroupID, post.Status).Scan(&postID)
 	if err != nil {
-		return
+		return 0, http.StatusBadRequest, err
 	}
-	last, err := res.LastInsertId()
-	if last == 0 && err == nil {
-		err = errors.New("insert error")
+
+	// Handle custom group creation if status is 'custom'
+	if post.Status == entity.PostStatusCustom {
+		groupID, err := r.createCustomGroup(tx, post.AllowedViewers)
+		if err != nil {
+			return 0, http.StatusBadRequest, err
+		}
+
+		// Update post with the new group ID
+		_, err = tx.Exec(`UPDATE posts SET group_id = $1 WHERE id = $2`, groupID, postID)
+		if err != nil {
+			return 0, http.StatusInternalServerError, err
+		}
 	}
-	return
+
+	// Commit transaction
+	err = tx.Commit()
+	if err != nil {
+		return 0, http.StatusInternalServerError, err
+	}
+
+	return postID, http.StatusCreated, nil
+}
+
+func (r *post) createCustomGroup(tx *sql.Tx, viewers []int) (int, error) {
+	// Create new custom group
+	var groupID int
+	err := tx.QueryRow(`INSERT INTO groups (type) VALUES (?) RETURNING id`, entity.PostStatusCustom).Scan(&groupID)
+	if err != nil {
+		return 0, err
+	}
+
+	// Add viewers to the group
+	for _, viewerID := range viewers {
+		_, err := tx.Exec(`INSERT INTO group_members (group_id, member_id) VALUES ($1, $2)`, groupID, viewerID)
+		if err != nil {
+			return 0, err
+		}
+	}
+
+	return groupID, nil
 }
 
 func (p *post) Repo_React(ctx context.Context, user_id int, react entity.Vote) (err error) {
