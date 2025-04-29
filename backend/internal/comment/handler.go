@@ -45,7 +45,7 @@ func (c *comment) AddComment(w http.ResponseWriter, r *http.Request) {
 
 	file, fileHeader, err := r.FormFile("image")
 	if err == nil {
-		commnt.Image, err = utils.FileUpload(file, fileHeader, err)
+		commnt.Image, err = utils.FileUpload(file, fileHeader)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
