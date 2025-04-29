@@ -3,9 +3,7 @@ package post
 import (
 	"database/sql"
 	"encoding/json"
-	"io"
 	"net/http"
-	"os"
 
 	"socialNetwork/entity"
 	"socialNetwork/pkg/config"
@@ -49,24 +47,50 @@ func (p *post) ReactPost(w http.ResponseWriter, r *http.Request) {
 }
 
 func (p *post) CreatePost(w http.ResponseWriter, r *http.Request) {
-	File, FileHeader, err := r.FormFile("image")
-	FilePath, err := utils.FileUpload(File, FileHeader, err)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
+	if r.Method != http.MethodPost {
+		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
-	post := entity.Post{
-		Image: FilePath,
-	}
-	err = p.Service_CreateOne(r.Context(), r.Body, r.Form["users"], post)
+	var (
+		post  entity.Post
+		image []byte
+	)
+	w.Header().Set("Content-Type", "application/json")
+	err := json.NewDecoder(r.Body).Decode(&post)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
+		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Invalid response body"})
+	}
+	file, fileHeader, err := r.FormFile("image")
+	if err != nil && err != http.ErrMissingFile {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Error reading uploaded file: " + err.Error()})
 		return
 	}
-	Content, _ := io.ReadAll(File)
-	os.WriteFile(FilePath, Content, 0o444)
+	if err != nil {
+		post.Image = ""
+	} else {
+		image, post.Image, err = utils.ValidateImage(file, fileHeader)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
+			return
+		}
+	}
+	status, postId, err := p.CreatePostService(r.Context(), post, image)
+	if err != nil {
+		w.WriteHeader(status)
+		if status == http.StatusBadRequest {
+			json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Invalid Credentials"})
+		}
+		return
+	}
+	json.NewEncoder(w).Encode(struct {
+		PostID int `json:"post_id"`
+	}{
+		PostID: postId,
+	})
+	w.WriteHeader(status)	
 }
 
 func (p *post) GetPost(w http.ResponseWriter, r *http.Request) {
