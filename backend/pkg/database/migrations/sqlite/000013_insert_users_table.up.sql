@@ -1,5 +1,5 @@
 -- Step 1: Create 10 users
-INSERT INTO users (email, password, first_name, last_name, birthday, avatar, nickname, about_me, status)
+INSERT INTO users (email, password, first_name, last_name, birthday, avatar, nickname, about_me)
 VALUES
   ('user1@example.com', 'media/profile/default.png', 'First1', 'Last1', '1990-01-01', NULL, 'user1', 'About user 1'),
   ('user2@example.com', 'media/profile/default.png', 'First2', 'Last2', '1992-02-02', NULL, 'user2', 'About user 2'),

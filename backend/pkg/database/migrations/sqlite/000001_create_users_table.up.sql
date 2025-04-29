@@ -7,5 +7,5 @@ CREATE TABLE IF NOT EXISTS users (
     birthday DATETIME,
     avatar TEXT DEFAULT 'media/profile/default.png',
     nickname TEXT UNIQUE,
-    about_me TEXT,
+    about_me TEXT
 );
