@@ -7,18 +7,19 @@ import (
 )
 
 type Post struct {
-	ID        int       `json:"id"`
-	Avatar    []byte    `json:"avatar"`
-	UserName  string    `json:"username"`
-	Content   string    `json:"content"`
-	Image     string    `json:"image"`
-	Comments  uint      `json:"comments"`
-	Likes     uint      `json:"likes"`
-	CreatedAt time.Time `json:"created_at"`
-	GroupName string    `json:"groupe_name"`
-	GroupID   uint
-	Status    int
-	UpdatedAt time.Time `json:"updated_at"`
+	ID             int       `json:"id"`
+	Avatar         []byte    `json:"avatar"`
+	UserName       string    `json:"username"`
+	Content        string    `json:"content"`
+	Image          string    `json:"image"`
+	Comments       uint      `json:"comments"`
+	Likes          uint      `json:"likes"`
+	CreatedAt      time.Time `json:"created_at"`
+	GroupName      string    `json:"groupe_name"`
+	GroupID        uint
+	Status         int       `json:"status"`
+	AllowedViewers []int     `json:"allowed_viewers"`
+	UpdatedAt      time.Time `json:"updated_at"`
 }
 
 type Target struct {
@@ -28,6 +29,12 @@ type Target struct {
 }
 
 // -- 0: private, 1: friends, 2: global
+const (
+	PostStatusCustom = iota
+	PostStatusFriends
+	PostStatusGlobal
+)
+
 func (p *Post) Validate(users []string) error {
 	if len(strings.TrimSpace(p.Content)) >= 1 && len(p.Content) <= 1000 {
 		switch p.Status {
