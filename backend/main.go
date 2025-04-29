@@ -1,7 +1,11 @@
 package main
 
 import (
+	"log"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"socialNetwork/internal/server"
@@ -54,5 +58,33 @@ func main() {
 
 	// Start listening server
 	loger.Info.Printf("\033[32mServer is running...🚀\n\tLink: 🌐 http://%s:%s", cfg.API.Host, cfg.API.Port)
-	server.ListenAndServe()
+	serverErrChan := make(chan error, 1)
+
+	go func() {
+		err := server.ListenAndServe()
+		if err != nil && err != http.ErrServerClosed {
+			serverErrChan <- err
+		} else {
+			serverErrChan <- nil
+		}
+	}()
+
+	// Create a channel to capture OS signals
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
+
+	select {
+	case sig := <-quit:
+		log.Println("\nserver shut down gracefully:", sig)
+		// Gracefully shutdown
+		if err := server.Close(); err != nil {
+			log.Fatal("Server Close failed:", err)
+		}
+	case err := <-serverErrChan:
+		if err != nil {
+			log.Fatal("Server crashed:", err)
+		} else {
+			log.Println("Server shutdown gracefully")
+		}
+	}
 }
