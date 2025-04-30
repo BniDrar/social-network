@@ -2,6 +2,7 @@ package post
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
 	"errors"
 	"net/http"
@@ -19,6 +20,7 @@ func (p *post) GetPostsService(ctx context.Context, limit, offset int) ([]entity
 	posts, status, err:= p.Repo_GetAll(ctx, id, limit, offset)
 	for _, post:= range posts {
 		post.Nickname = post.UserName.String
+		post.UserName = sql.NullString{}
 	}
 	return posts, status, err
 }

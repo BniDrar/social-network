@@ -70,6 +70,7 @@ func (p *post) Repo_GetAll(ctx context.Context, id, limit, offset int) ([]entity
 		    post.content,
 			post.image,
 			(SELECT COUNT(*) FROM engagement AS eng WHERE eng.user_id = $1 AND eng.post_id = post.id) AS likes_count,
+			(SELECT COUNT(*) FROM comments AS c WHERE c.post_id = post.id),
 		    (SELECT nickname FROM users AS u WHERE post.user_id=u.id) AS creator,
 		    CASE 
 			WHEN EXISTS (
@@ -104,7 +105,7 @@ func (p *post) Repo_GetAll(ctx context.Context, id, limit, offset int) ([]entity
 	var posts []entity.Post
 	for rows.Next() {
 		var post entity.Post
-		err := rows.Scan(&post.ID, &post.Avatar, &post.First, &post.Last, &post.Content, &post.Image, &post.LikesCount, &post.UserName, &post.Engagement)
+		err := rows.Scan(&post.ID, &post.Avatar, &post.First, &post.Last, &post.Content, &post.Image, &post.LikesCount, &post.Comments, &post.UserName, &post.Engagement)
 		if err != nil {
 			p.loger.Error.Println("error occur while scan post info", err)
 			continue
