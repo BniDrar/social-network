@@ -88,7 +88,9 @@ func (u *user) CreateUser(user entity.User) error {
 	}
 	if user.Nickname == "" {
 		nickname.Valid = false
-	}	
+	}else {
+		nickname.Valid = true
+	}
 	if user.Nickname != "" {
 		ok, err := u.CheckUserByUsername(user.Nickname)
 		if err != nil {
