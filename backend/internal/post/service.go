@@ -2,7 +2,6 @@ package post
 
 import (
 	"context"
-	"database/sql"
 	"encoding/json"
 	"errors"
 	"net/http"
@@ -17,21 +16,23 @@ import (
 
 func (p *post) GetPostsService(ctx context.Context, limit, offset int) ([]entity.Post, int, error) {
 	id := ctx.Value(entity.ContextID).(int)
-	posts, status, err:= p.Repo_GetAll(ctx, id, limit, offset)
-	for _, post:= range posts {
+	posts, status, err := p.Repo_GetAll(ctx, id, limit, offset)
+	for _, post := range posts {
 		post.Nickname = post.UserName.String
-		post.UserName = sql.NullString{}
+		post.UserName = entity.NullString{}
 	}
 	return posts, status, err
 }
-
 
 func (p *post) GetPostService(ctx context.Context, postID int) (entity.Post, int, error) {
 	id := ctx.Value(entity.ContextID).(int)
 	if !p.Repo_UserCanPost(ctx, id, postID) {
 		return entity.Post{}, http.StatusUnauthorized, errors.New("you don't have the permision")
 	}
-	return p.GetPostRepo(ctx, postID)
+
+	post, status, err := p.GetPostRepo(ctx, postID)
+	post.Nickname, post.UserName = post.UserName.String, entity.NullString{}
+	return post, status, err
 }
 
 func (p *post) CreatePostService(ctx context.Context, post entity.Post, imageContent []byte) (int, int, error) {
@@ -53,7 +54,7 @@ func (p *post) PostEngagementService(ctx context.Context, postId int) (int, erro
 	if !p.Repo_UserCanPost(ctx, userId, postId) {
 		return http.StatusUnauthorized, errors.New("you don't have the permission to react")
 	}
-	err:=  p.PostEngagementRepo(ctx, userId, postId)
+	err := p.PostEngagementRepo(ctx, userId, postId)
 	if err != nil {
 		return http.StatusInternalServerError, err
 	}

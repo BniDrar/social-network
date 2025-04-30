@@ -1,24 +1,23 @@
 package entity
 
 import (
-	"database/sql"
 	"errors"
 	"strings"
 	"time"
 )
 
 type Post struct {
-	ID             int            `json:"id"`
-	Avatar         sql.NullString `json:"avatar"`
-	Nickname       string         `json:"nickname"`
-	First          string         `json:"first_name"`
-	Last           string         `json:"last_name"`
-	UserName       sql.NullString `json:"username"`
-	Content        string         `json:"content"`
-	Image          string         `json:"image"`
-	Comments       uint           `json:"comments"`
-	CreatedAt      time.Time      `json:"created_at"`
-	GroupName      string         `json:"groupe_name"`
+	ID             int        `json:"id"`
+	Avatar         NullString `json:"avatar"`
+	Nickname       string     `json:"nickname"`
+	First          string     `json:"first_name"`
+	Last           string     `json:"last_name"`
+	UserName       NullString `json:"username"`
+	Content        string     `json:"content"`
+	Image          string     `json:"image"`
+	Comments       uint       `json:"comments"`
+	CreatedAt      time.Time  `json:"created_at"`
+	GroupName      string     `json:"groupe_name"`
 	GroupID        uint
 	Engagement     int       `json:"engagement"`
 	LikesCount     int       `json:"likes_count"`
