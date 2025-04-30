@@ -88,6 +88,11 @@ func (app *App) createRoutes() []Route {
 			handler: app.GetUserNotification,
 			Role:    User,
 		},
+		{
+			Path: "/api/user/changestatus",
+			handler: app.ChangeStatus,
+			Role: User,
+		},
 		/*group handlers*/
 		{
 			Path:    "/api/user/groups",

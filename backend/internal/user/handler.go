@@ -35,6 +35,7 @@ type User interface {
 	HandleFollowRequestResponse(w http.ResponseWriter, r *http.Request)
 	FollowersAndFollowed(w http.ResponseWriter, r *http.Request)
 	GetUserPosts(w http.ResponseWriter, r *http.Request)
+	ChangeStatus(w http.ResponseWriter, r *http.Request)
 	DeleteUserByNickName(Nickname string) error
 	IsUserExist(id uint) (bool, error)
 }
@@ -122,6 +123,19 @@ func (u *user) Register(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(status)
+}
+
+func (u *user) ChangeStatus(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPut {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+	err := u.ChangeStatusService(r.Context())
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
 }
 
 func (u *user) Login(w http.ResponseWriter, r *http.Request) {

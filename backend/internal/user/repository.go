@@ -124,6 +124,13 @@ func (u *user) CreateUser(user entity.User) error {
 	return nil
 }
 
+func (u *user) changeStatusRepo(ctx context.Context, id int) error {
+	query := `UPDATE users SET status = 1 - status WHERE id = $1`
+	_, err := u.db.ExecContext(ctx, query, id)
+	return err
+}
+
+
 // this function is used to update user
 func (r *user) UpdateUser(user entity.User) error {
 	query := `UPDATE users SET

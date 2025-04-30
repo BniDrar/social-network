@@ -93,6 +93,11 @@ func (u *user) GetUserPostsService(ctx context.Context, userId, limit, offset in
 	return posts, http.StatusOK, nil
 }
 
+func (u *user) ChangeStatusService(ctx context.Context) error {
+	id:= ctx.Value(entity.ContextID).(int)
+	return u.changeStatusRepo(ctx, id)
+}
+
 func (u *user) FollowersAndFollowedService(ctx context.Context, id int) (int, entity.Follows, error) {
 	var (
 		follows entity.Follows
