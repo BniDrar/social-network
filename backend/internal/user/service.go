@@ -28,8 +28,9 @@ func (s *user) RegisterService(user entity.User) (int, error) {
 		return http.StatusBadRequest, errors.New("email already exists")
 	}
 	// check if user Nickname already exists
-	if user.Nickname != "" {
-		_, err = s.GetUserByUsername(user.Nickname)
+	if user.Nickname.String != "" {
+		user.Nickname.Valid = true
+		_, err = s.GetUserByUsername(user.Nickname.String)
 		if err != nil {
 			return http.StatusBadRequest, errors.New("nickname already exists")
 		}
@@ -67,6 +68,29 @@ func (u *user) UserProfile(ctx context.Context, targetId int) (int, entity.User,
 		return http.StatusInternalServerError, entity.User{}, err
 	}
 	return http.StatusOK, user, nil
+}
+
+func (u *user) GetUserPostsService(ctx context.Context, userId, limit, offset int) ([]entity.Post, int, error) {
+	id := ctx.Value(entity.ContextID).(int)
+	user, err := u.GetUserProfileById(ctx, userId)
+	if err != nil {
+		return nil, http.StatusInternalServerError, err
+	}
+	if user.Status == entity.PrivateUser && id != userId {
+		authorized, err := u.isFollowedBy(id, userId)
+		if err != nil {
+			return nil, http.StatusInternalServerError, err
+		}
+		if !authorized {
+			return nil, http.StatusUnauthorized, errors.New("you can't access to the user profile")
+		}
+	}
+	posts, err := u.GetUserPostsRep(ctx, userId, limit, offset)
+	if err != nil {
+		return nil, http.StatusInternalServerError, err
+	}
+
+	return posts, http.StatusOK, nil
 }
 
 func (u *user) FollowersAndFollowedService(ctx context.Context, id int) (int, entity.Follows, error) {

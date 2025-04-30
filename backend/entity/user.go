@@ -1,8 +1,10 @@
 package entity
 
+import "database/sql"
+
 type User struct {
 	ID             uint   `json:"id,omitempty"`
-	Nickname       string `json:"nickname,omitempty"`
+	Nickname       sql.NullString `json:"nickname,omitempty"`
 	Email          string `json:"email,omitempty"`
 	Password       string `json:"password,omitempty"`
 	Avatar         string `json:"avatar,omitempty"`

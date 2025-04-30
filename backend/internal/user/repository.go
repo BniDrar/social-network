@@ -83,16 +83,9 @@ func (r *user) GetUserByUsername(username string) (entity.User, error) {
 
 // this function is used to create new user
 func (u *user) CreateUser(user entity.User) error {
-	nickname := sql.NullString{
-		String: user.Nickname,
-	}
-	if user.Nickname == "" {
-		nickname.Valid = false
-	}else {
-		nickname.Valid = true
-	}
-	if user.Nickname != "" {
-		ok, err := u.CheckUserByUsername(user.Nickname)
+	if user.Nickname.String != "" {
+		user.Nickname.Valid = true
+		ok, err := u.CheckUserByUsername(user.Nickname.String)
 		if err != nil {
 			return err
 		}
@@ -121,7 +114,7 @@ func (u *user) CreateUser(user entity.User) error {
 		user.First,
 		user.Last,
 		user.DateOfBirth,
-		nickname,
+		user.Nickname,
 		user.AboutMe,
 		user.Status,
 		user.Avatar)
@@ -471,4 +464,35 @@ func (u *user) userNotificationRepo(ctx context.Context) ([]entity.Notification,
 	}
 
 	return notifications, http.StatusOK, nil
+}
+func (p *user) GetUserPostsRep(ctx context.Context, postID, limit, offset int) ([]entity.Post, error) {
+	query := `SELECT
+		    post.id,
+		    user.avatar,
+		    post.content,
+			post.image,
+		    (SELECT nickname FROM users AS u WHERE post.user_id=u.id) AS creator
+		FROM posts AS post 
+		INNER JOIN users AS user ON user.id = post.user_id
+		WHERE (post.id=$1)
+		LIMIT $2 OFFSET $3;`
+	smtp, err := p.db.PrepareContext(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	rows, err := smtp.QueryContext(ctx, postID, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+	var posts []entity.Post
+	for rows.Next() {
+		var post entity.Post
+		err := rows.Scan(&post.ID, &post.Avatar, &post.Content, &post.Image, &post.UserName)
+		if err != nil {
+			p.loger.Error.Println("error occur while scan post info", err)
+			continue
+		}
+		posts = append(posts, post)
+	}
+	return posts, nil
 }

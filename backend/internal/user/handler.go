@@ -34,6 +34,7 @@ type User interface {
 	GetUserNotification(w http.ResponseWriter, r *http.Request)
 	HandleFollowRequestResponse(w http.ResponseWriter, r *http.Request)
 	FollowersAndFollowed(w http.ResponseWriter, r *http.Request)
+	GetUserPosts(w http.ResponseWriter, r *http.Request)
 	DeleteUserByNickName(Nickname string) error
 	IsUserExist(id uint) (bool, error)
 }
@@ -82,7 +83,7 @@ func (u *user) Register(w http.ResponseWriter, r *http.Request) {
 	}
 	
 	// Optional fields
-	user.Nickname = r.FormValue("nickname")
+	user.Nickname.String = r.FormValue("nickname")
 	user.AboutMe = r.FormValue("about_me")
 	file, fileHeader, err := r.FormFile("avatar")
 	if err != nil && err != http.ErrMissingFile {
@@ -213,6 +214,44 @@ func (u *user) Profile(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+}
+
+func (u *user) GetUserPosts(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	userId, err := strconv.Atoi(r.URL.Query().Get("user_id"))
+	if err != nil || userId <= 0 {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Invalid query"})
+		return
+	}
+
+	limit, err := strconv.Atoi(r.URL.Query().Get("limit"))
+	if err != nil || limit <= 0 {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Invalid query"})
+		return
+	}
+	offset, err := strconv.Atoi(r.URL.Query().Get("offset"))
+	if err != nil || offset < 0 {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Invalid query"})
+		return
+	}
+
+	posts, status, err := u.GetUserPostsService(r.Context(), userId, limit, offset)
+	w.WriteHeader(status)
+	if err != nil {
+		u.loger.Error.Println(err)
+		if status == http.StatusBadRequest {
+			json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
+		}
+		return
+	}
+	json.NewEncoder(w).Encode(&posts)
 }
 
 func (u *user) Follow(w http.ResponseWriter, r *http.Request) {

@@ -79,6 +79,11 @@ func (app *App) createRoutes() []Route {
 			Role:    User,
 		},
 		{
+			Path: "/api/user/posts",
+			handler: app.GetUserPosts,
+			Role: User,
+		},
+		{
 			Path:    "api/user/notifications",
 			handler: app.GetUserNotification,
 			Role:    User,

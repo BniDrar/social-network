@@ -1,6 +1,7 @@
 package entity
 
 import (
+	"database/sql"
 	"errors"
 	"strings"
 	"time"
@@ -9,7 +10,7 @@ import (
 type Post struct {
 	ID             int       `json:"id"`
 	Avatar         []byte    `json:"avatar"`
-	UserName       string    `json:"username"`
+	UserName       sql.NullString    `json:"username"`
 	Content        string    `json:"content"`
 	Image          string    `json:"image"`
 	Comments       uint      `json:"comments"`

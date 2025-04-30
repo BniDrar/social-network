@@ -19,6 +19,7 @@ func (p *post) GetPostsService(ctx context.Context, limit, offset int) ([]entity
 	return p.Repo_GetAll(ctx, id, limit, offset)
 }
 
+
 func (p *post) GetPostService(ctx context.Context, postID int) (entity.Post, int, error) {
 	id := ctx.Value(entity.ContextID).(int)
 	if !p.Repo_UserCanPost(ctx, id, postID) {
@@ -32,9 +33,11 @@ func (p *post) CreatePostService(ctx context.Context, post entity.Post, imageCon
 	if err != nil {
 		return 0, status, err
 	}
-	err = os.WriteFile(post.Image, imageContent, 0o444)
-	if err != nil {
-		return 0, http.StatusInternalServerError, err
+	if post.Image != "" {
+		err = os.WriteFile(post.Image, imageContent, 0o444)
+		if err != nil {
+			return 0, http.StatusInternalServerError, err
+		}
 	}
 	return postID, http.StatusCreated, nil
 }
