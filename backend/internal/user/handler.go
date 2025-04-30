@@ -54,20 +54,46 @@ func (u *user) Register(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Content-Type", "application/json")
 
+	err := r.ParseMultipartForm(10 << 20) // 10MB
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Error parsing form"})
+		return
+	}
+
+	var user entity.User
+
+	// Required fields
+	user.First = r.FormValue("first")
+	user.Last = r.FormValue("last")
+	user.Email = r.FormValue("email")
+	user.Password = r.FormValue("password")
+	user.DateOfBirth = r.FormValue("date_of_birth")
+	statusStr := r.FormValue("status")
+	
+	if statusStr != "" {
+		statusUint, err := strconv.ParseUint(statusStr, 10, 32)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "invalid status value"})
+			return
+		}
+		user.Status = uint(statusUint)
+	}
+	
+	// Optional fields
+	user.Nickname = r.FormValue("nickname")
+	user.AboutMe = r.FormValue("about_me")
 	file, fileHeader, err := r.FormFile("avatar")
 	if err != nil && err != http.ErrMissingFile {
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Error reading uploaded file"})
 		return
 	}
-	var (
-		User        entity.User
-		fileContent []byte
-	)
-	if err != nil {
-		User.Avatar = ""
-	} else {
-		fileContent, User.Avatar, err = utils.ValidateImage(file, fileHeader)
+
+	var fileContent []byte
+	if err == nil {
+		fileContent, user.Avatar, err = utils.ValidateImage(file, fileHeader)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
@@ -75,26 +101,24 @@ func (u *user) Register(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	err = json.NewDecoder(r.Body).Decode(&User)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
-		return
-	}
-	status, err := u.RegisterService(User)
+	status, err := u.RegisterService(user)
 	if err != nil {
 		u.loger.Error.Println(err)
 		w.WriteHeader(status)
 		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
 		return
 	}
-	if User.Avatar != "" {
-		err = os.WriteFile(User.Avatar, fileContent, 0o444)
+
+	if user.Avatar != "" {
+		err = os.WriteFile(user.Avatar, fileContent, 0o644)
 		if err != nil {
-			u.loger.Error.Println("error while create the avatar", err)
+			u.loger.Error.Println("error while saving avatar", err)
 			w.WriteHeader(http.StatusInternalServerError)
+			json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Error saving avatar"})
+			return
 		}
 	}
+
 	w.WriteHeader(status)
 }
 

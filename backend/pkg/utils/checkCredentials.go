@@ -24,15 +24,15 @@ func ValidateLoginCredentials(user entity.Credentials) error {
 	return nil
 }
 
-//  this function the register credentials before saving to the database
+// this function the register credentials before saving to the database
 func ValidateRegisterCredentials(user entity.User) error {
 	if user.First == "" || user.Last == "" {
 		return fmt.Errorf("invalid first or last name")
 	}
-	if !isValidNickName(user.Nickname) {
-		return fmt.Errorf("invalid nickname")
-	}
-	if !isValidateEmail(user.Email){
+	// if !isValidNickName(user.Nickname) {
+	// 	return fmt.Errorf("invalid nickname")
+	// }
+	if !isValidateEmail(user.Email) {
 		return fmt.Errorf("invalid email %v", user.Email)
 	}
 	if !isValidPassWord(user.Password) {
@@ -43,19 +43,19 @@ func ValidateRegisterCredentials(user entity.User) error {
 
 // this if know if the user enter email or nickname in the username field and validate it
 func ValidateUsername(username string) error {
-    // Check if input looks like an email (contains @)
-    if strings.Contains(username, "@") {
-        if isValidateEmail(username) {
-            return nil
-        }
-        return fmt.Errorf("invalid email format: %s (example: user@domain.com)", username)
-    }
+	// Check if input looks like an email (contains @)
+	if strings.Contains(username, "@") {
+		if isValidateEmail(username) {
+			return nil
+		}
+		return fmt.Errorf("invalid email format: %s (example: user@domain.com)", username)
+	}
 
-    // If no @, treat as nickname
-    if isValidNickName(username) {
-        return nil
-    }
-    return fmt.Errorf("invalid nickname format: %s (must be 4-20 alphanumeric characters)", username)
+	// If no @, treat as nickname
+	if isValidNickName(username) {
+		return nil
+	}
+	return fmt.Errorf("invalid nickname format: %s (must be 4-20 alphanumeric characters)", username)
 }
 
 // this function is used to validate the email
@@ -101,18 +101,18 @@ func isValidPassWord(password string) bool {
 
 // this function is used to validate the username
 func isValidNickName(name string) bool {
-    if name == "" || len(name) < 5 || len(name) > 20 {
-        return false
-    }
-    // Compile regex once at package level for better performance
-    var nickNameRegex = regexp.MustCompile(`^[a-zA-Z0-9][a-zA-Z0-9.]*[a-zA-Z0-9]$`)
-    // Early exit if pattern doesn't match
-    if !nickNameRegex.MatchString(name) {
-        return false
-    }
+	if name == "" || len(name) < 5 || len(name) > 20 {
+		return false
+	}
+	// Compile regex once at package level for better performance
+	var nickNameRegex = regexp.MustCompile(`^[a-zA-Z0-9][a-zA-Z0-9.]*[a-zA-Z0-9]$`)
+	// Early exit if pattern doesn't match
+	if !nickNameRegex.MatchString(name) {
+		return false
+	}
 
-    // Check for consecutive periods
-    return !strings.Contains(name, "..")
+	// Check for consecutive periods
+	return !strings.Contains(name, "..")
 }
 
 // this function is used to compare the hashed password with the plain password

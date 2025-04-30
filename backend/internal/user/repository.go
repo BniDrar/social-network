@@ -83,13 +83,20 @@ func (r *user) GetUserByUsername(username string) (entity.User, error) {
 
 // this function is used to create new user
 func (u *user) CreateUser(user entity.User) error {
-	// ok, err := u.IsExistsService(int(user.ID))
-	ok, err := u.CheckUserByUsername(user.Nickname)
-	if err != nil {
-		return err
+	nickname := sql.NullString{
+		String: user.Nickname,
 	}
-	if ok {
-		return config.ErrUserAlreadyExists
+	if user.Nickname == "" {
+		nickname.Valid = false
+	}	
+	if user.Nickname != "" {
+		ok, err := u.CheckUserByUsername(user.Nickname)
+		if err != nil {
+			return err
+		}
+		if ok {
+			return config.ErrUserAlreadyExists
+		}
 	}
 	query := `INSERT INTO users(
 						Email,
@@ -111,7 +118,7 @@ func (u *user) CreateUser(user entity.User) error {
 		user.First,
 		user.Last,
 		user.DateOfBirth,
-		user.Nickname,
+		nickname,
 		user.AboutMe,
 		user.Avatar)
 	if err != nil {
@@ -409,7 +416,7 @@ func (u *user) GetFollowing(ctx context.Context, id int) ([]entity.User, error) 
 }
 
 func (u *user) userNotificationRepo(ctx context.Context) ([]entity.Notification, int, error) {
-    query := `SELECT 
+	query := `SELECT 
                 n.id,
                 n.type,
                 n.group_id,
@@ -427,37 +434,37 @@ func (u *user) userNotificationRepo(ctx context.Context) ([]entity.Notification,
                       AND gm.group_id = n.group_id
                   )
               )
-              ORDER BY n.id DESC`  
+              ORDER BY n.id DESC`
 
-    rows, err := u.db.QueryContext(ctx, query, ctx.Value(entity.ContextID).(int))
-    if err != nil {
-        return nil, http.StatusInternalServerError, 
-               fmt.Errorf("error querying notifications: %w", err)
-    }
-    defer rows.Close()
+	rows, err := u.db.QueryContext(ctx, query, ctx.Value(entity.ContextID).(int))
+	if err != nil {
+		return nil, http.StatusInternalServerError,
+			fmt.Errorf("error querying notifications: %w", err)
+	}
+	defer rows.Close()
 
-    var notifications []entity.Notification
-    for rows.Next() {
-        var n entity.Notification
-        err = rows.Scan(
-            &n.Id,
-            &n.Type,
-            &n.GroupId,
-            &n.SenderId,
-            &n.ReceiverID,
-            &n.EventID,
-        )
-        if err != nil {
-            return nil, http.StatusInternalServerError, 
-                   fmt.Errorf("error scanning notification: %w", err)
-        }
-        notifications = append(notifications, n)
-    }
+	var notifications []entity.Notification
+	for rows.Next() {
+		var n entity.Notification
+		err = rows.Scan(
+			&n.Id,
+			&n.Type,
+			&n.GroupId,
+			&n.SenderId,
+			&n.ReceiverID,
+			&n.EventID,
+		)
+		if err != nil {
+			return nil, http.StatusInternalServerError,
+				fmt.Errorf("error scanning notification: %w", err)
+		}
+		notifications = append(notifications, n)
+	}
 
-    if err = rows.Err(); err != nil {
-        return nil, http.StatusInternalServerError, 
-               fmt.Errorf("rows iteration error: %w", err)
-    }
+	if err = rows.Err(); err != nil {
+		return nil, http.StatusInternalServerError,
+			fmt.Errorf("rows iteration error: %w", err)
+	}
 
-    return notifications, http.StatusOK, nil
+	return notifications, http.StatusOK, nil
 }

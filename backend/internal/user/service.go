@@ -28,9 +28,11 @@ func (s *user) RegisterService(user entity.User) (int, error) {
 		return http.StatusBadRequest, errors.New("email already exists")
 	}
 	// check if user Nickname already exists
-	_, err = s.GetUserByUsername(user.Nickname)
-	if err != nil {
-		return http.StatusBadRequest, errors.New("nickname already exists")
+	if user.Nickname != "" {
+		_, err = s.GetUserByUsername(user.Nickname)
+		if err != nil {
+			return http.StatusBadRequest, errors.New("nickname already exists")
+		}
 	}
 	// save user to db
 	err = s.CreateUser(user)
