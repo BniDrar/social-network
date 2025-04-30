@@ -2,7 +2,6 @@ package server
 
 import (
 	"net/http"
-
 	"socialNetwork/pkg/config"
 )
 
@@ -155,6 +154,16 @@ func (app *App) createRoutes() []Route {
 		{
 			Path:    "/api/post/create",
 			handler: app.CreatePost,
+			Role:    User,
+		},
+		{
+			Path:    "/api/post/",
+			handler: app.GetPost,
+			Role:    User,
+		},
+		{
+			Path:    "/api/pictures/",
+			handler: app.ServeMedia,
 			Role:    User,
 		},
 		// comments handlers

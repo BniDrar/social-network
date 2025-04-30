@@ -21,6 +21,7 @@ type Post interface {
 	CreatePost(w http.ResponseWriter, r *http.Request)
 	GetPost(w http.ResponseWriter, r *http.Request)
 	ReactPost(w http.ResponseWriter, r *http.Request)
+	ServeMedia(w http.ResponseWriter, r *http.Request)
 	GetPostByUsername(w http.ResponseWriter, r *http.Request)
 }
 
@@ -38,8 +39,8 @@ func (p *post) ServeMedia(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Serving media file:", r.URL.Path)
 
 	// Clean the path to avoid path traversal
-	path := filepath.Clean("." + r.URL.Path)
-
+	path := filepath.Clean("." + r.URL.Path)[len("api/pictures/"):]
+	fmt.Println(path)
 	// Check if file exists and is not a directory
 	info, err := os.Stat(path)
 	if err != nil || info.IsDir() {
