@@ -61,15 +61,23 @@ func (p *post) Repo_UserCanPost(ctx context.Context, id, postid int) bool {
 	}
 }
 
-
-
 func (p *post) Repo_GetAll(ctx context.Context, id, limit, offset int) ([]entity.Post, int, error) {
 	prep, err := p.db.PrepareContext(ctx, `SELECT
 			post.id,
 		    user.avatar,
+		    user.first_name,
+		    user.last_name,
 		    post.content,
 			post.image,
-		    (SELECT nickname FROM users AS u WHERE post.user_id=u.id) AS creator
+			(SELECT COUNT(*) FROM engagement AS eng WHERE eng.user_id = $1 AND eng.post_id = post.id) AS likes_count,
+		    (SELECT nickname FROM users AS u WHERE post.user_id=u.id) AS creator,
+		    CASE 
+			WHEN EXISTS (
+				SELECT 1 FROM engagement eng 
+				WHERE eng.user_id = $1 AND eng.post_id = post.id
+				) THEN 1 ELSE 0 
+			END AS engaged	
+
 		FROM
 		    posts AS post
 		INNER JOIN users AS user ON user.id= post.user_id
@@ -96,7 +104,7 @@ func (p *post) Repo_GetAll(ctx context.Context, id, limit, offset int) ([]entity
 	var posts []entity.Post
 	for rows.Next() {
 		var post entity.Post
-		err := rows.Scan(&post.ID, &post.Avatar, &post.Content, &post.Image, &post.UserName)
+		err := rows.Scan(&post.ID, &post.Avatar, &post.First, &post.Last, &post.Content, &post.Image, &post.LikesCount, &post.UserName, &post.Engagement)
 		if err != nil {
 			p.loger.Error.Println("error occur while scan post info", err)
 			continue
@@ -192,7 +200,7 @@ func (p *post) PostEngagementRepo(ctx context.Context, userId, postId int) error
 	countQuery := `SELECT COUNT(*) FROM engagement WHERE user_id = $1 AND post_id = $2`
 	insertQuery := `INSERT INTO engagement (user_id, post_id, status) VALUES ($1, $2, 1)`
 	deleteQuery := `DELETE FROM engagement WHERE user_id = $1 AND post_id = $2`
-	
+
 	// Prepare count statement
 	countStmt, err := p.db.PrepareContext(ctx, countQuery)
 	if err != nil {
@@ -234,7 +242,6 @@ func (p *post) PostEngagementRepo(ctx context.Context, userId, postId int) error
 
 	return nil
 }
-
 
 func (p *post) GetPostsByUserID(ctx context.Context, user_id int, username string) (posts []entity.Post, err error) {
 	prep, err := p.db.PrepareContext(ctx, `SELECT
