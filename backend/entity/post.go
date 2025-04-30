@@ -14,7 +14,7 @@ type Post struct {
 	Last           string     `json:"last_name"`
 	UserName       NullString `json:"username"`
 	Content        string     `json:"content"`
-	Image          string     `json:"image"`
+	Image          NullString `json:"image"`
 	Comments       uint       `json:"comments"`
 	CreatedAt      time.Time  `json:"created_at"`
 	GroupName      string     `json:"groupe_name"`

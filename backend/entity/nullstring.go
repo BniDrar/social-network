@@ -10,6 +10,10 @@ type NullString struct {
 	sql.NullString
 }
 
+func (ns *NullString) SetValid(value bool) {
+	ns.Valid = value
+	ns.NullString.Valid = value
+}
 // Make it work with database/sql
 func (ns *NullString) Scan(value interface{}) error {
 	return ns.NullString.Scan(value)

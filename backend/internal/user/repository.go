@@ -465,7 +465,7 @@ func (u *user) userNotificationRepo(ctx context.Context) ([]entity.Notification,
 
 	return notifications, http.StatusOK, nil
 }
-func (p *user) GetUserPostsRep(ctx context.Context, postID, limit, offset int) ([]entity.Post, error) {
+func (p *user) GetUserPostsRep(ctx context.Context, userId, limit, offset int) ([]entity.Post, error) {
 	query := `SELECT
 		    post.id,
 		    user.avatar,
@@ -474,13 +474,13 @@ func (p *user) GetUserPostsRep(ctx context.Context, postID, limit, offset int) (
 		    (SELECT nickname FROM users AS u WHERE post.user_id=u.id) AS creator
 		FROM posts AS post 
 		INNER JOIN users AS user ON user.id = post.user_id
-		WHERE (post.id=$1)
+		WHERE (user.id=$1)
 		LIMIT $2 OFFSET $3;`
 	smtp, err := p.db.PrepareContext(ctx, query)
 	if err != nil {
 		return nil, err
 	}
-	rows, err := smtp.QueryContext(ctx, postID, limit, offset)
+	rows, err := smtp.QueryContext(ctx, userId, limit, offset)
 	if err != nil {
 		return nil, err
 	}

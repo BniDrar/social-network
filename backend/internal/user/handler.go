@@ -94,7 +94,8 @@ func (u *user) Register(w http.ResponseWriter, r *http.Request) {
 
 	var fileContent []byte
 	if err == nil {
-		fileContent, user.Avatar, err = utils.ValidateImage(file, fileHeader)
+		fileContent, user.Avatar.NullString.String, err = utils.ValidateImage(file, fileHeader)
+		user.Avatar.SetValid(true)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
@@ -110,8 +111,8 @@ func (u *user) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if user.Avatar != "" {
-		err = os.WriteFile(user.Avatar, fileContent, 0o644)
+	if user.Avatar.Valid {
+		err = os.WriteFile(user.Avatar.NullString.String, fileContent, 0o644)
 		if err != nil {
 			u.loger.Error.Println("error while saving avatar", err)
 			w.WriteHeader(http.StatusInternalServerError)

@@ -30,8 +30,8 @@ func (c *comment) CreateCommentService(ctx context.Context, commnt entity.Commen
 		}
 		return 0, status, err
 	}
-	if commnt.Image != "" {
-		err = os.WriteFile(commnt.Image, imageContent, 0444)
+	if commnt.Image.Valid {
+		err = os.WriteFile(commnt.Image.NullString.String, imageContent, 0444)
 		if err != nil {
 			return 0, http.StatusInternalServerError, err
 		}

@@ -22,7 +22,6 @@ type Post interface {
 	GetPost(w http.ResponseWriter, r *http.Request)
 	ReactPost(w http.ResponseWriter, r *http.Request)
 	ServeMedia(w http.ResponseWriter, r *http.Request)
-	GetPostByUsername(w http.ResponseWriter, r *http.Request)
 }
 
 type post struct {
@@ -149,14 +148,4 @@ func (p *post) GetPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	json.NewEncoder(w).Encode(&post)
-}
-
-func (p *post) GetPostByUsername(w http.ResponseWriter, r *http.Request) {
-	data, err := p.GetPostsByUserService(r.Context(), r.PathValue("username"))
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
-		return
-	}
-	w.Write(data)
 }

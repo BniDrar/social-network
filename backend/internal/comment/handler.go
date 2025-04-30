@@ -52,9 +52,10 @@ func (c *comment) AddComment(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Error reading uploaded file"})
 	}
 	if err != nil {
-		commnt.Image = ""
+		commnt.Image.SetValid(false)
 	} else {
-		imageContent, commnt.Image, err = utils.ValidateImage(file, fileHeader)
+		imageContent, commnt.Image.NullString.String, err = utils.ValidateImage(file, fileHeader)
+		commnt.Image.SetValid(true)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})

@@ -37,10 +37,11 @@ func ParseAndValidatePostForm(r *http.Request) (entity.Post, []byte, error) {
 	var image []byte
 	file, fileHeader, err := r.FormFile("image")
 	if err == nil {
-		image, post.Image, err = ValidateImage(file, fileHeader)
+		image, post.Image.NullString.String, err = ValidateImage(file, fileHeader)
 		if err != nil {
 			return post, nil, fmt.Errorf("invalid image: %v", err)
 		}
+		post.Image.SetValid(true)
 	} else if err != http.ErrMissingFile {
 		return post, nil, fmt.Errorf("error reading uploaded file: %v", err)
 	}
