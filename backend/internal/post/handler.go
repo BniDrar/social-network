@@ -115,6 +115,7 @@ func (p *post) CreatePost(w http.ResponseWriter, r *http.Request) {
 
 	postId, status, err := p.CreatePostService(r.Context(), formData, image)
 	w.WriteHeader(status)
+	p.loger.Error.Println(err)
 	if err != nil {
 		if status == http.StatusBadRequest {
 			json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Invalid credentials"})

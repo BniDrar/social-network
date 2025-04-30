@@ -171,6 +171,7 @@ func (r *post) createCustomGroup(tx *sql.Tx, viewers []int) (int, error) {
 	var groupID int
 	err := tx.QueryRow(`INSERT INTO groups (type) VALUES (?) RETURNING id`, entity.PostStatusCustom).Scan(&groupID)
 	if err != nil {
+		r.loger.Error.Println(err)
 		return 0, err
 	}
 
@@ -193,8 +194,15 @@ func (p *post) PostEngagementRepo(ctx context.Context, engagement entity.Engagem
 	if err != nil {
 		return 0, nil
 	}
-	_, err = prep.ExecContext(ctx, engagement.UserID, engagement.PostID, engagement.Status)
-	return 0, nil
+	res, err := prep.ExecContext(ctx, engagement.UserID, engagement.PostID, engagement.Status)
+	if err != nil {
+		return 0, err
+	}
+	id, err:= res.LastInsertId()
+	if err != nil {
+		return 0, err
+	}
+	return int(id), nil
 }
 
 func (p *post) GetPostsByUserID(ctx context.Context, user_id int, username string) (posts []entity.Post, err error) {
