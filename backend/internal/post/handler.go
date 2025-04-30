@@ -104,46 +104,27 @@ func (p *post) CreatePost(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
-	var (
-		post  entity.Post
-		image []byte
-	)
 	w.Header().Set("Content-Type", "application/json")
-	err := json.NewDecoder(r.Body).Decode(&post)
+
+	formData, image, err := utils.ParseAndValidatePostForm(r)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Invalid response body"})
-	}
-	file, fileHeader, err := r.FormFile("image")
-	if err != nil && err != http.ErrMissingFile {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Error reading uploaded file: " + err.Error()})
+		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
 		return
 	}
+
+	postId, status, err := p.CreatePostService(r.Context(), formData, image)
+	w.WriteHeader(status)
 	if err != nil {
-		post.Image = ""
-	} else {
-		image, post.Image, err = utils.ValidateImage(file, fileHeader)
-		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
-			return
-		}
-	}
-	status, postId, err := p.CreatePostService(r.Context(), post, image)
-	if err != nil {
-		w.WriteHeader(status)
 		if status == http.StatusBadRequest {
-			json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Invalid Credentials"})
+			json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Invalid credentials"})
 		}
 		return
 	}
+
 	json.NewEncoder(w).Encode(struct {
 		PostID int `json:"post_id"`
-	}{
-		PostID: postId,
-	})
-	w.WriteHeader(status)
+	}{PostID: postId})
 }
 
 func (p *post) GetPost(w http.ResponseWriter, r *http.Request) {
