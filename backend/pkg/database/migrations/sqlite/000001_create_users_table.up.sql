@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS users (
     last_name TEXT,
     birthday DATETIME,
     avatar TEXT DEFAULT 'media/profile/default.png',
+    status INTEGER,
     nickname TEXT UNIQUE,
     about_me TEXT
 );
