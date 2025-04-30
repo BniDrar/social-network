@@ -8,7 +8,7 @@ type User struct {
 	Avatar         string `json:"avatar,omitempty"`
 	First          string `json:"first,omitempty"`
 	Last           string `json:"last,omitempty"`
-	DateOfBirth    string `json:"date_of_birth,omitempty"`
+	DateOfBirth    string `json:"birthday,omitempty"`
 	AboutMe        string `json:"about_me,omitempty"`
 	Status         uint   `json:"status,omitempty"`
 	ProfileOwner   bool   `json:"profile_owner,omitempty"`
@@ -16,6 +16,8 @@ type User struct {
 	FollowersCount uint   `json:"followers_count,omitempty"`
 	FollowingCount uint   `json:"following_count,omitempty"`
 }
+
+
 
 type Follows struct {
 	Followers []User
@@ -28,6 +30,6 @@ type Credentials struct {
 }
 
 const (
-	PrivateUser = 0
-	PublicUser  = 1
+	PublicUser  = 0
+	PrivateUser = 1
 )
