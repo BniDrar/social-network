@@ -179,31 +179,60 @@ func (r *post) createCustomGroup(tx *sql.Tx, viewers []int) (int, error) {
 	for _, viewerID := range viewers {
 		_, err := tx.Exec(`INSERT INTO group_members (group_id, member_id) VALUES ($1, $2)`, groupID, viewerID)
 		if err != nil {
-			return 0, errors.New("error while executing the transaction: "+ err.Error())
+			return 0, errors.New("error while executing the transaction: " + err.Error())
 		}
 	}
 
 	return groupID, nil
 }
 
-func (p *post) PostEngagementRepo(ctx context.Context, engagement entity.Engagement) (int, error) {
-	prep, err := p.db.PrepareContext(ctx, `INSERT INTO engagements
-			(user_id, post_id, status)
-		VALUES
-			($1, $2, $3)`)
+func (p *post) PostEngagementRepo(ctx context.Context, userId, postId int) error {
+	countQuery := `SELECT COUNT(*) FROM engagement WHERE user_id = $1 AND post_id = $2`
+	insertQuery := `INSERT INTO engagement (user_id, post_id, status) VALUES ($1, $2, 1)`
+	deleteQuery := `DELETE FROM engagement WHERE user_id = $1 AND post_id = $2`
+	
+	// Prepare count statement
+	countStmt, err := p.db.PrepareContext(ctx, countQuery)
 	if err != nil {
-		return 0, nil
+		return fmt.Errorf("failed to prepare count query: %w", err)
 	}
-	res, err := prep.ExecContext(ctx, engagement.UserID, engagement.PostID, engagement.Status)
+	defer countStmt.Close()
+
+	var count int
+	err = countStmt.QueryRowContext(ctx, userId, postId).Scan(&count)
 	if err != nil {
-		return 0, err
+		return fmt.Errorf("failed to count engagement: %w", err)
 	}
-	id, err:= res.LastInsertId()
-	if err != nil {
-		return 0, err
+
+	var stmt *sql.Stmt
+
+	if count > 0 {
+		stmt, err = p.db.PrepareContext(ctx, deleteQuery)
+		if err != nil {
+			return fmt.Errorf("failed to prepare delete query: %w", err)
+		}
+		defer stmt.Close()
+
+		_, err = stmt.ExecContext(ctx, userId, postId)
+		if err != nil {
+			return fmt.Errorf("failed to delete engagement: %w", err)
+		}
+	} else {
+		stmt, err = p.db.PrepareContext(ctx, insertQuery)
+		if err != nil {
+			return fmt.Errorf("failed to prepare insert query: %w", err)
+		}
+		defer stmt.Close()
+
+		_, err = stmt.ExecContext(ctx, userId, postId)
+		if err != nil {
+			return fmt.Errorf("failed to insert engagement: %w", err)
+		}
 	}
-	return int(id), nil
+
+	return nil
 }
+
 
 func (p *post) GetPostsByUserID(ctx context.Context, user_id int, username string) (posts []entity.Post, err error) {
 	prep, err := p.db.PrepareContext(ctx, `SELECT

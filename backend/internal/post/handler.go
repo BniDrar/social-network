@@ -86,14 +86,12 @@ func (p *post) ReactPost(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
-	var engagement entity.Engagement
-	err := json.NewDecoder(r.Body).Decode(&engagement)
-	if err != nil {
+	postId, err := strconv.Atoi(r.URL.Query().Get("post_id"))
+	if err != nil || postId == 0 {
 		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Invalid response body"})
-		return
+		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Invalid query"})
 	}
-	status, err := p.PostEngagementService(r.Context(), engagement)
+	status, err := p.PostEngagementService(r.Context(), postId)
 	w.WriteHeader(status)
 	if err != nil {
 		p.loger.Error.Println(err)

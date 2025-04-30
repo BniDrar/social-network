@@ -166,6 +166,11 @@ func (app *App) createRoutes() []Route {
 			handler: app.ServeMedia,
 			Role:    User,
 		},
+		{
+			Path: "/api/post/vote",
+			handler: app.ReactPost,
+			Role: User,
+		},
 		// comments handlers
 		{
 			Path:    "/api/comment/add",

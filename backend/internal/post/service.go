@@ -39,12 +39,16 @@ func (p *post) CreatePostService(ctx context.Context, post entity.Post, imageCon
 	return postID, http.StatusCreated, nil
 }
 
-func (p *post) PostEngagementService(ctx context.Context, engagement entity.Engagement) (int, error) {
-	engagement.UserID = ctx.Value(entity.ContextID).(int)
-	if !p.Repo_UserCanPost(ctx, engagement.UserID, engagement.PostID) {
+func (p *post) PostEngagementService(ctx context.Context, postId int) (int, error) {
+	userId := ctx.Value(entity.ContextID).(int)
+	if !p.Repo_UserCanPost(ctx, userId, postId) {
 		return http.StatusUnauthorized, errors.New("you don't have the permission to react")
 	}
-	return p.PostEngagementRepo(ctx, engagement)
+	err:=  p.PostEngagementRepo(ctx, userId, postId)
+	if err != nil {
+		return http.StatusInternalServerError, err
+	}
+	return http.StatusOK, nil
 }
 
 func (p *post) GetPostsByUserService(ctx context.Context, username string) (data []byte, err error) {
