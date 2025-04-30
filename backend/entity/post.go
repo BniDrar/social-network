@@ -9,7 +9,7 @@ import (
 
 type Post struct {
 	ID             int       `json:"id"`
-	Avatar         []byte    `json:"avatar"`
+	Avatar         string    `json:"avatar"`
 	UserName       sql.NullString    `json:"username"`
 	Content        string    `json:"content"`
 	Image          string    `json:"image"`
