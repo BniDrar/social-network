@@ -29,7 +29,7 @@ type Target struct {
 	Offset uint `json:"offset"`
 }
 
-// -- 0: private, 1: friends, 2: global
+// -- 0: custom, 1: friends, 2: global
 const (
 	PostStatusCustom = iota
 	PostStatusFriends
