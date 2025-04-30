@@ -36,7 +36,7 @@ func (r *user) GetUserProfileById(ctx context.Context, targetId int) (entity.Use
 
 	err := r.db.QueryRowContext(ctx, query, requesterId, targetId).Scan(
 		&user.ID, &user.Nickname, &user.Email, &user.Avatar,
-		&user.First, &user.Last, &user.DateOfBirth, &user.AboutMe, &user.Status,
+		&user.First, &user.Last, &user.DateOfBirth, &user.AboutMe, &user.Status, 
 		&user.FollowersCount, &user.FollowingCount, &user.FollowingState,
 	)
 	if err != nil {
@@ -108,8 +108,9 @@ func (u *user) CreateUser(user entity.User) error {
 						birthday,
 						Nickname,
 						about_me,
+						status,
 						Avatar)
-						VALUES($1, $2, $3, $4, $5, $6, $7, $8)`
+						VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)`
 	stmt, err := u.db.Prepare(query)
 	if err != nil {
 		return err
@@ -122,6 +123,7 @@ func (u *user) CreateUser(user entity.User) error {
 		user.DateOfBirth,
 		nickname,
 		user.AboutMe,
+		user.Status,
 		user.Avatar)
 	if err != nil {
 		return err
