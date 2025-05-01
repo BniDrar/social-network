@@ -109,7 +109,7 @@ func (c *chat) getContacts(ctx context.Context, userId int) ([]entity.Contact, e
 			NULL AS group_name,
 			u.first_name,
 			u.last_name,
-			u.avatar,
+			u.avatar
 		FROM users u
 		JOIN messages m ON (u.id = m.sender_id AND m.receiver_id = ?) OR (u.id = m.receiver_id AND m.sender_id = ?)
 		WHERE u.id != ?
@@ -121,7 +121,7 @@ func (c *chat) getContacts(ctx context.Context, userId int) ([]entity.Contact, e
 			g.name AS group_name,
 			NULL AS first_name,
 			NULL AS last_name,
-			NULL AS avatar,
+			NULL AS avatar
 		FROM groups g
 		JOIN group_members gm ON gm.group_id = g.id
 		WHERE gm.member_id = ? AND g.type IN (0, 2)

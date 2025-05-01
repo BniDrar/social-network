@@ -58,8 +58,8 @@ func (c *chat) getUserContactsService(ctx context.Context) ([]entity.Contact, in
 		log.Println("err get contacts 0")
 		return nil, http.StatusInternalServerError, err
 	}
-	for _, contact := range contacts {
-		contact.Online = true
+	for i := range contacts {
+		contacts[i].Online = true
 	}
 	return contacts, http.StatusOK, nil
 }
