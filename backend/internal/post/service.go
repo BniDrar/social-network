@@ -13,11 +13,13 @@ import (
 	_ "image/png"
 )
 
-func (p *post) GetPostsService(ctx context.Context, limit, offset int) ([]entity.Post, int, error) {
+func (p *post) GetPostsService(ctx context.Context, cursor entity.Cursor) ([]entity.Post, int, error) {
 	id := ctx.Value(entity.ContextID).(int)
-	posts, status, err:= p.Repo_GetAll(ctx, id, limit, offset)
+	posts, status, err:= p.getAllPostsRepo(ctx, id, cursor)
 	for _, post:= range posts {
-		post.Image.SetValid(true)
+		if post.Image.String != "" {
+			post.Image.SetValid(true)
+		}
 	}
 	return posts, status, err
 }

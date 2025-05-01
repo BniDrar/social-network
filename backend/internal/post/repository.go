@@ -62,58 +62,86 @@ func (p *post) Repo_UserCanPost(ctx context.Context, id, postid int) bool {
 	}
 }
 
-func (p *post) Repo_GetAll(ctx context.Context, id, limit, offset int) ([]entity.Post, int, error) {
-	prep, err := p.db.PrepareContext(ctx, `SELECT
+func (p *post) getAllPostsRepo(ctx context.Context, userID int, cursor entity.Cursor) ([]entity.Post, int, error) {
+	query := `
+		SELECT
 			post.id,
-		    user.avatar,
-		    user.first_name,
-		    user.last_name,
-		    post.content,
+			user.avatar,
+			user.first_name,
+			user.last_name,
+			post.content,
 			post.image,
 			(SELECT COUNT(*) FROM engagement AS eng WHERE eng.user_id = $1 AND eng.post_id = post.id) AS likes_count,
-			(SELECT COUNT(*) FROM comments AS c WHERE c.post_id = post.id),
-		    (SELECT nickname FROM users AS u WHERE post.user_id=u.id) AS creator,
-		    CASE 
-			WHEN EXISTS (
-				SELECT 1 FROM engagement eng 
-				WHERE eng.user_id = $1 AND eng.post_id = post.id
-				) THEN 1 ELSE 0 
-			END AS engaged	
+			(SELECT COUNT(*) FROM comments AS c WHERE c.post_id = post.id) AS comments,
+			(SELECT nickname FROM users AS u WHERE post.user_id = u.id) AS creator,
+			CASE 
+				WHEN EXISTS (
+					SELECT 1 FROM engagement eng 
+					WHERE eng.user_id = $1 AND eng.post_id = post.id
+				) THEN 1 ELSE 0
+			END AS engaged,
+			post.created_at
 
-		FROM
-		    posts AS post
-		INNER JOIN users AS user ON user.id= post.user_id
+		FROM posts AS post
+		INNER JOIN users AS user ON user.id = post.user_id
 		LEFT JOIN groups AS "group" ON "group".id = post.group_id
 		LEFT JOIN group_members AS gm ON gm.member_id = $1 AND gm.group_id = "group".id
 		LEFT JOIN follows AS follow 
-		    ON (follow.followed_id = post.user_id AND 
-		        follow.follower_id = $1 AND 
-		        post.status = 0 AND 
-		        post.group_id IS NULL)
+			ON (follow.followed_id = post.user_id AND 
+				follow.follower_id = $1 AND 
+				post.status = 0 AND 
+				post.group_id IS NULL)
 		WHERE
-		    (post.status = 0 AND gm.member_id IS NOT NULL )
-		    OR (post.status = 1 AND follow.follower_id = $1 )
-			OR (post.status = 2 )
-			OR (post.user_id = $1)
-		ORDER BY post.created_at DESC
-		LIMIT $2 OFFSET $3;`)
+			(
+				(post.status = 0 AND gm.member_id IS NOT NULL)
+				OR (post.status = 1 AND follow.follower_id = $1)
+				OR (post.status = 2)
+				OR (post.user_id = $1)
+			)
+			AND (
+				$2 IS NULL
+				OR (post.created_at < $2)
+				OR (post.created_at = $2 AND post.id < $3)
+			)
+		ORDER BY post.created_at DESC, post.id DESC
+		LIMIT $4;
+	`
+
+	prep, err := p.db.PrepareContext(ctx, query)
 	if err != nil {
 		return nil, http.StatusInternalServerError, err
 	}
-	rows, err := prep.QueryContext(ctx, id, limit, offset)
+	defer prep.Close()
+	if (cursor.Time == nil && cursor.LastId != nil) || (cursor.Time != nil && cursor.LastId == nil) {
+		return nil, http.StatusBadRequest, errors.New("invalid cursor: both time and id must be set together")
+	}
+	
+	var rows *sql.Rows
+	if cursor.Time == nil || cursor.LastId == nil {
+		// First page → pass NULLs
+		rows, err = prep.QueryContext(ctx, userID, nil, nil, entity.LIMIT)
+	} else {
+		rows, err = prep.QueryContext(ctx, userID, cursor.Time, cursor.LastId, entity.LIMIT)
+	}
 	if err != nil {
 		return nil, http.StatusBadRequest, errors.New("invalid query")
 	}
+
 	var posts []entity.Post
 	for rows.Next() {
 		var post entity.Post
-		err := rows.Scan(&post.ID, &post.Avatar, &post.First, &post.Last, &post.Content, &post.Image, &post.LikesCount, &post.Comments, &post.UserName, &post.Engagement)
+		err := rows.Scan(
+			&post.ID, &post.Avatar, &post.First, &post.Last,
+			&post.Content, &post.Image, &post.LikesCount, &post.Comments,
+			&post.UserName, &post.Engagement, &post.CreatedAt, // <-- Don't forget created_at!
+		)
 		if err != nil {
 			p.loger.Error.Println("error occur while scan post info", err)
 			continue
 		}
 		posts = append(posts, post)
 	}
+
 	return posts, http.StatusOK, nil
 }
 
@@ -134,7 +162,7 @@ func (p *post) GetPostRepo(ctx context.Context, post_id int) (entity.Post, int, 
 	}
 	var post entity.Post
 	res := prep.QueryRowContext(ctx, post_id)
-	err = res.Scan(&post.ID, &post.Avatar, &post.Content, &post.Image, &post.UserName, &post.LikesCount, &post.Comments, )
+	err = res.Scan(&post.ID, &post.Avatar, &post.Content, &post.Image, &post.UserName, &post.LikesCount, &post.Comments)
 	if err != nil {
 		return entity.Post{}, http.StatusInternalServerError, err
 	}
