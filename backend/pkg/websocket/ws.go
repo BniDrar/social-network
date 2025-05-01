@@ -26,6 +26,7 @@ func NewManager() *WsManager {
 }
 
 func (m *WsManager) AddClient(userID uint, conn *websocket.Conn) {
+	log.Println("befor adding", len(m.Clients))
 	m.Mtx.Lock()
 	defer m.Mtx.Unlock()
 	c := &Client{
@@ -34,11 +35,16 @@ func (m *WsManager) AddClient(userID uint, conn *websocket.Conn) {
 	}
 	m.Clients[userID] = c
 	log.Printf("Client %d added", userID)
-	go m.readMessage(userID)
-	go m.writeMessage(userID)
+	for i, _ := range m.Clients {
+		fmt.Printf("online ---------------> id  %d ", i)
+	}
+	log.Println("after adding", len(m.Clients))
+	// go m.readMessage(userID)
+	// go m.writeMessage(userID)
 }
 
 func (m *WsManager) RemoveClient(userID uint) {
+	log.Println("client removed", userID)
 	m.Mtx.Lock()
 	defer m.Mtx.Unlock()
 
@@ -66,6 +72,7 @@ func (m *WsManager) readMessage(userID uint) {
 }
 
 func (m *WsManager) writeMessage(userID uint) {
+	fmt.Println("writing message ")
 	c := m.Clients[userID]
 	fmt.Println("clients:", c)
 	for message := range c.send { //
@@ -97,6 +104,7 @@ func (m *WsManager) writeMessage(userID uint) {
 }
 
 func (m *WsManager) SendMessage(userID uint, message []byte) {
+	fmt.Println("sending the message now")
 	m.Mtx.Lock()
 	defer m.Mtx.Unlock()
 	c, ok := m.Clients[userID]

@@ -79,9 +79,9 @@ func (app *App) createRoutes() []Route {
 			Role:    User,
 		},
 		{
-			Path: "/api/user/posts",
+			Path:    "/api/user/posts",
 			handler: app.GetUserPosts,
-			Role: User,
+			Role:    User,
 		},
 		{
 			Path:    "api/user/notifications",
@@ -89,9 +89,9 @@ func (app *App) createRoutes() []Route {
 			Role:    User,
 		},
 		{
-			Path: "/api/user/changestatus",
+			Path:    "/api/user/changestatus",
 			handler: app.ChangeStatus,
-			Role: User,
+			Role:    User,
 		},
 		/*group handlers*/
 		{
@@ -177,9 +177,9 @@ func (app *App) createRoutes() []Route {
 			Role:    User,
 		},
 		{
-			Path: "/api/post/vote",
+			Path:    "/api/post/vote",
 			handler: app.ReactPost,
-			Role: User,
+			Role:    User,
 		},
 		// comments handlers
 		{
@@ -188,7 +188,7 @@ func (app *App) createRoutes() []Route {
 			Role:    User,
 		},
 		{
-			Path:    "api/comment/get",
+			Path:    "/api/comment/get",
 			handler: app.GetComments,
 			Role:    User,
 		},
@@ -199,9 +199,9 @@ func (app *App) createRoutes() []Route {
 			Role:    User,
 		},
 		{
-			Path: "api/contacts",
+			Path:    "/api/contacts",
 			handler: app.GetUserContacts,
-			Role: User,
+			Role:    User,
 		},
 		/*... handlers*/
 	}
