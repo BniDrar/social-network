@@ -48,13 +48,13 @@ func WsListing(conn *websocket.Conn, ctx context.Context) error {
 }
 
 func (c *chat) getUserContactsService(ctx context.Context) ([]entity.Contact, int, error) {
-	userId:= ctx.Value(entity.ContextID).(int)
+	userId := ctx.Value(entity.ContextID).(int)
 	contacts, err := c.getContacts(ctx, userId)
 	if err != nil {
 		return nil, http.StatusInternalServerError, err
 	}
-	for _, contact:= range contacts {
-		contact.Online = true
+	for i := range contacts {
+		contacts[i].Online = true
 	}
 	return contacts, http.StatusOK, nil
 }
