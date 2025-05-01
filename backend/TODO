@@ -1,3 +1,1 @@
-add remove notification in all the notification response 
-or add seen to the notification table 
-    
+replace the limit offset pagination with the cursor pagination to avoid repetition
