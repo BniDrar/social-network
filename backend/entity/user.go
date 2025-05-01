@@ -17,6 +17,14 @@ type User struct {
 	FollowingCount uint       `json:"following_count,omitempty"`
 }
 
+type Contact struct {
+	ID int `json:"id"`
+	FirstName string `json:"first_name"`
+	LastName string `json:"last_name"`
+	Avatar NullString `json:"avatar"`
+	Online bool
+}
+
 type Follows struct {
 	Followers []User
 	Following []User
