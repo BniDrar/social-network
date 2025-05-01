@@ -32,8 +32,9 @@ func WsListing(conn *websocket.Conn, ctx context.Context) error {
 	// Listen for messages from the client
 	for {
 		_, message, err := conn.ReadMessage()
-
+		log.Printf("message arrived: %q", message)
 		if err != nil {
+			log.Println(1, err)
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
 				log.Printf("error: %v", err)
 			}

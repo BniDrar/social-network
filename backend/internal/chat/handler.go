@@ -45,7 +45,6 @@ func (c *chat) GetUserContacts(w http.ResponseWriter, r *http.Request) {
 
 func (c *chat) WebSocket(w http.ResponseWriter, r *http.Request) {
 	// upgrade
-	c.loger.Info.Println("0")
 	var upgrader = websocket.Upgrader{
 		ReadBufferSize:  2048,
 		WriteBufferSize: 2048,
@@ -53,7 +52,6 @@ func (c *chat) WebSocket(w http.ResponseWriter, r *http.Request) {
 			return true // Allow all origins (use cautiously in production)
 		},
 	}
-	c.loger.Info.Println("1")
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		c.loger.Error.Println("Error while upgrading connection:", err)
@@ -112,18 +110,16 @@ func (c *chat) WebSocket(w http.ResponseWriter, r *http.Request) {
 	// 	}
 	// }()
 	/*________________________________________________________________________________________________________*/
-	c.loger.Info.Println("2")
 	defer conn.Close()
+
 	//get user id from session
 	userId := r.Context().Value(entity.ContextID)
-	c.loger.Info.Println("3")
 	if userId == nil {
 		c.loger.Error.Println("User ID not found in session")
 		//w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
-	c.loger.Info.Println("4")
 	c.loger.Info.Printf("Client %d connected\n", userId)
 	WsListing(conn, r.Context())
 	c.loger.Info.Printf("Client %d disconnected\n", userId)

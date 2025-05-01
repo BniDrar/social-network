@@ -51,7 +51,6 @@ func (m *WsManager) RemoveClient(userID uint) {
 
 func (m *WsManager) readMessage(userID uint) {
 	c := m.Clients[userID]
-	defer m.RemoveClient(userID)
 
 	for {
 		_, message, err := c.conn.ReadMessage()
@@ -68,7 +67,6 @@ func (m *WsManager) readMessage(userID uint) {
 
 func (m *WsManager) writeMessage(userID uint) {
 	c := m.Clients[userID]
-	defer m.RemoveClient(userID)
 	fmt.Println("clients:", c)
 	for message := range c.send { //
 		fmt.Println("message:", message)
@@ -101,8 +99,9 @@ func (m *WsManager) writeMessage(userID uint) {
 func (m *WsManager) SendMessage(userID uint, message []byte) {
 	m.Mtx.Lock()
 	defer m.Mtx.Unlock()
-
-	if c, ok := m.Clients[userID]; ok {
+	c, ok := m.Clients[userID]
+	log.Println("..........................................................................", ok)
+	if ok {
 		select {
 		case c.send <- message:
 		default:
@@ -112,9 +111,11 @@ func (m *WsManager) SendMessage(userID uint, message []byte) {
 }
 
 func (m *WsManager) Broadcast(userID uint, message []byte) {
+	log.Printf("start broadcasting")
 	m.Mtx.Lock()
 	defer m.Mtx.Unlock()
 	for id, c := range m.Clients {
+		log.Printf("brod cast to %d", id)
 		if id != userID {
 			select {
 			case c.send <- message:
