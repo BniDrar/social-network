@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"log"
+	"net/http"
 
 	"socialNetwork/entity"
 	ws "socialNetwork/pkg/websocket"
@@ -44,4 +45,16 @@ func WsListing(conn *websocket.Conn, ctx context.Context) error {
 		Manager.SendMessage(id, message)
 		log.Printf("received message from Client %d: %s", id, message)
 	}
+}
+
+func (c *chat) getUserContactsService(ctx context.Context) ([]entity.Contact, int, error) {
+	userId:= ctx.Value(entity.ContextID).(int)
+	contacts, err := c.getContacts(ctx, userId)
+	if err != nil {
+		return nil, http.StatusInternalServerError, err
+	}
+	for _, contact:= range contacts {
+		contact.Online = true
+	}
+	return contacts, http.StatusOK, nil
 }

@@ -198,6 +198,11 @@ func (app *App) createRoutes() []Route {
 			handler: app.WebSocket,
 			Role:    User,
 		},
+		{
+			Path: "api/contacts",
+			handler: app.GetUserContacts,
+			Role: User,
+		},
 		/*... handlers*/
 	}
 }

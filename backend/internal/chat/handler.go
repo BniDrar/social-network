@@ -23,6 +23,7 @@ type chat struct {
 
 type Chat interface {
 	WebSocket(w http.ResponseWriter, r *http.Request)
+	GetUserContacts(w http.ResponseWriter, r *http.Request)
 }
 
 func NewChat(dep *config.Dependencies) Chat {
@@ -40,7 +41,13 @@ func (c *chat) GetUserContacts(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
-	
+	contacts, status, err := c.getUserContactsService(r.Context())
+	w.WriteHeader(status)
+	if err != nil {
+		c.loger.Error.Println("error while getting contacts: ", err)
+		return
+	}
+	json.NewEncoder(w).Encode(&contacts)
 }
 
 func (c *chat) WebSocket(w http.ResponseWriter, r *http.Request) {
