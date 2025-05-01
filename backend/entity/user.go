@@ -21,7 +21,8 @@ type Contact struct {
 	ID int `json:"id"`
 	FirstName string `json:"first_name"`
 	LastName string `json:"last_name"`
-	Avatar NullString `json:"avatar"`
+	GroupName string `json:"group_name"`
+	Avatar string `json:"avatar"`
 	Online bool
 }
 
