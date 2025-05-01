@@ -472,34 +472,55 @@ func (u *user) userNotificationRepo(ctx context.Context) ([]entity.Notification,
 
 	return notifications, http.StatusOK, nil
 }
-func (p *user) GetUserPostsRep(ctx context.Context, userId, limit, offset int) ([]entity.Post, error) {
-	query := `SELECT
-		    post.id,
-		    user.avatar,
-		    post.content,
+
+func (p *user) GetUserPostsRep(ctx context.Context, cursor entity.Cursor) ([]entity.Post, error) {
+	query := `
+		SELECT
+			post.id,
+			user.avatar,
+			post.content,
 			post.image,
-		    (SELECT nickname FROM users AS u WHERE post.user_id=u.id) AS creator
-		FROM posts AS post 
+			(SELECT nickname FROM users AS u WHERE post.user_id=u.id) AS creator,
+			post.created_at
+		FROM posts AS post
 		INNER JOIN users AS user ON user.id = post.user_id
-		WHERE (user.id=$1)
-		LIMIT $2 OFFSET $3;`
-	smtp, err := p.db.PrepareContext(ctx, query)
+		WHERE user.id = $1
+		AND (
+			$2 IS NULL
+			OR (post.created_at < $2)
+			OR (post.created_at = $2 AND post.id < $3)
+		)
+		ORDER BY post.created_at DESC, post.id DESC
+		LIMIT $4;
+	`
+
+	stmt, err := p.db.PrepareContext(ctx, query)
 	if err != nil {
 		return nil, err
 	}
-	rows, err := smtp.QueryContext(ctx, userId, limit, offset)
+	defer stmt.Close()
+
+	var rows *sql.Rows
+	if cursor.Time == nil || cursor.LastId == nil {
+		// First page — pass NULL cursor
+		rows, err = stmt.QueryContext(ctx, cursor.UserId, nil, nil, entity.LIMIT)
+	} else {
+		rows, err = stmt.QueryContext(ctx, cursor.UserId, cursor.Time, cursor.LastId, entity.LIMIT)
+	}
 	if err != nil {
 		return nil, err
 	}
+
 	var posts []entity.Post
 	for rows.Next() {
 		var post entity.Post
-		err := rows.Scan(&post.ID, &post.Avatar, &post.Content, &post.Image, &post.UserName)
+		err := rows.Scan(&post.ID, &post.Avatar, &post.Content, &post.Image, &post.UserName, &post.CreatedAt)
 		if err != nil {
 			p.loger.Error.Println("error occur while scan post info", err)
 			continue
 		}
 		posts = append(posts, post)
 	}
+
 	return posts, nil
 }

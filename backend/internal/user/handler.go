@@ -232,32 +232,19 @@ func (u *user) Profile(w http.ResponseWriter, r *http.Request) {
 }
 
 func (u *user) GetUserPosts(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
+	if r.Method != http.MethodPost {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
-	userId, err := strconv.Atoi(r.URL.Query().Get("user_id"))
-	if err != nil || userId <= 0 {
+	var cursor entity.Cursor
+	err:= json.NewDecoder(r.Body).Decode(&cursor)
+	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Invalid query"})
+		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Invalid request body"})
 		return
 	}
-
-	limit, err := strconv.Atoi(r.URL.Query().Get("limit"))
-	if err != nil || limit <= 0 {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Invalid query"})
-		return
-	}
-	offset, err := strconv.Atoi(r.URL.Query().Get("offset"))
-	if err != nil || offset < 0 {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Invalid query"})
-		return
-	}
-
-	posts, status, err := u.GetUserPostsService(r.Context(), userId, limit, offset)
+	posts, status, err := u.GetUserPostsService(r.Context(), cursor)
 	w.WriteHeader(status)
 	if err != nil {
 		u.loger.Error.Println(err)

@@ -70,14 +70,14 @@ func (u *user) UserProfile(ctx context.Context, targetId int) (int, entity.User,
 	return http.StatusOK, user, nil
 }
 
-func (u *user) GetUserPostsService(ctx context.Context, userId, limit, offset int) ([]entity.Post, int, error) {
+func (u *user) GetUserPostsService(ctx context.Context, cursor entity.Cursor) ([]entity.Post, int, error) {
 	id := ctx.Value(entity.ContextID).(int)
-	user, err := u.GetUserProfileById(ctx, userId)
+	user, err := u.GetUserProfileById(ctx, cursor.UserId)
 	if err != nil {
 		return nil, http.StatusInternalServerError, err
 	}
-	if user.Status == entity.PrivateUser && id != userId {
-		authorized, err := u.isFollowedBy(id, userId)
+	if user.Status == entity.PrivateUser && id != cursor.UserId {
+		authorized, err := u.isFollowedBy(id, cursor.UserId)
 		if err != nil {
 			return nil, http.StatusInternalServerError, err
 		}
@@ -85,7 +85,7 @@ func (u *user) GetUserPostsService(ctx context.Context, userId, limit, offset in
 			return nil, http.StatusUnauthorized, errors.New("you can't access to the user profile")
 		}
 	}
-	posts, err := u.GetUserPostsRep(ctx, userId, limit, offset)
+	posts, err := u.GetUserPostsRep(ctx, cursor)
 	if err != nil {
 		return nil, http.StatusInternalServerError, err
 	}

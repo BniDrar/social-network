@@ -3,8 +3,9 @@ package entity
 import "time"
 
 type Cursor struct {
-	Time *time.Time `json:"creation_time"`
-	Id *int `json:"id"`
+	UserId int        `json:"user_id"`
+	Time   *time.Time `json:"creation_time"`
+	LastId     *int       `json:"last_id"`
 }
 
 const LIMIT = 10
