@@ -46,7 +46,8 @@ func (p *post) Repo_UserCanPost(ctx context.Context, id, postid int) bool {
 		    (post.status = 0 AND gm.member_id IS NOT NULL AND post.id = $2)
 		    OR (post.status = 1 AND follow.follower_id = $1 AND post.id = $2)
 			OR (post.status = 2 AND post.id = $2)
-			OR (post.user_id = $1);`
+			OR (post.user_id = $1);
+		ORDER BY post.created_at DESC`
 	smtp, err := p.db.PrepareContext(ctx, query)
 	if err != nil {
 		return false
@@ -94,6 +95,7 @@ func (p *post) Repo_GetAll(ctx context.Context, id, limit, offset int) ([]entity
 		    OR (post.status = 1 AND follow.follower_id = $1 )
 			OR (post.status = 2 )
 			OR (post.user_id = $1)
+		ORDER BY post.created_at DESC
 		LIMIT $2 OFFSET $3;`)
 	if err != nil {
 		return nil, http.StatusInternalServerError, err
@@ -121,9 +123,9 @@ func (p *post) GetPostRepo(ctx context.Context, post_id int) (entity.Post, int, 
 		    user.avatar,
 		    post.content,
 			post.image,
-		    user.nickname AS creator
+		    user.nickname AS creator,
 		(SELECT COUNT(*) FROM engagement AS eng WHERE eng.user_id = $1 AND eng.post_id = post.id) AS likes_count,
-		(SELECT COUNT(*) FROM comments AS c WHERE c.post_id = post.id),
+		(SELECT COUNT(*) FROM comments AS c WHERE c.post_id = post.id) AS comments
 		FROM posts AS post 
 		INNER JOIN users AS user ON user.id = post.user_id
 		WHERE (post.id=$1);`)

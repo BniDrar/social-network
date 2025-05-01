@@ -15,7 +15,11 @@ import (
 
 func (p *post) GetPostsService(ctx context.Context, limit, offset int) ([]entity.Post, int, error) {
 	id := ctx.Value(entity.ContextID).(int)
-	return p.Repo_GetAll(ctx, id, limit, offset)
+	posts, status, err:= p.Repo_GetAll(ctx, id, limit, offset)
+	for _, post:= range posts {
+		post.Image.SetValid(true)
+	}
+	return posts, status, err
 }
 
 func (p *post) GetPostService(ctx context.Context, postID int) (entity.Post, int, error) {
