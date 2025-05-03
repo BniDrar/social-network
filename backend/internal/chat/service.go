@@ -1,7 +1,6 @@
 package chat
 
 import (
-	"bytes"
 	"context"
 	"errors"
 	"log"
@@ -50,9 +49,9 @@ func WsListing(conn *websocket.Conn, ctx context.Context) error {
 			}
 			return err
 		}
-		message = bytes.TrimSpace(bytes.Replace(message, []byte("\n"), []byte(" "), -1))
-		// Manager.SendMessage(id, message)
-		Manager.Broadcast(id, message)
+		// message = bytes.TrimSpace(bytes.Replace(message, []byte("\n"), []byte(" "), -1))
+		Manager.SendMessage(uint(data.To), []byte(data.Message))
+		// Manager.Broadcast(id, message)
 		log.Println("after brodcasting:", len(m.Clients))
 	}
 }

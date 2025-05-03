@@ -64,8 +64,6 @@ func (m *WsManager) readMessage(userID uint) {
 			log.Printf("Error reading message from Client %d: %v", userID, err)
 			break
 		}
-		log.Printf("Received message from Client %d: %s", userID, string(message))
-
 		// Handle the message (e.g., broadcast to other Clients or process it)
 		m.Broadcast(userID, message)
 	}
