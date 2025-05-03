@@ -100,8 +100,8 @@ func (p *post) getAllPostsRepo(ctx context.Context, userID int, cursor entity.Cu
 			)
 			AND (
 				$2 IS NULL
-				OR (post.created_at < $2)
-				OR (post.created_at = $2 AND post.id < $3)
+				OR (post.created_at < $2 AND post.id < $3)
+				OR (post.created_at = $2 AND post.id  < $3)
 			)
 		ORDER BY post.created_at DESC, post.id DESC
 		LIMIT $4;

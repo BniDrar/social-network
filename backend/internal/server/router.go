@@ -69,7 +69,7 @@ func (app *App) createRoutes() []Route {
 			Role:    User,
 		},
 		{
-			Path:    "api/user/follow/response",
+			Path:    "/api/user/follow/response",
 			handler: app.HandleFollowRequestResponse,
 			Role:    User,
 		},
@@ -84,7 +84,7 @@ func (app *App) createRoutes() []Route {
 			Role:    User,
 		},
 		{
-			Path:    "api/user/notifications",
+			Path:    "/api/user/notifications",
 			handler: app.GetUserNotification,
 			Role:    User,
 		},

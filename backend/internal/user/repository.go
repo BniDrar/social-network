@@ -487,8 +487,8 @@ func (p *user) GetUserPostsRep(ctx context.Context, cursor entity.Cursor) ([]ent
 		WHERE user.id = $1
 		AND (
 			$2 IS NULL
-			OR (post.created_at < $2)
-			OR (post.created_at = $2 AND post.id < $3)
+			OR (post.created_at < $2 AND post.id < $3)
+			OR (post.created_at = $2 AND post.id  < $3)
 		)
 		ORDER BY post.created_at DESC, post.id DESC
 		LIMIT $4;
