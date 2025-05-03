@@ -2,6 +2,7 @@ package chat
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"socialNetwork/entity"
 )
@@ -164,4 +165,74 @@ func (c *chat) getContacts(ctx context.Context, userId int) ([]entity.Contact, e
 	}
 
 	return contacts, nil
+}
+
+func (c *chat) getOnlines(ctx context.Context, userId int) ([]entity.Contact, error) {
+	query := `
+		SELECT DISTINCT 
+			u.id,
+			NULL AS group_name,
+			u.first_name,
+			u.last_name,
+			u.avatar
+		FROM users u
+		JOIN messages m ON (u.id = m.sender_id AND m.receiver_id = ?) OR (u.id = m.receiver_id AND m.sender_id = ?)
+		WHERE u.id != ?
+
+		UNION
+
+		SELECT DISTINCT
+			g.id,
+			g.name AS group_name,
+			NULL AS first_name,
+			NULL AS last_name,
+			NULL AS avatar
+		FROM groups g
+		JOIN group_members gm ON gm.group_id = g.id
+		WHERE gm.member_id = ? AND g.type IN (0, 2)
+	`
+
+	rows, err := c.db.QueryContext(ctx, query, userId, userId, userId, userId)
+	if err != nil {
+		return nil, fmt.Errorf("query contacts: %w", err)
+	}
+	defer rows.Close()
+
+	var contacts []entity.Contact
+	for rows.Next() {
+		var contact entity.Contact
+		var avatar entity.NullString
+		var groupName entity.NullString
+		var firstName entity.NullString
+		var lastName entity.NullString
+
+		if err := rows.Scan(
+			&contact.ID,
+			&groupName,
+			&firstName,
+			&lastName,
+			&avatar,
+		); err != nil {
+			return nil, fmt.Errorf("scan contact: %w", err)
+		}
+
+		contact.GroupName = groupName.String
+		contact.FirstName = firstName.String
+		contact.LastName = lastName.String
+		contact.Avatar = avatar.String
+
+		contacts = append(contacts, contact)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("rows error: %w", err)
+	}
+
+	return contacts, nil
+}
+func DecodeMessage(data []byte, msg *entity.ChatMessage) (*entity.ChatMessage, error) {
+	if err := json.Unmarshal(data, msg); err != nil {
+		return msg, err
+	}
+	return msg, nil
 }

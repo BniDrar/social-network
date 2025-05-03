@@ -32,3 +32,9 @@ type Message struct {
 	Content   string    `json:"content"`
 	CreatedAt time.Time `json:"created_at"`
 }
+
+type ChatMessage struct {
+	From    int    `json:from`
+	To      int    `json:to`
+	Message string `json:"text"`
+}

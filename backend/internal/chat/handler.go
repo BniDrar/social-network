@@ -24,6 +24,7 @@ type chat struct {
 type Chat interface {
 	WebSocket(w http.ResponseWriter, r *http.Request)
 	GetUserContacts(w http.ResponseWriter, r *http.Request)
+	GetOnlineUsers(w http.ResponseWriter, r *http.Request)
 }
 
 func NewChat(dep *config.Dependencies) Chat {
@@ -34,6 +35,20 @@ var upgrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool {
 		return true // Allow all origins (use cautiously in production)
 	},
+}
+
+func (c *chat) GetOnlineUsers(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+	contacts, status, err := c.getOnlineUsers(r.Context())
+	w.WriteHeader(status)
+	if err != nil {
+		c.loger.Error.Println("error while getting contacts: ", err)
+		return
+	}
+	json.NewEncoder(w).Encode(&contacts)
 }
 
 func (c *chat) GetUserContacts(w http.ResponseWriter, r *http.Request) {

@@ -74,7 +74,7 @@ func (app *App) createRoutes() []Route {
 			Role:    User,
 		},
 		{
-			Path:    "api/user/follower_and_followed",
+			Path:    "/api/user/follower_and_followed",
 			handler: app.FollowersAndFollowed,
 			Role:    User,
 		},

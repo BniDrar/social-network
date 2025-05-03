@@ -119,19 +119,17 @@ func (m *WsManager) SendMessage(userID uint, message []byte) {
 }
 
 func (m *WsManager) Broadcast(userID uint, message []byte) {
-	log.Printf("start broadcasting")
 	m.Mtx.Lock()
 	defer m.Mtx.Unlock()
 	for id, c := range m.Clients {
 		log.Printf("brod cast to %d", id)
-		// if id != userID {
-		fmt.Println("valid valid valid")
-		select {
-		case c.send <- message:
-		default:
-			log.Printf("Client %d send buffer is full", id)
+		if id != userID {
+			select {
+			case c.send <- message:
+			default:
+				log.Printf("Client %d send buffer is full", id)
+			}
 		}
-		// }
 	}
 }
 

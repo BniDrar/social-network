@@ -30,13 +30,19 @@ func WsListing(conn *websocket.Conn, ctx context.Context) error {
 	}
 	m.AddClient(id, conn)
 	defer m.RemoveClient(id)
-	log.Println("after defer in wslisting:", len(m.Clients))
 	// Listen for messages from the client
 	for {
-		log.Println("in the foor", len(m.Clients))
 		_, message, err := conn.ReadMessage()
-		log.Println("after reading message:", len(m.Clients))
-		log.Printf("received message from Client %d: %s", id, message)
+		if err != nil {
+			log.Println(err)
+		}
+		var msg entity.ChatMessage
+		data, err := DecodeMessage(message, &msg)
+		if err != nil {
+			log.Println(msg)
+		}
+		log.Println("decoded message", data)
+
 		if err != nil {
 			log.Println(1, err)
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
@@ -54,6 +60,19 @@ func WsListing(conn *websocket.Conn, ctx context.Context) error {
 func (c *chat) getUserContactsService(ctx context.Context) ([]entity.Contact, int, error) {
 	userId := ctx.Value(entity.ContextID).(int)
 	contacts, err := c.getContacts(ctx, userId)
+	if err != nil {
+		log.Println("err get contacts 0")
+		return nil, http.StatusInternalServerError, err
+	}
+	for i := range contacts {
+		contacts[i].Online = true
+	}
+	return contacts, http.StatusOK, nil
+}
+
+func (c *chat) getOnlineUsers(ctx context.Context) ([]entity.Contact, int, error) {
+	userId := ctx.Value(entity.ContextID).(int)
+	contacts, err := c.getOnlines(ctx, userId)
 	if err != nil {
 		log.Println("err get contacts 0")
 		return nil, http.StatusInternalServerError, err
