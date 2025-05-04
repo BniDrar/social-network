@@ -94,7 +94,7 @@ func (u *user) GetUserPostsService(ctx context.Context, cursor entity.Cursor) ([
 }
 
 func (u *user) ChangeStatusService(ctx context.Context) error {
-	id:= ctx.Value(entity.ContextID).(int)
+	id := ctx.Value(entity.ContextID).(int)
 	return u.changeStatusRepo(ctx, id)
 }
 
@@ -105,10 +105,12 @@ func (u *user) FollowersAndFollowedService(ctx context.Context, id int) (int, en
 	)
 	follows.Followers, err = u.GetFollowers(ctx, id)
 	if err != nil {
+		u.loger.Error.Println(err)
 		return http.StatusInternalServerError, follows, errors.New("invalid user id")
 	}
 	follows.Following, err = u.GetFollowing(ctx, id)
 	if err != nil {
+		u.loger.Error.Println(err)
 		return http.StatusInternalServerError, follows, err
 	}
 

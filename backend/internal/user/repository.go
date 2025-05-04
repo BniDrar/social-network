@@ -36,7 +36,7 @@ func (r *user) GetUserProfileById(ctx context.Context, targetId int) (entity.Use
 
 	err := r.db.QueryRowContext(ctx, query, requesterId, targetId).Scan(
 		&user.ID, &user.Nickname, &user.Email, &user.Avatar,
-		&user.First, &user.Last, &user.DateOfBirth, &user.AboutMe, &user.Status, 
+		&user.First, &user.Last, &user.DateOfBirth, &user.AboutMe, &user.Status,
 		&user.FollowersCount, &user.FollowingCount, &user.FollowingState,
 	)
 	if err != nil {
@@ -129,7 +129,6 @@ func (u *user) changeStatusRepo(ctx context.Context, id int) error {
 	_, err := u.db.ExecContext(ctx, query, id)
 	return err
 }
-
 
 // this function is used to update user
 func (r *user) UpdateUser(user entity.User) error {
@@ -370,10 +369,10 @@ func (u *user) GroupContainsMember(groupId, userId int) (bool, error) {
 // this function is used to get followers by user id
 func (u *user) GetFollowers(ctx context.Context, id int) ([]entity.User, error) {
 	query := `
-		SELECT users.nickname, users.avatar 
-		FROM users
-		INNER JOIN follows ON users.id = follows.follower_id
-		WHERE follows.followed_id = $1`
+	SELECT users.id, first_name, last_name, status, nickname, avatar 
+	FROM users
+	INNER JOIN follows ON users.id = follows.follower_id
+	WHERE follows.followed_id = ?`
 
 	rows, err := u.db.QueryContext(ctx, query, id)
 	if err != nil {
@@ -384,7 +383,7 @@ func (u *user) GetFollowers(ctx context.Context, id int) ([]entity.User, error) 
 	var followers []entity.User
 	for rows.Next() {
 		var follower entity.User
-		if err := rows.Scan(&follower.Nickname, &follower.Avatar); err != nil {
+		if err := rows.Scan(&follower.ID, &follower.First, &follower.Last, &follower.Status, &follower.Nickname, &follower.Avatar); err != nil {
 			return nil, err
 		}
 		followers = append(followers, follower)
@@ -396,10 +395,10 @@ func (u *user) GetFollowers(ctx context.Context, id int) ([]entity.User, error) 
 // this function is used to get following by user id
 func (u *user) GetFollowing(ctx context.Context, id int) ([]entity.User, error) {
 	query := `
-		SELECT users.nickname, users.avatar 
-		FROM users
-		INNER JOIN follows ON users.id = follows.followed_id 
-		WHERE follows.follower_id = $1`
+	SELECT users.id, first_name, last_name, status, nickname, avatar 
+	FROM users
+	INNER JOIN follows ON users.id = follows.followed_id 
+	WHERE follows.follower_id = ?`
 
 	rows, err := u.db.QueryContext(ctx, query, id)
 	if err != nil {
@@ -410,7 +409,7 @@ func (u *user) GetFollowing(ctx context.Context, id int) ([]entity.User, error) 
 	var followers []entity.User
 	for rows.Next() {
 		var follower entity.User
-		if err := rows.Scan(&follower.Nickname, &follower.Avatar); err != nil {
+		if err := rows.Scan(&follower.ID, &follower.First, &follower.Last, &follower.Status, &follower.Nickname, &follower.Avatar); err != nil {
 			return nil, err
 		}
 		followers = append(followers, follower)

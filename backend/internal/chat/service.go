@@ -2,6 +2,7 @@ package chat
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"log"
 	"net/http"
@@ -50,7 +51,8 @@ func WsListing(conn *websocket.Conn, ctx context.Context) error {
 			return err
 		}
 		// message = bytes.TrimSpace(bytes.Replace(message, []byte("\n"), []byte(" "), -1))
-		Manager.SendMessage(uint(data.To), []byte(data.Message))
+		byteData, _ := json.Marshal(data)
+		Manager.SendMessage(uint(data.To), byteData)
 		log.Println("message sent:", len(m.Clients))
 	}
 }
