@@ -26,15 +26,10 @@ type groupoup struct {
 }
 
 type Message struct {
-	ID        int       `json:"id"`
-	ChatID    int       `json:"chat_id"`
-	SenderID  int       `json:"sender_id"`
-	Content   string    `json:"content"`
-	CreatedAt time.Time `json:"created_at"`
-}
-
-type ChatMessage struct {
-	From    int    `json:from`
-	To      int    `json:to`
-	Message string `json:"text"`
+	ID         int       `json:"id"`
+	SenderID   int       `json:"from"`
+	ReceiverID *int      `json:"to,omitempty"`       // nil if group message
+	GroupID    *int      `json:"group_id,omitempty"` // nil if private message
+	Content    string    `json:"text"`
+	CreatedAt  time.Time `json:"created_at"`
 }

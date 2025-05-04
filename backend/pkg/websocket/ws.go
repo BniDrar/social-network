@@ -1,7 +1,6 @@
 package websocket
 
 import (
-	"fmt"
 	"log"
 	"sync"
 
@@ -26,7 +25,6 @@ func NewManager() *WsManager {
 }
 
 func (m *WsManager) AddClient(userID uint, conn *websocket.Conn) {
-	log.Println("befor adding", len(m.Clients))
 	m.Mtx.Lock()
 	defer m.Mtx.Unlock()
 	c := &Client{
@@ -34,14 +32,12 @@ func (m *WsManager) AddClient(userID uint, conn *websocket.Conn) {
 		send: make(chan []byte, 1024),
 	}
 	m.Clients[userID] = c
-	log.Printf("Client %d added", userID)
 	// log.Println("after adding", len(m.Clients))
 	// go m.readMessage(userID)
 	go m.writeMessage(userID)
 }
 
 func (m *WsManager) RemoveClient(userID uint) {
-	log.Println("client removed", userID)
 	m.Mtx.Lock()
 	defer m.Mtx.Unlock()
 
@@ -67,11 +63,8 @@ func (m *WsManager) readMessage(userID uint) {
 }
 
 func (m *WsManager) writeMessage(userID uint) {
-	fmt.Println("writing message ")
 	c := m.Clients[userID]
-	fmt.Println("clients:", c)
 	for message := range c.send { //
-		fmt.Println("message:", message)
 		err := c.conn.WriteMessage(websocket.TextMessage, message)
 		if err != nil {
 			log.Printf("Error writing message to Client %d: %v", userID, err)
@@ -99,7 +92,7 @@ func (m *WsManager) writeMessage(userID uint) {
 }
 
 func (m *WsManager) SendMessage(userID uint, message []byte) {
-	fmt.Println("sending the message now")
+	log.Println("Forwarding Message To:", userID)
 	m.Mtx.Lock()
 	defer m.Mtx.Unlock()
 	c, ok := m.Clients[userID]

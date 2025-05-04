@@ -36,12 +36,13 @@ func WsListing(conn *websocket.Conn, ctx context.Context) error {
 		if err != nil {
 			log.Println(err)
 		}
-		var msg entity.ChatMessage
+		var msg entity.Message
 		data, err := DecodeMessage(message, &msg)
+		data.SenderID = idInt
+		log.Println("recieved package:", data)
 		if err != nil {
 			log.Println(msg)
 		}
-		log.Println("decoded message", data)
 
 		if err != nil {
 			log.Println(1, err)
@@ -52,7 +53,7 @@ func WsListing(conn *websocket.Conn, ctx context.Context) error {
 		}
 		// message = bytes.TrimSpace(bytes.Replace(message, []byte("\n"), []byte(" "), -1))
 		byteData, _ := json.Marshal(data)
-		Manager.SendMessage(uint(data.To), byteData)
+		Manager.SendMessage(uint(*data.ReceiverID), byteData)
 		log.Println("message sent:", len(m.Clients))
 	}
 }

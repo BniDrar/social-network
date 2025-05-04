@@ -58,7 +58,7 @@ func (r *chat) GetChatMessages(chatID int) ([]entity.Message, error) {
 	var messages []entity.Message
 	for rows.Next() {
 		var message entity.Message
-		if err := rows.Scan(&message.ID, &message.ChatID, &message.SenderID, &message.Content, &message.CreatedAt); err != nil {
+		if err := rows.Scan(&message.ID, &message.GroupID, &message.SenderID, &message.Content, &message.CreatedAt); err != nil {
 			return nil, err
 		}
 		messages = append(messages, message)
@@ -72,7 +72,7 @@ func (r *chat) GetChatMessages(chatID int) ([]entity.Message, error) {
 func (r *chat) CreateMessage(message entity.Message) (int, error) {
 	query := `INSERT INTO chat_messages (chat_id, sender_id, content) VALUES ($1, $2, $3) RETURNING id`
 	var id int
-	err := r.db.QueryRow(query, message.ChatID, message.SenderID, message.Content).Scan(&id)
+	err := r.db.QueryRow(query, message.GroupID, message.SenderID, message.Content).Scan(&id)
 	if err != nil {
 		return 0, err
 	}
@@ -86,7 +86,7 @@ func (r *chat) SaveMessage(message entity.Message) error {
 		return err
 	}
 	defer stmt.Close()
-	_, err = stmt.Exec(message.ChatID, message.SenderID, message.Content)
+	_, err = stmt.Exec(message.GroupID, message.SenderID, message.Content)
 	if err != nil {
 		return err
 	}
@@ -230,7 +230,7 @@ func (c *chat) getOnlines(ctx context.Context, userId int) ([]entity.Contact, er
 
 	return contacts, nil
 }
-func DecodeMessage(data []byte, msg *entity.ChatMessage) (*entity.ChatMessage, error) {
+func DecodeMessage(data []byte, msg *entity.Message) (*entity.Message, error) {
 	if err := json.Unmarshal(data, msg); err != nil {
 		return msg, err
 	}

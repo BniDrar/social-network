@@ -72,7 +72,7 @@ func (u *user) Register(w http.ResponseWriter, r *http.Request) {
 	user.Password = r.FormValue("password")
 	user.DateOfBirth = r.FormValue("date_of_birth")
 	statusStr := r.FormValue("status")
-	
+
 	if statusStr != "" {
 		statusUint, err := strconv.ParseUint(statusStr, 10, 32)
 		if err != nil {
@@ -82,7 +82,7 @@ func (u *user) Register(w http.ResponseWriter, r *http.Request) {
 		}
 		user.Status = uint(statusUint)
 	}
-	
+
 	// Optional fields
 	user.Nickname.String = r.FormValue("nickname")
 	user.AboutMe = r.FormValue("about_me")
@@ -175,7 +175,6 @@ func (u *user) Login(w http.ResponseWriter, r *http.Request) {
 	u.sessionManager.Put(r.Context(), "authenticatedUserID", id)
 
 	w.WriteHeader(http.StatusOK)
-	u.loger.Info.Println(User, ": is logged in")
 }
 
 func (u *user) Logout(w http.ResponseWriter, r *http.Request) {
@@ -238,7 +237,7 @@ func (u *user) GetUserPosts(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Content-Type", "application/json")
 	var cursor entity.Cursor
-	err:= json.NewDecoder(r.Body).Decode(&cursor)
+	err := json.NewDecoder(r.Body).Decode(&cursor)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Invalid request body"})
@@ -306,13 +305,19 @@ func (u *user) FollowersAndFollowed(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Content-Type", "application/json")
 
+	var id int
 	target := r.URL.Query().Get("userid")
-	id, err := strconv.Atoi(target)
-	if err != nil || id <= 0 {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Invalid user ID"})
-		return
+	if target == "" {
+		id = r.Context().Value(entity.ContextID).(int)
+	} else {
+		id, err := strconv.Atoi(target)
+		if err != nil || id <= 0 {
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Invalid user ID"})
+			return
+		}
 	}
+
 	status, follows, err := u.FollowersAndFollowedService(r.Context(), id)
 	if err != nil {
 		u.loger.Error.Println(err)

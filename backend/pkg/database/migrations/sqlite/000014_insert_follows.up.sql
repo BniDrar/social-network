@@ -36,3 +36,5 @@ INSERT INTO follows (follower_id, followed_id) VALUES (10, 6);
 INSERT INTO follows (follower_id, followed_id) VALUES (10, 7);
 INSERT INTO follows (follower_id, followed_id) VALUES (10, 8);
 INSERT INTO follows (follower_id, followed_id) VALUES (10, 9);
+INSERT INTO follows (follower_id, followed_id) VALUES (9, 1);
+INSERT INTO follows (follower_id, followed_id) VALUES (1, 9);

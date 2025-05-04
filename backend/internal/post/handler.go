@@ -3,8 +3,6 @@ package post
 import (
 	"database/sql"
 	"encoding/json"
-	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -36,11 +34,9 @@ func Newpost(dep *config.Dependencies) Post {
 }
 
 func (p *post) ServeMedia(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Serving media file:", r.URL.Path)
 
 	// Clean the path to avoid path traversal
 	path := filepath.Clean("." + r.URL.Path)[len("api/pictures/"):]
-	log.Println("path:---->:", path)
 	// Check if file exists and is not a directory
 	info, err := os.Stat(path)
 	if err != nil || info.IsDir() {
