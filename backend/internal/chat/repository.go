@@ -80,13 +80,13 @@ func (r *chat) CreateMessage(message entity.Message) (int, error) {
 }
 
 func (r *chat) SaveMessage(message entity.Message) error {
-	query := `INSERT INTO chat_messages (chat_id, sender_id, content) VALUES ($1, $2, $3)`
+	query := `INSERT INTO messages (sender_id, receiver_id,created_at ,content) VALUES (?, ?, ?, ?)`
 	stmt, err := r.db.Prepare(query)
 	if err != nil {
 		return err
 	}
 	defer stmt.Close()
-	_, err = stmt.Exec(message.GroupID, message.SenderID, message.Content)
+	_, err = stmt.Exec(message.SenderID, message.ReceiverID, message.CreatedAt, message.Content)
 	if err != nil {
 		return err
 	}

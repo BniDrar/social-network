@@ -143,6 +143,6 @@ func (c *chat) WebSocket(w http.ResponseWriter, r *http.Request) {
 	}
 
 	c.loger.Info.Printf("Client %d connected\n", userId)
-	WsListing(conn, r.Context())
+	c.WsListing(conn, r.Context())
 	c.loger.Info.Printf("Client %d disconnected\n", userId)
 }

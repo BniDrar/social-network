@@ -15,7 +15,7 @@ import (
 
 var Manager = ws.NewManager()
 
-func WsListing(conn *websocket.Conn, ctx context.Context) error {
+func (c *chat) WsListing(conn *websocket.Conn, ctx context.Context) error {
 	// defer conn.Close() i don't see why closing the connection here ?
 	// and also closing it in the parent function
 	// so for now i removed it from here ?
@@ -53,7 +53,8 @@ func WsListing(conn *websocket.Conn, ctx context.Context) error {
 		}
 		// message = bytes.TrimSpace(bytes.Replace(message, []byte("\n"), []byte(" "), -1))
 		byteData, _ := json.Marshal(data)
-		Manager.SendMessage(uint(*data.ReceiverID), byteData)
+		go c.SaveMessage(*data)
+		go Manager.SendMessage(uint(*data.ReceiverID), byteData)
 		log.Println("message sent:", len(m.Clients))
 	}
 }
