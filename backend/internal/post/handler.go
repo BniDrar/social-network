@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -39,7 +40,7 @@ func (p *post) ServeMedia(w http.ResponseWriter, r *http.Request) {
 
 	// Clean the path to avoid path traversal
 	path := filepath.Clean("." + r.URL.Path)[len("api/pictures/"):]
-	fmt.Println(path)
+	log.Println("path:---->:", path)
 	// Check if file exists and is not a directory
 	info, err := os.Stat(path)
 	if err != nil || info.IsDir() {
@@ -57,7 +58,7 @@ func (p *post) GetPosts(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Content-Type", "application/json")
 	var cursor entity.Cursor
-	err:= json.NewDecoder(r.Body).Decode(&cursor)
+	err := json.NewDecoder(r.Body).Decode(&cursor)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Invalid request body"})
