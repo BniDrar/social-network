@@ -35,11 +35,8 @@ func (m *WsManager) AddClient(userID uint, conn *websocket.Conn) {
 	}
 	m.Clients[userID] = c
 	log.Printf("Client %d added", userID)
-	for i, _ := range m.Clients {
-		fmt.Printf("online ---------------> id  %d ", i)
-	}
-	log.Println("after adding", len(m.Clients))
-	go m.readMessage(userID)
+	// log.Println("after adding", len(m.Clients))
+	// go m.readMessage(userID)
 	go m.writeMessage(userID)
 }
 
@@ -59,13 +56,13 @@ func (m *WsManager) readMessage(userID uint) {
 	c := m.Clients[userID]
 
 	for {
-		_, message, err := c.conn.ReadMessage()
+		_, _ /*message*/, err := c.conn.ReadMessage()
 		if err != nil {
 			log.Printf("Error reading message from Client %d: %v", userID, err)
 			break
 		}
 		// Handle the message (e.g., broadcast to other Clients or process it)
-		m.Broadcast(userID, message)
+		// m.Broadcast(userID, message)
 	}
 }
 

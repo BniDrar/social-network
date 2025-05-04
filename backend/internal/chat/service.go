@@ -51,8 +51,7 @@ func WsListing(conn *websocket.Conn, ctx context.Context) error {
 		}
 		// message = bytes.TrimSpace(bytes.Replace(message, []byte("\n"), []byte(" "), -1))
 		Manager.SendMessage(uint(data.To), []byte(data.Message))
-		// Manager.Broadcast(id, message)
-		log.Println("after brodcasting:", len(m.Clients))
+		log.Println("message sent:", len(m.Clients))
 	}
 }
 
