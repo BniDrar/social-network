@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
-	"log"
 	"net/http"
 	"os"
 	"strconv"
@@ -154,7 +153,6 @@ func (u *user) Login(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
 		return
 	}
-	log.Println(User)
 	id, err := u.authenticateService(User.Username, User.Password)
 	if err != nil {
 		if errors.Is(err, config.ErrInvalidCredentials) {
