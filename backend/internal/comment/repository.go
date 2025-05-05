@@ -36,8 +36,8 @@ func (c *comment) CanSeePost(userid, postid int) bool {
 }
 
 func (c *comment) CreateCommentRepo(ctx context.Context, commnt entity.Comment) (int, int, error) {
-	query := `INSERT INTO comments (post_id, user_id, content, image)
-	VALUES (?, ?, ?, ?)`
+	query := `INSERT INTO comments (post_id, user_id, content, image, created_at)
+	VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP)`
 	stmt, err := c.db.PrepareContext(ctx, query)
 	if err != nil {
 		return 0, http.StatusInternalServerError, err
@@ -62,7 +62,7 @@ func (c *comment) getPostComments(ctx context.Context, postId int) (int, []entit
 			comments.post_id,
 			comments.user_id,
 			comments.content,
-			comments.image
+			comments.image,
 			comments.created_at
 		FROM comments
 		JOIN users ON users.id = comments.user_id
@@ -88,6 +88,7 @@ func (c *comment) getPostComments(ctx context.Context, postId int) (int, []entit
 			&comment.UserID,
 			&comment.Content,
 			&comment.Image,
+			&comment.CreatedAt,
 		)
 		if err != nil {
 			return http.StatusInternalServerError, nil, err
