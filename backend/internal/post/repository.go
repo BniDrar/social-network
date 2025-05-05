@@ -145,6 +145,86 @@ func (p *post) getAllPostsRepo(ctx context.Context, userID int, cursor entity.Cu
 	return posts, http.StatusOK, nil
 }
 
+func (p *post) getPostsByGroupId(ctx context.Context, userId int, cursor entity.Cursor) ([]entity.Post, error) {
+	if cursor.ID <= 0 {
+		return nil, errors.New("group ID is required")
+	}
+
+	query := `
+		SELECT
+			post.id,
+			user.avatar,
+			user.first_name,
+			user.last_name,
+			post.content,
+			post.image,
+			(SELECT COUNT(*) FROM engagement AS eng WHERE eng.user_id = $1 AND eng.post_id = post.id) AS likes_count,
+			(SELECT COUNT(*) FROM comments AS c WHERE c.post_id = post.id) AS comments,
+			(SELECT nickname FROM users AS u WHERE post.user_id = u.id) AS creator,
+			CASE 
+				WHEN EXISTS (
+					SELECT 1 FROM engagement eng 
+					WHERE eng.user_id = $1 AND eng.post_id = post.id
+				) THEN 1 ELSE 0
+			END AS engaged,
+			post.created_at
+
+		FROM posts AS post
+		INNER JOIN users AS user ON user.id = post.user_id
+		LEFT JOIN group_members AS gm ON gm.member_id = $1 AND gm.group_id = post.group_id
+
+		WHERE
+			post.group_id = $2
+			AND gm.member_id IS NOT NULL
+			AND (
+				$3 IS NULL
+				OR (post.created_at < $3 AND post.id < $4)
+				OR (post.created_at = $3 AND post.id < $4)
+			)
+		ORDER BY post.created_at DESC, post.id DESC
+		LIMIT $5;
+	`
+
+	prep, err := p.db.PrepareContext(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	defer prep.Close()
+
+	// Validate cursor
+	if (cursor.Time == nil && cursor.LastId != nil) || (cursor.Time != nil && cursor.LastId == nil) {
+		return nil, errors.New("invalid cursor: both time and id must be set together")
+	}
+
+	var rows *sql.Rows
+	if cursor.Time == nil || cursor.LastId == nil {
+		// First page → pass NULLs
+		rows, err = prep.QueryContext(ctx, userId, cursor.ID, nil, nil, entity.LIMIT)
+	} else {
+		rows, err = prep.QueryContext(ctx, userId, cursor.ID, cursor.Time, cursor.LastId, entity.LIMIT)
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	var posts []entity.Post
+	for rows.Next() {
+		var post entity.Post
+		err := rows.Scan(
+			&post.ID, &post.Avatar, &post.First, &post.Last,
+			&post.Content, &post.Image, &post.LikesCount, &post.Comments,
+			&post.UserName, &post.Engagement, &post.CreatedAt,
+		)
+		if err != nil {
+			p.loger.Error.Println("error occur while scan post info", err)
+			continue
+		}
+		posts = append(posts, post)
+	}
+
+	return posts, nil
+}
+
 func (p *post) GetPostRepo(ctx context.Context, post_id int) (entity.Post, int, error) {
 	prep, err := p.db.PrepareContext(ctx, `SELECT
 		    post.id,

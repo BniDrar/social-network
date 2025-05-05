@@ -24,6 +24,18 @@ func (p *post) GetPostsService(ctx context.Context, cursor entity.Cursor) ([]ent
 	return posts, status, err
 }
 
+func (p *post) getPostsByGroup(ctx context.Context, cursor entity.Cursor) (int, []entity.Post, error) {
+	userId:= ctx.Value(entity.ContextID).(int)
+	if (cursor.LastId != nil && cursor.Time == nil) || (cursor.LastId == nil && cursor.Time != nil) {
+		return http.StatusBadRequest, nil, errors.New("invalid request body")
+	}
+	posts, err:= p.getPostsByGroupId(ctx, userId, cursor)
+	if err != nil {
+		return http.StatusInternalServerError, nil, err
+	}
+	return http.StatusOK, posts, nil
+}
+
 func (p *post) GetPostService(ctx context.Context, postID int) (entity.Post, int, error) {
 	id := ctx.Value(entity.ContextID).(int)
 	if !p.Repo_UserCanPost(ctx, id, postID) {

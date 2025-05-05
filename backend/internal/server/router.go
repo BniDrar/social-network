@@ -120,6 +120,11 @@ func (app *App) createRoutes() []Route {
 			Role:    User,
 		},
 		{
+			Path: "/api/group/posts",
+			handler: app.GetGroupPosts,
+			Role: User,
+		},
+		{
 			Path:    "/api/group/invite/response",
 			handler: app.InvitationResponse,
 			Role:    User,

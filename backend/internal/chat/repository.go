@@ -16,11 +16,11 @@ func (c *chat) getMessagesRepo(ctx context.Context, cursor entity.Cursor, userId
 	if cursor.IsGroup {
 		query = `SELECT * FROM messages AS m WHERE `
 		whereClauses = append(whereClauses, "(group_id = ?)")
-		params = append(params, cursor.UserId)
+		params = append(params, cursor.ID)
 	} else {
 		query = `SELECT * FROM messages WHERE `
 		whereClauses = append(whereClauses, "((sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?))")
-		params = append(params, userId, cursor.UserId, cursor.UserId, userId)
+		params = append(params, userId, cursor.ID, cursor.ID, userId)
 	}
 
 	// Pagination clause (only if cursor provided)

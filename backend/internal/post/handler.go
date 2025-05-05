@@ -19,6 +19,7 @@ type Post interface {
 	GetPosts(w http.ResponseWriter, r *http.Request)
 	CreatePost(w http.ResponseWriter, r *http.Request)
 	GetPost(w http.ResponseWriter, r *http.Request)
+	GetGroupPosts(w http.ResponseWriter, r *http.Request)
 	ReactPost(w http.ResponseWriter, r *http.Request)
 	ServeMedia(w http.ResponseWriter, r *http.Request)
 }
@@ -72,11 +73,39 @@ func (p *post) GetPosts(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(&posts)
 }
 
+func (p *post) GetGroupPosts(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+
+	var cursor entity.Cursor
+	err:= json.NewDecoder(r.Body).Decode(&cursor)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Invalid request body"})
+		return
+	}
+
+	status, posts, err:= p.getPostsByGroup(r.Context(), cursor)
+	w.WriteHeader(status)
+	if err != nil {
+		p.loger.Error.Println(err)
+		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
+		return
+	}
+	json.NewEncoder(w).Encode(&posts)
+}
+
+
 func (p *post) ReactPost(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
+	w.Header().Set("Content-Type", "application/json")
+
 	postId, err := strconv.Atoi(r.URL.Query().Get("post_id"))
 	if err != nil || postId == 0 {
 		w.WriteHeader(http.StatusBadRequest)
