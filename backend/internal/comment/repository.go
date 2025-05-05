@@ -63,10 +63,11 @@ func (c *comment) getPostComments(ctx context.Context, postId int) (int, []entit
 			comments.user_id,
 			comments.content,
 			comments.image
+			comments.created_at
 		FROM comments
 		JOIN users ON users.id = comments.user_id
 		WHERE comments.post_id = $1
-		ORDER BY comments.id ASC
+		ORDER BY comments.id DESC
 	`
 
 	rows, err := c.db.QueryContext(ctx, query, postId)
