@@ -10,30 +10,34 @@ import (
 
 func (c *comment) CanSeePost(userid, postid int) bool {
 	prep, err := c.db.Prepare(`SELECT
-		    1
-		FROM posts AS post 
-		INNER JOIN users AS user ON user.id = post.user_id
-		LEFT JOIN group_members AS gm ON gm.group_id=post.group_id AND gm.member_id = $1
-		LEFT JOIN follows AS follow ON follow.followed_id = post.user_id AND follow.follower_id = 1
+		    post.id
+		FROM
+			posts AS post
+		LEFT JOIN follows AS follow ON follow.followed_id = post.user_id
+			AND follow.follower_id = $1
+		LEFT JOIN group_members AS gm ON gm.group_id = post.group_id
+			AND gm.member_id = $1
 		WHERE
-		    (post.group_id IS NOT NULL AND gm.member_id = $1 AND post.id=$2)
-		    OR 
-		    (post.group_id IS NULL AND follow.follower_id = $1 AND post.id=$2);`)
+		    (post.status = 0 AND gm.member_id IS NOT NULL AND post.id = $2)
+		    OR (post.status = 1 AND follow.follower_id = $1 AND post.id = $2)
+			OR (post.status = 2 AND post.id = $2)
+			OR (post.user_id = $1);
+		ORDER BY post.created_at DESC`)
 	if err != nil {
 		return false
 	}
 	row := prep.QueryRow(userid, postid)
-	var res bool
+	var res int
 	err = row.Scan(&res)
 	if err != nil {
 		return false
 	}
-	return res
+	return true
 }
 
 func (c *comment) CreateCommentRepo(ctx context.Context, commnt entity.Comment) (int, int, error) {
 	query := `INSERT INTO comments (post_id, user_id, content, image)
-	VALUES (?, ?, ?)`
+	VALUES (?, ?, ?, ?)`
 	stmt, err := c.db.PrepareContext(ctx, query)
 	if err != nil {
 		return 0, http.StatusInternalServerError, err
@@ -94,4 +98,3 @@ func (c *comment) getPostComments(ctx context.Context, postId int) (int, []entit
 
 	return http.StatusOK, comments, nil
 }
-

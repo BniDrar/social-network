@@ -35,35 +35,13 @@ func (c *comment) AddComment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
-	var (
-		commnt       entity.Comment
-		imageContent []byte
-	)
-	err := json.NewDecoder(r.Body).Decode(&commnt)
+	formData, image, err := utils.ParseAndValidateCommentForm(r)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Invalid request body"})
+		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
 		return
 	}
-
-	file, fileHeader, err := r.FormFile("image")
-	if err != nil && err != http.ErrMissingFile {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Error reading uploaded file"})
-	}
-	if err != nil {
-		commnt.Image.SetValid(false)
-	} else {
-		imageContent, commnt.Image.NullString.String, err = utils.ValidateImage(file, fileHeader)
-		commnt.Image.SetValid(true)
-		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
-			return
-		}
-	}
-
-	commentId, status, err := c.CreateCommentService(r.Context(), commnt, imageContent)
+	commentId, status, err := c.CreateCommentService(r.Context(), formData, image)
 	if err != nil {
 		c.loger.Error.Println(err)
 		w.WriteHeader(status)
