@@ -58,6 +58,7 @@ func (c *comment) getPostComments(ctx context.Context, postId int) (int, []entit
 		SELECT 
 			comments.id,
 			users.nickname AS creater_name,
+			users.avatar AS avatar,
 			comments.post_id,
 			comments.user_id,
 			comments.content,
@@ -81,6 +82,7 @@ func (c *comment) getPostComments(ctx context.Context, postId int) (int, []entit
 		err := rows.Scan(
 			&comment.ID,
 			&comment.CreaterName,
+			&comment.Avatar,
 			&comment.PostID,
 			&comment.UserID,
 			&comment.Content,
