@@ -72,12 +72,12 @@ func (u *user) UserProfile(ctx context.Context, targetId int) (int, entity.User,
 
 func (u *user) GetUserPostsService(ctx context.Context, cursor entity.Cursor) ([]entity.Post, int, error) {
 	id := ctx.Value(entity.ContextID).(int)
-	user, err := u.GetUserProfileById(ctx, cursor.UserId)
+	user, err := u.GetUserProfileById(ctx, cursor.ID)
 	if err != nil {
 		return nil, http.StatusInternalServerError, err
 	}
-	if user.Status == entity.PrivateUser && id != cursor.UserId {
-		authorized, err := u.isFollowedBy(id, cursor.UserId)
+	if user.Status == entity.PrivateUser && id != cursor.ID {
+		authorized, err := u.isFollowedBy(id, cursor.ID)
 		if err != nil {
 			return nil, http.StatusInternalServerError, err
 		}

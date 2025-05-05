@@ -502,9 +502,9 @@ func (p *user) GetUserPostsRep(ctx context.Context, cursor entity.Cursor) ([]ent
 	var rows *sql.Rows
 	if cursor.Time == nil || cursor.LastId == nil {
 		// First page — pass NULL cursor
-		rows, err = stmt.QueryContext(ctx, cursor.UserId, nil, nil, entity.LIMIT)
+		rows, err = stmt.QueryContext(ctx, cursor.ID, nil, nil, entity.LIMIT)
 	} else {
-		rows, err = stmt.QueryContext(ctx, cursor.UserId, cursor.Time, cursor.LastId, entity.LIMIT)
+		rows, err = stmt.QueryContext(ctx, cursor.ID, cursor.Time, cursor.LastId, entity.LIMIT)
 	}
 	if err != nil {
 		return nil, err
