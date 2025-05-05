@@ -5,66 +5,55 @@ import (
 	"encoding/json"
 	"fmt"
 	"socialNetwork/entity"
+	"strings"
 )
 
-func (r *chat) GetChats(id int) ([]entity.Chat, error) {
-	query := `SELECT * FROM chats WHERE user_id = $1 OR friend_id = $1`
-	rows, err := r.db.Query(query, id)
+func (c *chat) getMessagesRepo(ctx context.Context, cursor entity.Cursor, userId int) ([]entity.Message, error) {
+	var query string
+	var params []interface{}
+	var whereClauses []string
+
+	if cursor.IsGroup {
+		query = `SELECT * FROM messages AS m WHERE `
+		whereClauses = append(whereClauses, "(group_id = ?)")
+		params = append(params, cursor.UserId)
+	} else {
+		query = `SELECT * FROM messages WHERE `
+		whereClauses = append(whereClauses, "((sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?))")
+		params = append(params, userId, cursor.UserId, cursor.UserId, userId)
+	}
+
+	// Pagination clause (only if cursor provided)
+	if cursor.Time != nil && cursor.LastId != nil {
+		whereClauses = append(whereClauses, "(created_at < ? OR (created_at = ? AND id < ?))")
+		params = append(params, cursor.Time, cursor.Time, cursor.LastId)
+	}
+
+	// Final query assembly
+	query += strings.Join(whereClauses, " AND ") + " ORDER BY created_at DESC, id DESC LIMIT ?"
+	params = append(params, entity.LIMIT)
+
+	stmt, err := c.db.PrepareContext(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	defer stmt.Close()
+
+	rows, err := stmt.QueryContext(ctx, params...)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var chats []entity.Chat
-	for rows.Next() {
-		var chat entity.Chat
-		if err := rows.Scan(&chat.ID, &chat.UserID, &chat.FriendID, &chat.Message, &chat.CreatedAt); err != nil {
-			return nil, err
-		}
-		chats = append(chats, chat)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return chats, nil
-}
 
-func (r *chat) GetChatById(id int) (entity.Chat, error) {
-	query := `SELECT * FROM chats WHERE id = $1`
-	row := r.db.QueryRow(query, id)
-	var chat entity.Chat
-	if err := row.Scan(&chat.ID, &chat.UserID, &chat.FriendID, &chat.Message, &chat.CreatedAt); err != nil {
-		return chat, err
-	}
-	return chat, nil
-}
-
-func (r *chat) CreateChat(chat entity.Chat) (int, error) {
-	query := `INSERT INTO chats (user_id, friend_id, message) VALUES ($1, $2, $3) RETURNING id`
-	var id int
-	err := r.db.QueryRow(query, chat.UserID, chat.FriendID, chat.Message).Scan(&id)
-	if err != nil {
-		return 0, err
-	}
-	return id, nil
-}
-
-func (r *chat) GetChatMessages(chatID int) ([]entity.Message, error) {
-	query := `SELECT * FROM chat_messages WHERE chat_id = $1`
-	rows, err := r.db.Query(query, chatID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
 	var messages []entity.Message
 	for rows.Next() {
 		var message entity.Message
-		if err := rows.Scan(&message.ID, &message.GroupID, &message.SenderID, &message.Content, &message.CreatedAt); err != nil {
-			return nil, err
+		err := rows.Scan(&message.ID, &message.SenderID, &message.ReceiverID, &message.GroupID, &message.CreatedAt, &message.Content)
+		if err != nil {
+			c.loger.Error.Println(err)
+			continue
 		}
 		messages = append(messages, message)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
 	}
 	return messages, nil
 }

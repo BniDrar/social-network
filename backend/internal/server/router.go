@@ -199,6 +199,11 @@ func (app *App) createRoutes() []Route {
 			Role:    User,
 		},
 		{
+			Path: "/api/messages",
+			handler: app.GetMessages,
+			Role: User,
+		},
+		{
 			Path:    "/api/contacts",
 			handler: app.GetUserContacts,
 			Role:    User,

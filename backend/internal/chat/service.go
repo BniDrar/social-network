@@ -84,3 +84,15 @@ func (c *chat) getOnlineUsers(ctx context.Context) ([]entity.Contact, int, error
 	}
 	return contacts, http.StatusOK, nil
 }
+
+func (c *chat) getMessagesService(ctx context.Context, cursor entity.Cursor) (int, []entity.Message, error) {
+	userId:= ctx.Value(entity.ContextID).(int)
+	if (cursor.Time == nil && cursor.LastId != nil) || (cursor.Time != nil && cursor.LastId == nil){
+		return http.StatusBadRequest, nil, errors.New("invalid request body") 
+	}
+	messages, err:= c.getMessagesRepo(ctx, cursor, userId)
+	if err != nil {
+		return http.StatusInternalServerError, nil, err
+	}
+	return http.StatusOK, messages, nil
+}
