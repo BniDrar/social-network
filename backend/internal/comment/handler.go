@@ -53,8 +53,10 @@ func (c *comment) AddComment(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(status)
 	json.NewEncoder(w).Encode(struct {
 		ID int `json:"id"`
+		Image string `json:"image"`
 	}{
 		ID: commentId,
+		Image: formData.Image.NullString.String,
 	})
 }
 
