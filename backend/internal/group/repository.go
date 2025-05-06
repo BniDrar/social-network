@@ -120,7 +120,7 @@ func (g *group) CreateGroupRepository(ctx context.Context, group entity.Group) (
 	return group, nil
 }
 
-func (g *group) GetAllGroupsRepository(ctx context.Context, limit, offset, typeGroup int) (entity.Groups, error) {
+func (g *group) GetAllGroupsRepository(ctx context.Context, typeGroup int) (entity.Groups, error) {
 	query := `
 	 SELECT
 		    g.id,
@@ -132,14 +132,13 @@ func (g *group) GetAllGroupsRepository(ctx context.Context, limit, offset, typeG
 		WHERE g.type = ?
 		GROUP BY g.id
 		ORDER BY g.id DESC
-		LIMIT ? OFFSET ?;
 	`
 	stmt, err := g.db.PrepareContext(ctx, query)
 	if err != nil {
 		return nil, err
 	}
 	defer stmt.Close()
-	rows, err := stmt.QueryContext(ctx, typeGroup, limit, offset)
+	rows, err := stmt.QueryContext(ctx, typeGroup)
 	if err != nil {
 		return nil, err
 	}

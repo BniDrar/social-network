@@ -115,7 +115,7 @@ func (p *post) getAllPostsRepo(ctx context.Context, userID int, cursor entity.Cu
 	if (cursor.Time == nil && cursor.LastId != nil) || (cursor.Time != nil && cursor.LastId == nil) {
 		return nil, http.StatusBadRequest, errors.New("invalid cursor: both time and id must be set together")
 	}
-	
+
 	var rows *sql.Rows
 	if cursor.Time == nil || cursor.LastId == nil {
 		// First page → pass NULLs

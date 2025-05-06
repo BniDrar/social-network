@@ -32,8 +32,8 @@ func (g *group) CreateGroupService(ctx context.Context, group entity.Group) (ent
 	return g.CreateGroupRepository(ctx, group)
 }
 
-func (g *group) GetAllGroupsService(ctx context.Context, limit, offset, typeGroup int) (entity.Groups, error) {
-	return g.GetAllGroupsRepository(ctx, limit, offset, typeGroup)
+func (g *group) GetAllGroupsService(ctx context.Context, typeGroup int) (entity.Groups, error) {
+	return g.GetAllGroupsRepository(ctx, typeGroup)
 }
 
 func (g *group) GetGroupMembersService(ctx context.Context, groupID int) ([]entity.User, error) {

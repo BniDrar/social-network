@@ -127,28 +127,9 @@ func (g *group) GetAllGroups(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
-	// get the limit and offset from the request body
-	var requestBody struct {
-		Limit  int `json:"limit"`
-		Offset int `json:"offset"`
-		// Type   int `json:"type"`
-	}
 	w.Header().Set("Content-Type", "application/json")
-	err := json.NewDecoder(r.Body).Decode(&requestBody)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Invalid request body"})
-		return
-	}
-	limit := requestBody.Limit
-	offset := requestBody.Offset
-	// typeGroup := requestBody.Type
-	if limit <= 0 || offset < 0 {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Invalid limit or offset"})
-		return
-	}
-	groups, err := g.GetAllGroupsService(r.Context(), limit, offset, entity.RealGroup)
+
+	groups, err := g.GetAllGroupsService(r.Context(), entity.RealGroup)
 	if err != nil {
 		g.loger.Error.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
