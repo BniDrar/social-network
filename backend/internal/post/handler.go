@@ -70,7 +70,13 @@ func (p *post) GetPosts(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
-	json.NewEncoder(w).Encode(&posts)
+
+	err = json.NewEncoder(w).Encode(&posts)
+	if err != nil {
+		p.loger.Error.Println(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 }
 
 func (p *post) GetGroupPosts(w http.ResponseWriter, r *http.Request) {
@@ -81,14 +87,14 @@ func (p *post) GetGroupPosts(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	var cursor entity.Cursor
-	err:= json.NewDecoder(r.Body).Decode(&cursor)
+	err := json.NewDecoder(r.Body).Decode(&cursor)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Invalid request body"})
 		return
 	}
 
-	status, posts, err:= p.getPostsByGroup(r.Context(), cursor)
+	status, posts, err := p.getPostsByGroup(r.Context(), cursor)
 	w.WriteHeader(status)
 	if err != nil {
 		p.loger.Error.Println(err)
@@ -97,7 +103,6 @@ func (p *post) GetGroupPosts(w http.ResponseWriter, r *http.Request) {
 	}
 	json.NewEncoder(w).Encode(&posts)
 }
-
 
 func (p *post) ReactPost(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {

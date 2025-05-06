@@ -62,28 +62,26 @@ func (g *group) GetGroupsByUserID(ctx context.Context, userID int, limit int, of
 
 func (g *group) GetGroupByIdRepository(ctx context.Context, userID, groupID int) (entity.Group, error) {
 	query := `
-		SELECT
-			g.id,
-			g.name,
-			g.description,
-			g.type,
-			g.admin,
-			COUNT(DISTINCT gm.member_id) AS member_count,
+		SELECT 
+			g.id, 
+			g.name, 
+			g.description, 
+			g.type, 
+			g.admin, 
+			COUNT(DISTINCT gm.member_id) AS member_count, 
 			COUNT(DISTINCT p.id) AS post_count
-			FROM groups g
-			JOIN group_members gm ON g.id = gm.group_id
-			LEFT JOIN posts p ON g.id = p.group_id
-			WHERE g.id = ? AND gm.member_id = ?
-			GROUP BY g.id
-			ORDER BY g.id DESC
-			LIMIT 1
-			`
+		FROM groups g
+		LEFT JOIN group_members gm ON g.id = gm.group_id
+		LEFT JOIN posts p ON g.id = p.group_id
+		WHERE g.id = ?
+		GROUP BY g.id
+	`
 	stmt, err := g.db.PrepareContext(ctx, query)
 	if err != nil {
 		return entity.Group{}, err
 	}
 	defer stmt.Close()
-	row := stmt.QueryRowContext(ctx, groupID, userID)
+	row := stmt.QueryRowContext(ctx, groupID)
 	var group entity.Group
 	err = row.Scan(
 		&group.ID,
@@ -365,17 +363,17 @@ func (g *group) CreateRequestJoiningNotification(ctx context.Context, invt entit
 }
 
 func (g *group) CreateEventNotification(ctx context.Context, event entity.Event) (int, int, error) {
-	query:= `INSERT INTO notification (type, sender_id, group_id, event_id)
+	query := `INSERT INTO notification (type, sender_id, group_id, event_id)
 	VALUES (?, ?, ?, ?)`
-	stmt, err:= g.db.PrepareContext(ctx, query)
+	stmt, err := g.db.PrepareContext(ctx, query)
 	if err != nil {
 		return 0, http.StatusInternalServerError, err
 	}
-	res, err:= stmt.ExecContext(ctx, entity.EventNotification, ctx.Value(entity.ContextID), event.GroupID, event.ID)
+	res, err := stmt.ExecContext(ctx, entity.EventNotification, ctx.Value(entity.ContextID), event.GroupID, event.ID)
 	if err != nil {
 		return 0, http.StatusBadRequest, errors.New("invalid event credentials")
 	}
-	id, err:= res.LastInsertId()
+	id, err := res.LastInsertId()
 	if err != nil {
 		return 0, http.StatusInternalServerError, err
 	}
