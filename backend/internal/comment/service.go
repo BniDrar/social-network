@@ -25,11 +25,10 @@ func (c *comment) CreateCommentService(ctx context.Context, commnt entity.Commen
 	commnt.UserID = userId
 	commentId, status, err := c.CreateCommentRepo(ctx, commnt)
 	if err != nil {
-
 		return 0, status, err
 	}
 	if commnt.Image.Valid {
-		err = os.WriteFile(commnt.Image.NullString.String, imageContent, 0444)
+		err = os.WriteFile(commnt.Image.NullString.String, imageContent, 0o444)
 		if err != nil {
 			return 0, http.StatusInternalServerError, err
 		}
