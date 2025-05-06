@@ -226,28 +226,30 @@ func (p *post) getPostsByGroupId(ctx context.Context, userId int, cursor entity.
 }
 
 func (p *post) GetPostRepo(ctx context.Context, post_id int) (entity.Post, int, error) {
+	user_id := ctx.Value(entity.ContextID).(int)
 	prep, err := p.db.PrepareContext(ctx, `SELECT
-		    post.id,
-		    user.avatar,
-		    post.content,
-			post.image,
-		    user.nickname AS creator,
-		(SELECT COUNT(*) FROM engagement AS eng WHERE eng.user_id = $1 AND eng.post_id = post.id) AS likes_count,
+		post.id,
+		user.avatar,
+		post.content,
+		post.image,
+		user.nickname AS creator,
+		(SELECT COUNT(*) FROM engagement AS eng WHERE eng.post_id = post.id) AS likes_count,
 		(SELECT COUNT(*) FROM comments AS c WHERE c.post_id = post.id) AS comments,
 		CASE 
 			WHEN EXISTS (
-				SELECT 1 FROM engagement eng 
+				SELECT 1 FROM engagement AS eng 
 				WHERE eng.user_id = $1 AND eng.post_id = post.id
 			) THEN 1 ELSE 0
 		END AS engaged
-		FROM posts AS post 
-		INNER JOIN users AS user ON user.id = post.user_id
-		WHERE (post.id=$1);`)
+	FROM posts AS post 
+	INNER JOIN users AS user ON user.id = post.user_id
+	WHERE (post.id = $2);
+`)
 	if err != nil {
 		return entity.Post{}, http.StatusInternalServerError, err
 	}
 	var post entity.Post
-	res := prep.QueryRowContext(ctx, post_id)
+	res := prep.QueryRowContext(ctx, user_id, post_id)
 	err = res.Scan(&post.ID, &post.Avatar, &post.Content, &post.Image, &post.UserName, &post.LikesCount, &post.Comments, &post.Engagement)
 	if err != nil {
 		return entity.Post{}, http.StatusInternalServerError, err
