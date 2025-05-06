@@ -28,6 +28,7 @@ func (g *group) GetGroupByIdService(ctx context.Context, groupID int) (entity.Gr
 
 // CreateGroupService creates a new group.
 func (g *group) CreateGroupService(ctx context.Context, group entity.Group) (entity.Group, error) {
+	group.Admin = ctx.Value(entity.ContextID).(int)
 	return g.CreateGroupRepository(ctx, group)
 }
 
