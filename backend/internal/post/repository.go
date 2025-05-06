@@ -115,13 +115,13 @@ func (p *post) getAllPostsRepo(ctx context.Context, userID int, cursor entity.Cu
 	if (cursor.Time == nil && cursor.LastId != nil) || (cursor.Time != nil && cursor.LastId == nil) {
 		return nil, http.StatusBadRequest, errors.New("invalid cursor: both time and id must be set together")
 	}
-	
+
 	var rows *sql.Rows
 	if cursor.Time == nil || cursor.LastId == nil {
 		// First page → pass NULLs
-		rows, err = prep.QueryContext(ctx, userID, nil, nil, entity.LIMIT)
+		rows, err = prep.QueryContext(ctx, userID, nil, nil, cursor.Limit)
 	} else {
-		rows, err = prep.QueryContext(ctx, userID, cursor.Time, cursor.LastId, entity.LIMIT)
+		rows, err = prep.QueryContext(ctx, userID, cursor.Time, cursor.LastId, cursor.Limit)
 	}
 	if err != nil {
 		return nil, http.StatusBadRequest, errors.New("invalid query")
@@ -199,9 +199,9 @@ func (p *post) getPostsByGroupId(ctx context.Context, userId int, cursor entity.
 	var rows *sql.Rows
 	if cursor.Time == nil || cursor.LastId == nil {
 		// First page → pass NULLs
-		rows, err = prep.QueryContext(ctx, userId, cursor.ID, nil, nil, entity.LIMIT)
-	} else {
-		rows, err = prep.QueryContext(ctx, userId, cursor.ID, cursor.Time, cursor.LastId, entity.LIMIT)
+		rows, err = prep.QueryContext(ctx, userId, cursor.ID, nil, nil, cursor.Limit)
+	} else { 
+		rows, err = prep.QueryContext(ctx, userId, cursor.ID, cursor.Time, cursor.LastId, cursor.Limit)
 	}
 	if err != nil {
 		return nil, err
