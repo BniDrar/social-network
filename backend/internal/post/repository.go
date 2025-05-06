@@ -233,7 +233,13 @@ func (p *post) GetPostRepo(ctx context.Context, post_id int) (entity.Post, int, 
 			post.image,
 		    user.nickname AS creator,
 		(SELECT COUNT(*) FROM engagement AS eng WHERE eng.user_id = $1 AND eng.post_id = post.id) AS likes_count,
-		(SELECT COUNT(*) FROM comments AS c WHERE c.post_id = post.id) AS comments
+		(SELECT COUNT(*) FROM comments AS c WHERE c.post_id = post.id) AS comments,
+		CASE 
+			WHEN EXISTS (
+				SELECT 1 FROM engagement eng 
+				WHERE eng.user_id = $1 AND eng.post_id = post.id
+			) THEN 1 ELSE 0
+		END AS engaged
 		FROM posts AS post 
 		INNER JOIN users AS user ON user.id = post.user_id
 		WHERE (post.id=$1);`)
@@ -242,7 +248,7 @@ func (p *post) GetPostRepo(ctx context.Context, post_id int) (entity.Post, int, 
 	}
 	var post entity.Post
 	res := prep.QueryRowContext(ctx, post_id)
-	err = res.Scan(&post.ID, &post.Avatar, &post.Content, &post.Image, &post.UserName, &post.LikesCount, &post.Comments)
+	err = res.Scan(&post.ID, &post.Avatar, &post.Content, &post.Image, &post.UserName, &post.LikesCount, &post.Comments, &post.Engagement)
 	if err != nil {
 		return entity.Post{}, http.StatusInternalServerError, err
 	}
