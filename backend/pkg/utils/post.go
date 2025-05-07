@@ -4,8 +4,9 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"socialNetwork/entity"
 	"strconv"
+
+	"socialNetwork/entity"
 )
 
 func ParseAndValidatePostForm(r *http.Request) (entity.Post, []byte, error) {
@@ -22,7 +23,7 @@ func ParseAndValidatePostForm(r *http.Request) (entity.Post, []byte, error) {
 	}
 
 	status, err := strconv.Atoi(r.FormValue("status"))
-	if err != nil ||status <0 || status > 2 {
+	if err != nil || status < 0 || status > 2 {
 		return post, nil, fmt.Errorf("invalid status value")
 	}
 	post.Status = status
@@ -30,9 +31,19 @@ func ParseAndValidatePostForm(r *http.Request) (entity.Post, []byte, error) {
 	if status == entity.PostStatusCustom {
 		post.AllowedViewers, err = parseAllowedViewers(r.Form["allowed_viewers"])
 		if err != nil || len(post.AllowedViewers) < 0 {
-			if err == nil {err = errors.New("you should enter the allowed viewers")}
+			if err == nil {
+				err = errors.New("you should enter the allowed viewers")
+			}
 			return post, nil, err
 		}
+	}
+
+	if status == entity.PostStatusGroup {
+		GroupID, err := strconv.ParseUint(r.FormValue("group_id"), 10, 32)
+		if err != nil || GroupID < 0 {
+			return post, nil, fmt.Errorf("invalid group id")
+		}
+		post.GroupID = uint(GroupID)
 	}
 
 	var image []byte
@@ -46,7 +57,6 @@ func ParseAndValidatePostForm(r *http.Request) (entity.Post, []byte, error) {
 	} else if err != http.ErrMissingFile {
 		return post, nil, fmt.Errorf("error reading uploaded file: %v", err)
 	}
-
 	return post, image, nil
 }
 
