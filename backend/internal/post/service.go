@@ -3,7 +3,6 @@ package post
 import (
 	"context"
 	"errors"
-	"fmt"
 	"net/http"
 	"os"
 
@@ -31,7 +30,6 @@ func (p *post) getPostsByGroup(ctx context.Context, cursor entity.Cursor) (int, 
 		return http.StatusBadRequest, nil, errors.New("invalid request body")
 	}
 	if !p.GroupMember(ctx, userId, cursor.ID) {
-		fmt.Println(userId, cursor.ID)
 		return http.StatusForbidden, nil, errors.New("forbidden action")
 	}
 	posts, err := p.getPostsByGroupId(ctx, userId, cursor)
