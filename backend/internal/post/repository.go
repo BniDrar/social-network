@@ -11,27 +11,24 @@ import (
 )
 
 func (p *post) GroupMember(ctx context.Context, userID, groupID int) bool {
-	query := `SELECT
-		    user.id
-		FROM
-			users AS user
-		LEFT JOIN group_members AS gm ON gm.group_id = $2
-			AND gm.member_id = $1
-		WHERE
-		    ($2 IS NOT NULL AND gm.member_id IS NOT NULL)`
-	smtp, err := p.db.PrepareContext(ctx, query)
+	query := `SELECT EXISTS (SELECT 1 FROM group_members WHERE member_id = ? AND group_id = ?)`
+	stmt, err := p.db.PrepareContext(ctx, query)
 	if err != nil {
 		return false
 	}
-	row := smtp.QueryRowContext(ctx, userID, groupID)
-	var res int
-	err = row.Scan(&res)
+	defer stmt.Close()
+
+	row := stmt.QueryRowContext(ctx, userID, groupID)
+
+	var exists bool
+	err = row.Scan(&exists)
 	if err != nil {
 		return false
-	} else {
-		return true
 	}
+
+	return exists
 }
+
 
 func (p *post) Repo_UserCanPost(ctx context.Context, id, postid int) bool {
 	query := `SELECT
@@ -171,11 +168,8 @@ func (p *post) getPostsByGroupId(ctx context.Context, userId int, cursor entity.
 
 		FROM posts AS post
 		INNER JOIN users AS user ON user.id = post.user_id
-		LEFT JOIN group_members AS gm ON gm.member_id = $1 AND gm.group_id = post.group_id
-
 		WHERE
 			post.group_id = $2
-			AND gm.member_id IS NOT NULL
 			AND (
 				$3 IS NULL
 				OR (post.created_at < $3 AND post.id < $4)
