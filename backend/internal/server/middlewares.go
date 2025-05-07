@@ -14,7 +14,7 @@ func secureHeaders(next http.Handler) http.Handler {
 		// Allow requests from your React app
 		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
 		// Allow specific methods
-		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, UPDATE, OPTIONS")
 		// Allow specific headers
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 

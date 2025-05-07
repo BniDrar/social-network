@@ -125,7 +125,7 @@ func (u *user) Register(w http.ResponseWriter, r *http.Request) {
 }
 
 func (u *user) ChangeStatus(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPut {
+	if r.Method != "UPDATE" {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}

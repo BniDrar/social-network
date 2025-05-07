@@ -85,6 +85,7 @@ func (u *user) GetUserPostsService(ctx context.Context, cursor entity.Cursor) ([
 			return nil, http.StatusUnauthorized, errors.New("you can't access to the user profile")
 		}
 	}
+	fmt.Println(cursor)
 	posts, err := u.GetUserPostsRep(ctx, cursor)
 	if err != nil {
 		return nil, http.StatusInternalServerError, err
