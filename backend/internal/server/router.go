@@ -100,6 +100,7 @@ func (app *App) createRoutes() []Route {
 			Role:    User,
 		},
 		{
+			//if the user 
 			Path:    "/api/group",
 			handler: app.GetGroupById,
 			Role:    User,

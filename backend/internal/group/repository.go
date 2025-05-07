@@ -121,24 +121,25 @@ func (g *group) CreateGroupRepository(ctx context.Context, group entity.Group) (
 }
 
 func (g *group) GetAllGroupsRepository(ctx context.Context, typeGroup int) (entity.Groups, error) {
+	userId:= ctx.Value(entity.ContextID).(int)
 	query := `
-	 SELECT
-		    g.id,
-		    g.name,
-		    g.description,
-		    g.type,
-		    g.admin
+		SELECT
+			g.id,
+			g.name,
+			g.description,
+			g.type,
+			g.admin,
+			(gm.member_id IS NOT NULL OR g.admin = ?) AS isMember
 		FROM groups g
+		LEFT JOIN group_members gm ON gm.group_id = g.id AND gm.member_id = ?
 		WHERE g.type = ?
-		GROUP BY g.id
-		ORDER BY g.id DESC
-	`
+		ORDER BY g.id DESC`
 	stmt, err := g.db.PrepareContext(ctx, query)
 	if err != nil {
 		return nil, err
 	}
 	defer stmt.Close()
-	rows, err := stmt.QueryContext(ctx, typeGroup)
+	rows, err := stmt.QueryContext(ctx, userId, userId, typeGroup)
 	if err != nil {
 		return nil, err
 	}
@@ -152,6 +153,7 @@ func (g *group) GetAllGroupsRepository(ctx context.Context, typeGroup int) (enti
 			&group.Description,
 			&group.Type,
 			&group.Admin,
+			&group.IsMember,
 		)
 		if err != nil {
 			return nil, err
