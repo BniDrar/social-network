@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"socialNetwork/entity"
@@ -27,11 +28,11 @@ func ParseAndValidatePostForm(r *http.Request) (entity.Post, []byte, error) {
 	post.Status = status
 
 	if status == entity.PostStatusCustom {
-		viewers, err := parseAllowedViewers(r.Form["allowed_viewers"])
-		if err != nil {
+		post.AllowedViewers, err = parseAllowedViewers(r.Form["allowed_viewers"])
+		if err != nil || len(post.AllowedViewers) < 0 {
+			if err == nil {err = errors.New("you should enter the allowed viewers")}
 			return post, nil, err
 		}
-		post.AllowedViewers = viewers
 	}
 
 	var image []byte
