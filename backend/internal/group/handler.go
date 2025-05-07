@@ -9,6 +9,7 @@ import (
 	"socialNetwork/entity"
 	"socialNetwork/pkg/config"
 	"socialNetwork/pkg/loger"
+	"socialNetwork/pkg/utils"
 	"socialNetwork/pkg/websocket"
 )
 
@@ -30,7 +31,7 @@ type Group interface {
 type group struct {
 	Hub   *websocket.Hub
 	db    *sql.DB
-	ws websocket.WsManager
+	ws    websocket.WsManager
 	loger loger.CstmLogger
 }
 
@@ -45,7 +46,7 @@ func (g *group) GetUserGroups(w http.ResponseWriter, r *http.Request) {
 		Limit  int `json:"limit"`
 		Offset int `json:"offset"`
 	}
-	
+
 	w.Header().Set("Content-Type", "application/json")
 	err := json.NewDecoder(r.Body).Decode(&requestBody)
 	if err != nil {
@@ -106,6 +107,12 @@ func (g *group) CreateGroup(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Invalid request body"})
+		return
+	}
+	err = utils.ValidGroupCredentials(group) 
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
 		return
 	}
 	// create the group in the database
@@ -232,7 +239,7 @@ func (g *group) RequestToJoinGroup(w http.ResponseWriter, r *http.Request) {
 			json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "invalid request data"})
 		}
 	}
-	//upstream the notification to the admin of the group
+	// upstream the notification to the admin of the group
 	g.loger.Info.Println(notificationID)
 	w.WriteHeader(status)
 }
