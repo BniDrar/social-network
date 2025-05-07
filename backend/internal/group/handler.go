@@ -82,10 +82,10 @@ func (g *group) GetGroupById(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Invalid group ID"})
 		return
 	}
-	group, err := g.GetGroupByIdService(r.Context(), groupID)
+	status, group, err := g.GetGroupByIdService(r.Context(), groupID)
 	if err != nil {
 		g.loger.Error.Println(err)
-		w.WriteHeader(http.StatusInternalServerError)
+		w.WriteHeader(status)
 		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
 		return
 	}

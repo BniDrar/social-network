@@ -10,20 +10,20 @@ import (
 
 func (g *group) GetGroupsByUserService(ctx context.Context, limit, offset int) (entity.Groups, error) {
 	return g.GetGroupsByUserID(ctx, ctx.Value(entity.ContextID).(int), limit, offset)
-
 }
 
 // GetGroupByIdService returns a group by its ID.
-func (g *group) GetGroupByIdService(ctx context.Context, groupID int) (entity.Group, error) {
-	userID, ok := ctx.Value(entity.ContextID).(int)
-	if !ok {
-		return entity.Group{}, errors.New("user id not found in context")
+func (g *group) GetGroupByIdService(ctx context.Context, groupID int) (int, entity.Group, error) {
+	userID := ctx.Value(entity.ContextID).(int)
+	exist, err := g.IsMemberRepository(ctx, userID, groupID)
+	if err != nil || !exist {
+		return http.StatusForbidden, entity.Group{}, errors.New("You can't access this group")
 	}
 	group, err := g.GetGroupByIdRepository(ctx, userID, groupID)
 	if err != nil {
-		return entity.Group{}, err
+		return http.StatusBadRequest, entity.Group{}, err
 	}
-	return group, nil
+	return http.StatusOK, group, nil
 }
 
 // CreateGroupService creates a new group.

@@ -220,23 +220,30 @@ func (g *group) addGroupMember(ctx context.Context, userID, groupID int) (int, e
 // CHECK IF THE USER IS A MEMBER OF THE GROUP
 func (g *group) IsMemberRepository(ctx context.Context, userID, groupID int) (bool, error) {
 	query := `
-SELECT COUNT(*) 
-FROM group_members 
-WHERE member_id = ? 
-  AND group_id = ?
-	`
+		SELECT EXISTS (
+			SELECT 1
+			FROM group_members
+			WHERE member_id = ? AND group_id = ?
+			
+			UNION
+			
+			SELECT 1
+			FROM groups
+			WHERE admin = ? AND id = ?)`
 	stmt, err := g.db.PrepareContext(ctx, query)
 	if err != nil {
 		return false, err
 	}
 	defer stmt.Close()
-	var count int
-	err = stmt.QueryRowContext(ctx, userID, groupID).Scan(&count)
+
+	var exists bool
+	err = stmt.QueryRowContext(ctx, userID, groupID, userID, groupID).Scan(&exists)
 	if err != nil {
 		return false, err
 	}
-	return count > 0, nil
+	return exists, nil
 }
+
 
 // --------------------events----------------------------
 // --------------------events----------------------------
