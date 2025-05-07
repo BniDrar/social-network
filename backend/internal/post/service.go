@@ -15,8 +15,8 @@ import (
 
 func (p *post) GetPostsService(ctx context.Context, cursor entity.Cursor) ([]entity.Post, int, error) {
 	id := ctx.Value(entity.ContextID).(int)
-	posts, status, err:= p.getAllPostsRepo(ctx, id, cursor)
-	for _, post:= range posts {
+	posts, status, err := p.getAllPostsRepo(ctx, id, cursor)
+	for _, post := range posts {
 		if post.Image.String != "" {
 			post.Image.SetValid(true)
 		}
@@ -25,11 +25,11 @@ func (p *post) GetPostsService(ctx context.Context, cursor entity.Cursor) ([]ent
 }
 
 func (p *post) getPostsByGroup(ctx context.Context, cursor entity.Cursor) (int, []entity.Post, error) {
-	userId:= ctx.Value(entity.ContextID).(int)
+	userId := ctx.Value(entity.ContextID).(int)
 	if (cursor.LastId != nil && cursor.Time == nil) || (cursor.LastId == nil && cursor.Time != nil) {
 		return http.StatusBadRequest, nil, errors.New("invalid request body")
 	}
-	posts, err:= p.getPostsByGroupId(ctx, userId, cursor)
+	posts, err := p.getPostsByGroupId(ctx, userId, cursor)
 	if err != nil {
 		return http.StatusInternalServerError, nil, err
 	}
