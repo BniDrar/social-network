@@ -22,7 +22,7 @@ func (g *group) GetGroupsByUserID(ctx context.Context, userID int, limit int, of
 	FROM groups g
 	JOIN group_members gm ON g.id = gm.group_id
 	LEFT JOIN posts p ON g.id = p.group_id
-	WHERE gm.member_id = ?
+	WHERE gm.member_id = ? OR g.admin = ?
 	GROUP BY g.id
 	ORDER BY g.id DESC
   LIMIT ? OFFSET ?
@@ -32,7 +32,7 @@ func (g *group) GetGroupsByUserID(ctx context.Context, userID int, limit int, of
 		return nil, fmt.Errorf("error preparing query in GetGroupsByUserID function: %v", err)
 	}
 	defer stmt.Close()
-	rows, err := stmt.QueryContext(ctx, userID, limit, offset)
+	rows, err := stmt.QueryContext(ctx, userID, userID, limit, offset)
 	if err != nil {
 		return nil, err
 	}

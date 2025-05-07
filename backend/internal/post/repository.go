@@ -11,24 +11,35 @@ import (
 )
 
 func (p *post) GroupMember(ctx context.Context, userID, groupID int) bool {
-	query := `SELECT EXISTS (SELECT 1 FROM group_members WHERE member_id = ? AND group_id = ?)`
+	query := `SELECT EXISTS (
+    SELECT 1
+    FROM group_members
+    WHERE member_id = ? AND group_id = ?
+    
+    UNION
+    
+    SELECT 1
+    FROM groups
+    WHERE admin = ? AND id = ?
+)`
 	stmt, err := p.db.PrepareContext(ctx, query)
 	if err != nil {
+		fmt.Println(err)
 		return false
 	}
 	defer stmt.Close()
 
-	row := stmt.QueryRowContext(ctx, userID, groupID)
+	row := stmt.QueryRowContext(ctx, userID, groupID, userID, groupID)
 
 	var exists bool
 	err = row.Scan(&exists)
 	if err != nil {
+		fmt.Println(err)
 		return false
 	}
 
 	return exists
 }
-
 
 func (p *post) Repo_UserCanPost(ctx context.Context, id, postid int) bool {
 	query := `SELECT
@@ -194,7 +205,7 @@ func (p *post) getPostsByGroupId(ctx context.Context, userId int, cursor entity.
 	if cursor.Time == nil || cursor.LastId == nil {
 		// First page → pass NULLs
 		rows, err = prep.QueryContext(ctx, userId, cursor.ID, nil, nil, cursor.Limit)
-	} else { 
+	} else {
 		rows, err = prep.QueryContext(ctx, userId, cursor.ID, cursor.Time, cursor.LastId, cursor.Limit)
 	}
 	if err != nil {
