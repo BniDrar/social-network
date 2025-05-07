@@ -218,6 +218,7 @@ func (u *user) Profile(w http.ResponseWriter, r *http.Request) {
 	status, user, err := u.UserProfile(r.Context(), id)
 	if err != nil {
 		u.loger.Error.Println(err)
+		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
 		w.WriteHeader(status)
 		return
 	}

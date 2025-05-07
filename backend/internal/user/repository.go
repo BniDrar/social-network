@@ -25,20 +25,17 @@ func (r *user) GetUserProfileById(ctx context.Context, targetId int) (entity.Use
 			u.status,
 			(SELECT COUNT(*) FROM follows WHERE followed_id = u.id) AS followers_count,
 			(SELECT COUNT(*) FROM follows WHERE follower_id = u.id) AS following_count,
-			CASE 
-				WHEN EXISTS (SELECT 1 FROM follows WHERE follower_id = $2 AND followed_id = $1) THEN 2
-				WHEN EXISTS (SELECT 1 FROM follows WHERE follower_id = $1 AND followed_id = $2) THEN 1
-				ELSE 0 
-			END AS following_state
+			(SELECT EXISTS (SELECT 1 FROM follows WHERE follower_id = $1 AND followed_id = $2)) AS is_following,
+			(SELECT EXISTS (SELECT 1 FROM follows WHERE follower_id = $2 AND followed_id = $1)) AS is_followed
 		FROM users u
-		WHERE u.id = $1
+		WHERE u.id = $2
+
 	`
 
 	err := r.db.QueryRowContext(ctx, query, requesterId, targetId).Scan(
 		&user.ID, &user.Nickname, &user.Email, &user.Avatar,
 		&user.First, &user.Last, &user.DateOfBirth, &user.AboutMe, &user.Status,
-		&user.FollowersCount, &user.FollowingCount, &user.FollowingState,
-	)
+		&user.FollowersCount, &user.FollowingCount, &user.IsFollowing, &user.IsFollowed)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return user, fmt.Errorf("user not found")
