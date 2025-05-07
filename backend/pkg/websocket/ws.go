@@ -1,7 +1,10 @@
 package websocket
 
 import (
+	"encoding/json"
+	"fmt"
 	"log"
+	"socialNetwork/entity"
 	"sync"
 
 	"github.com/gorilla/websocket"
@@ -127,4 +130,26 @@ func (m *WsManager) GetClients() map[uint]*Client {
 
 func (m *WsManager) GetClient(userID uint) *Client {
 	return m.Clients[userID]
+}
+
+func (m *WsManager) SendNotification(userID uint, notification entity.NotificationMessage) error {
+	m.Mtx.Lock()
+	defer m.Mtx.Unlock()
+
+	c, ok := m.Clients[userID]
+	if !ok {
+		return fmt.Errorf("user %d is not connected", userID)
+	}
+
+	message, err := json.Marshal(notification)
+	if err != nil {
+		return fmt.Errorf("failed to marshal notification: %w", err)
+	}
+
+	select {
+	case c.send <- message:
+		return nil
+	default:
+		return fmt.Errorf("client %d send buffer is full", userID)
+	}
 }

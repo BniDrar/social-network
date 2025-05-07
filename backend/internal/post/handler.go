@@ -10,6 +10,7 @@ import (
 
 	"socialNetwork/entity"
 	"socialNetwork/pkg/config"
+	"socialNetwork/pkg/errors"
 	"socialNetwork/pkg/loger"
 	"socialNetwork/pkg/utils"
 	"socialNetwork/pkg/websocket"
@@ -50,98 +51,96 @@ func (p *post) ServeMedia(w http.ResponseWriter, r *http.Request) {
 
 func (p *post) GetPosts(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		w.WriteHeader(http.StatusMethodNotAllowed)
+		errors.WriteError(w, errors.BadRequest("Method not allowed", nil))
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
+	
 	var cursor entity.Cursor
-	err := json.NewDecoder(r.Body).Decode(&cursor)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Invalid request body"})
+	if err := json.NewDecoder(r.Body).Decode(&cursor); err != nil {
+		errors.WriteError(w, errors.BadRequest("Invalid request body", err))
 		return
 	}
+
 	posts, status, err := p.GetPostsService(r.Context(), cursor)
-	w.WriteHeader(status)
 	if err != nil {
 		p.loger.Error.Println(err)
-		if status == http.StatusBadRequest {
-			json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
-		}
+		errors.WriteError(w, err)
 		return
 	}
+
+	w.WriteHeader(status)
 	json.NewEncoder(w).Encode(&posts)
 }
 
 func (p *post) GetGroupPosts(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		w.WriteHeader(http.StatusMethodNotAllowed)
+		errors.WriteError(w, errors.BadRequest("Method not allowed", nil))
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
 
 	var cursor entity.Cursor
-	err:= json.NewDecoder(r.Body).Decode(&cursor)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Invalid request body"})
+	if err := json.NewDecoder(r.Body).Decode(&cursor); err != nil {
+		errors.WriteError(w, errors.BadRequest("Invalid request body", err))
 		return
 	}
 
-	status, posts, err:= p.getPostsByGroup(r.Context(), cursor)
-	w.WriteHeader(status)
+	status, posts, err := p.getPostsByGroup(r.Context(), cursor)
 	if err != nil {
 		p.loger.Error.Println(err)
-		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
+		errors.WriteError(w, err)
 		return
 	}
+
+	w.WriteHeader(status)
 	json.NewEncoder(w).Encode(&posts)
 }
 
-
 func (p *post) ReactPost(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		w.WriteHeader(http.StatusMethodNotAllowed)
+		errors.WriteError(w, errors.BadRequest("Method not allowed", nil))
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
 
 	postId, err := strconv.Atoi(r.URL.Query().Get("post_id"))
 	if err != nil || postId == 0 {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Invalid query"})
+		errors.WriteError(w, errors.BadRequest("Invalid post ID", err))
+		return
 	}
+
 	status, err := p.PostEngagementService(r.Context(), postId)
-	w.WriteHeader(status)
 	if err != nil {
 		p.loger.Error.Println(err)
+		errors.WriteError(w, err)
+		return
 	}
+
+	w.WriteHeader(status)
 }
 
 func (p *post) CreatePost(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		w.WriteHeader(http.StatusMethodNotAllowed)
+		errors.WriteError(w, errors.BadRequest("Method not allowed", nil))
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
 
 	formData, image, err := utils.ParseAndValidatePostForm(r)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
+		errors.WriteError(w, errors.BadRequest("Invalid form data", err))
 		return
 	}
 
 	postId, status, err := p.CreatePostService(r.Context(), formData, image)
-	w.WriteHeader(status)
 	if err != nil {
 		p.loger.Error.Println(err)
-		if status == http.StatusBadRequest {
-			json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Invalid credentials"})
-		}
+		errors.WriteError(w, err)
 		return
 	}
 
+	w.WriteHeader(status)
 	json.NewEncoder(w).Encode(struct {
 		PostID int `json:"post_id"`
 	}{PostID: postId})
@@ -149,24 +148,24 @@ func (p *post) CreatePost(w http.ResponseWriter, r *http.Request) {
 
 func (p *post) GetPost(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
-		w.WriteHeader(http.StatusMethodNotAllowed)
+		errors.WriteError(w, errors.BadRequest("Method not allowed", nil))
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
+
 	postId, err := strconv.Atoi(r.URL.Query().Get("post_id"))
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "invalid query"})
+		errors.WriteError(w, errors.BadRequest("Invalid post ID", err))
 		return
 	}
+
 	post, status, err := p.GetPostService(r.Context(), postId)
-	w.WriteHeader(status)
 	if err != nil {
 		p.loger.Error.Println(err)
-		if status == http.StatusBadRequest {
-			json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
-		}
+		errors.WriteError(w, err)
 		return
 	}
+
+	w.WriteHeader(status)
 	json.NewEncoder(w).Encode(&post)
 }

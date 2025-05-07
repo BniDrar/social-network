@@ -33,33 +33,39 @@ func (p *post) GroupMember(ctx context.Context, userID, groupID int) bool {
 	}
 }
 
-func (p *post) Repo_UserCanPost(ctx context.Context, id, postid int) bool {
-	query := `SELECT
-		    post.id
-		FROM
-			posts AS post
-		LEFT JOIN follows AS follow ON follow.followed_id = post.user_id
-			AND follow.follower_id = $1
-		LEFT JOIN group_members AS gm ON gm.group_id = post.group_id
-			AND gm.member_id = $1
-		WHERE
-		    (post.status = 0 AND gm.member_id IS NOT NULL AND post.id = $2)
-		    OR (post.status = 1 AND follow.follower_id = $1 AND post.id = $2)
-			OR (post.status = 2 AND post.id = $2)
-			OR (post.user_id = $1);
-		ORDER BY post.created_at DESC`
-	smtp, err := p.db.PrepareContext(ctx, query)
+func (p *post) Repo_UserCanPost(ctx context.Context, userID, postID int) bool {
+	query := `
+		SELECT EXISTS (
+			SELECT 1
+			FROM posts AS post
+			LEFT JOIN follows AS follow ON follow.followed_id = post.user_id
+				AND follow.follower_id = $1
+			LEFT JOIN group_members AS gm ON gm.group_id = post.group_id
+				AND gm.member_id = $1
+			WHERE post.id = $2
+				AND (
+					(post.status = 0 AND gm.member_id IS NOT NULL)
+					OR (post.status = 1 AND follow.follower_id = $1)
+					OR (post.status = 2)
+					OR (post.user_id = $1)
+				)
+		)`
+
+	stmt, err := p.db.PrepareContext(ctx, query)
 	if err != nil {
+		p.loger.Error.Printf("Failed to prepare user post access query: %v", err)
 		return false
 	}
-	row := smtp.QueryRowContext(ctx, id, postid)
-	var res int
-	err = row.Scan(&res)
+	defer stmt.Close()
+
+	var hasAccess bool
+	err = stmt.QueryRowContext(ctx, userID, postID).Scan(&hasAccess)
 	if err != nil {
+		p.loger.Error.Printf("Failed to check user post access: %v", err)
 		return false
-	} else {
-		return true
 	}
+
+	return hasAccess
 }
 
 func (p *post) getAllPostsRepo(ctx context.Context, userID int, cursor entity.Cursor) ([]entity.Post, int, error) {
@@ -115,7 +121,7 @@ func (p *post) getAllPostsRepo(ctx context.Context, userID int, cursor entity.Cu
 	if (cursor.Time == nil && cursor.LastId != nil) || (cursor.Time != nil && cursor.LastId == nil) {
 		return nil, http.StatusBadRequest, errors.New("invalid cursor: both time and id must be set together")
 	}
-	
+
 	var rows *sql.Rows
 	if cursor.Time == nil || cursor.LastId == nil {
 		// First page → pass NULLs
