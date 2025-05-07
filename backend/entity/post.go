@@ -26,12 +26,6 @@ type Post struct {
 	UpdatedAt      time.Time `json:"updated_at"`
 }
 
-type Target struct {
-	Target uint `json:"target"`
-	Limit  uint `json:"liimit"`
-	Offset uint `json:"offset"`
-}
-
 // -- 0: custom, 1: friends, 2: global
 const (
 	PostStatusCustom = iota
