@@ -31,7 +31,7 @@ func (c *chat) getMessagesRepo(ctx context.Context, cursor entity.Cursor, userId
 
 	// Final query assembly
 	query += strings.Join(whereClauses, " AND ") + " ORDER BY created_at DESC, id DESC LIMIT ?"
-	params = append(params, entity.LIMIT)
+	params = append(params, cursor.Limit)
 
 	stmt, err := c.db.PrepareContext(ctx, query)
 	if err != nil {
