@@ -1,21 +1,21 @@
 package entity
 
 type User struct {
-	ID             uint       `json:"id,omitempty"`
-	Nickname       NullString `json:"nickname,omitempty"`
-	Email          string     `json:"email,omitempty"`
-	Password       string     `json:"password,omitempty"`
-	Avatar         NullString `json:"avatar,omitempty"`
-	First          string     `json:"first,omitempty"`
-	Last           string     `json:"last,omitempty"`
-	DateOfBirth    string     `json:"birthday,omitempty"`
-	AboutMe        string     `json:"about_me,omitempty"`
-	Status         uint       `json:"status,omitempty"`
-	ProfileOwner   bool       `json:"profile_owner,omitempty"`
-	IsFollowing     bool       `json:"is_following"` // current user follows the target user
+	ID             uint       `json:"id"`
+	Nickname       NullString `json:"nickname"`
+	Email          string     `json:"email"`
+	Password       string     `json:"password"`
+	Avatar         NullString `json:"avatar"`
+	First          string     `json:"first"`
+	Last           string     `json:"last"`
+	DateOfBirth    string     `json:"birthday"`
+	AboutMe        string     `json:"about_me"`
+	Status         uint       `json:"status"`
+	ProfileOwner   bool       `json:"profile_owner"`
+	IsFollowing    bool       `json:"is_following"` // current user follows the target user
 	IsFollowed     bool       `json:"is_followed"`  // target user follows the current user
-	FollowersCount uint       `json:"followers_count,omitempty"`
-	FollowingCount uint       `json:"following_count,omitempty"`
+	FollowersCount uint       `json:"followers_count"`
+	FollowingCount uint       `json:"following_count"`
 }
 
 type Contact struct {
