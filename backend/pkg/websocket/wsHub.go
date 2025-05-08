@@ -1,6 +1,7 @@
 package websocket
 
 import (
+	"encoding/json"
 	"log"
 	"sync"
 	"time"
@@ -122,7 +123,6 @@ func (h *Hub) writeMessage(client *Client) {
 	}
 }
 
-
 func (h *Hub) Run() {
 	for {
 		select {
@@ -145,8 +145,13 @@ func (h *Hub) Run() {
 		case message := <-h.private:
 			h.mu.Lock()
 			if client, ok := h.Clients[message.UserID]; ok {
+				jsonData, err := json.Marshal(message)
+				if err != nil {
+					log.Printf("Error marshaling message: %v", err)
+					continue
+				}
 				select {
-				case client.send <- message.Data:
+				case client.send <- jsonData:
 				default:
 					log.Printf("Client %d send buffer is full", message.UserID)
 				}
@@ -154,11 +159,16 @@ func (h *Hub) Run() {
 			h.mu.Unlock()
 
 		case message := <-h.group:
+			jsonData, err := json.Marshal(message)
+			if err != nil {
+				log.Printf("Error marshaling message: %v", err)
+				continue
+			}
 			h.mu.Lock()
 			for _, userID := range message.GroupMembers {
 				if client, exists := h.Clients[userID]; exists {
 					select {
-					case client.send <- message.Data:
+					case client.send <- jsonData:
 					default:
 						log.Printf("Client %d send buffer is full", userID)
 					}
@@ -168,10 +178,16 @@ func (h *Hub) Run() {
 
 		case message := <-h.broadcast:
 			h.mu.Lock()
+			jsonData, err := json.Marshal(message)
+			if err != nil {
+				log.Printf("Error marshaling message: %v", err)
+				continue
+			}
 			for userID, client := range h.Clients {
 				if userID != message.UserID { // Don't send to sender
+
 					select {
-					case client.send <- message.Data:
+					case client.send <- jsonData:
 					default:
 						log.Printf("Client %d send buffer is full", userID)
 					}
@@ -182,8 +198,13 @@ func (h *Hub) Run() {
 		case message := <-h.notification:
 			h.mu.Lock()
 			if client, ok := h.Clients[message.UserID]; ok {
+				jsonData, err := json.Marshal(message)
+				if err != nil {
+					log.Printf("Error marshaling message: %v", err)
+					continue
+				}
 				select {
-				case client.send <- message.Data:
+				case client.send <- jsonData:
 				default:
 					log.Printf("Client %d send buffer is full", message.UserID)
 				}
