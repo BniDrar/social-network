@@ -33,13 +33,13 @@ type Client struct {
 
 type Hub struct {
 	// WebSocket connections
-	clients map[uint]*Client
+	Clients map[uint]*Client
 	// Channels for different types of messages
 	private      chan Message
 	group        chan Message
 	broadcast    chan Message
 	notification chan Message
-	// Channel for registering/unregistering clients
+	// Channel for registering/unregistering Clients
 	register   chan *Client
 	unregister chan *Client
 	// Mutex for thread safety
@@ -53,7 +53,7 @@ func NewHub(bufferSize int) *Hub {
 		bufferSize = 1024 // Default buffer size
 	}
 	return &Hub{
-		clients:      make(map[uint]*Client),
+		Clients:      make(map[uint]*Client),
 		private:      make(chan Message),
 		group:        make(chan Message),
 		broadcast:    make(chan Message),
@@ -74,8 +74,6 @@ func (h *Hub) AddClient(userID uint, conn *websocket.Conn) {
 
 	// Start ping/pong handling
 	go h.handlePingPong(client)
-	// Start message reading
-	go h.readMessage(client)
 	// Start message writing
 	go h.writeMessage(client)
 }
@@ -124,37 +122,20 @@ func (h *Hub) writeMessage(client *Client) {
 	}
 }
 
-func (h *Hub) readMessage(client *Client) {
-	defer func() {
-		h.unregister <- client
-	}()
-
-	for {
-		_, message, err := client.conn.ReadMessage()
-		if err != nil {
-			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
-				log.Printf("error: %v", err)
-			}
-			break
-		}
-		// Handle the message (you can add message processing logic here)
-		log.Printf("Received message from client %d: %s", client.userID, message)
-	}
-}
 
 func (h *Hub) Run() {
 	for {
 		select {
 		case client := <-h.register:
 			h.mu.Lock()
-			h.clients[client.userID] = client
+			h.Clients[client.userID] = client
 			h.mu.Unlock()
 			log.Printf("Client %d registered", client.userID)
 
 		case client := <-h.unregister:
 			h.mu.Lock()
-			if _, ok := h.clients[client.userID]; ok {
-				delete(h.clients, client.userID)
+			if _, ok := h.Clients[client.userID]; ok {
+				delete(h.Clients, client.userID)
 				close(client.send)
 				client.conn.Close() // Close the connection
 				log.Printf("Client %d unregistered", client.userID)
@@ -163,7 +144,7 @@ func (h *Hub) Run() {
 
 		case message := <-h.private:
 			h.mu.Lock()
-			if client, ok := h.clients[message.UserID]; ok {
+			if client, ok := h.Clients[message.UserID]; ok {
 				select {
 				case client.send <- message.Data:
 				default:
@@ -175,7 +156,7 @@ func (h *Hub) Run() {
 		case message := <-h.group:
 			h.mu.Lock()
 			for _, userID := range message.GroupMembers {
-				if client, exists := h.clients[userID]; exists {
+				if client, exists := h.Clients[userID]; exists {
 					select {
 					case client.send <- message.Data:
 					default:
@@ -187,7 +168,7 @@ func (h *Hub) Run() {
 
 		case message := <-h.broadcast:
 			h.mu.Lock()
-			for userID, client := range h.clients {
+			for userID, client := range h.Clients {
 				if userID != message.UserID { // Don't send to sender
 					select {
 					case client.send <- message.Data:
@@ -200,7 +181,7 @@ func (h *Hub) Run() {
 
 		case message := <-h.notification:
 			h.mu.Lock()
-			if client, ok := h.clients[message.UserID]; ok {
+			if client, ok := h.Clients[message.UserID]; ok {
 				select {
 				case client.send <- message.Data:
 				default:
@@ -231,7 +212,7 @@ func (h *Hub) SendGroupMessage(groupID uint, groupMembers []uint, message []byte
 	}
 }
 
-// BroadcastMessage sends a message to all connected clients except the sender
+// BroadcastMessage sends a message to all connected Clients except the sender
 func (h *Hub) BroadcastMessage(senderID uint, message []byte) {
 	h.broadcast <- Message{
 		Type:   BroadcastMessage,

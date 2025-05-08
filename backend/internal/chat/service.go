@@ -6,6 +6,7 @@ import (
 	"errors"
 	"log"
 	"net/http"
+	"time"
 
 	"socialNetwork/entity"
 
@@ -28,13 +29,19 @@ func (c *chat) WsListing(conn *websocket.Conn, ctx context.Context) error {
 			}
 			return err
 		}
+		if msg.ReceiverID == nil {
+			c.loger.Error.Println("ReceiverID is nil. Ignoring message.")
+			continue
+		}
 
 		// Set sender ID
 		msg.SenderID = id
-		c.loger.Info.Printf("Received message: %+v\n", msg)
+		c.loger.Info.Printf("Received message: %v\n", id)
 
 		// Save message to database
-		go c.SaveMessage(msg)
+		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+		defer cancel()
+		go c.SaveMessage(ctx, msg)
 
 		// Send message to receiver
 		byteData, err := json.Marshal(msg)
