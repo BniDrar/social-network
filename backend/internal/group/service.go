@@ -2,7 +2,9 @@ package group
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 
 	"socialNetwork/entity"
@@ -61,14 +63,52 @@ func (g *group) inviteToJoinGroupService(ctx context.Context, invitation entity.
 		return http.StatusBadRequest, err
 	}
 
-	notfID, status, err := g.CreateInvitationNotification(ctx, invitation)
+	_, status, err := g.CreateInvitationNotification(ctx, invitation)
 	if err != nil {
 		return status, err
 	}
 
-	g.loger.Info.Println(notfID)
-	// send the notification via websocket
-	g.ws.SendMessage(uint(invitation.InvitedID), []byte("something"))
+	// Get group information
+	group, err := g.GetGroupByIdRepository(ctx, invitation.InviterID, invitation.GroupId)
+	if err != nil {
+		g.loger.Error.Printf("Error getting group info: %v", err)
+		return http.StatusInternalServerError, err
+	}
+
+	// Get inviter information from group members
+	groupMembers, err := g.GetGroupMembersRepository(ctx, invitation.GroupId)
+	if err != nil {
+		g.loger.Error.Printf("Error getting group members: %v", err)
+		return http.StatusInternalServerError, err
+	}
+
+	// Find the inviter in group members
+	var inviter entity.User
+	for _, member := range groupMembers {
+		if member.ID == uint(invitation.InviterID) {
+			inviter = member
+			break
+		}
+	}
+
+	// Create notification message
+	notification := entity.Notification{
+		Type:       entity.GroupInvitationNotification,
+		GroupId:    invitation.GroupId,
+		SenderId:   invitation.InviterID,
+		ReceiverID: invitation.InvitedID,
+		Message:    fmt.Sprintf("%s invited you to join the group '%s'", inviter.Nickname, group.Name),
+	}
+	notificationBytes, err := json.Marshal(notification)
+	if err != nil {
+		g.loger.Error.Printf("Error marshaling notification: %v", err)
+		return http.StatusInternalServerError, err
+	}
+
+	// Send notification to the invited user
+	g.Hub.SendNotification(uint(invitation.InvitedID), notificationBytes)
+	g.loger.Info.Printf("Sent invitation notification to user %d", invitation.InvitedID)
+
 	return http.StatusOK, nil
 }
 
@@ -109,11 +149,46 @@ func (g *group) requestToJoingGroupService(ctx context.Context, invitation entit
 		return 0, http.StatusBadRequest, errors.New("invalid group id")
 	}
 	invitation.InvitedID = group.Admin
+
+	// Get requester information from group members
+	groupMembers, err := g.GetGroupMembersRepository(ctx, invitation.GroupId)
+	if err != nil {
+		g.loger.Error.Printf("Error getting group members: %v", err)
+		return 0, http.StatusInternalServerError, err
+	}
+
+	// Find the requester in group members
+	var requester entity.User
+	for _, member := range groupMembers {
+		if member.ID == uint(userId) {
+			requester = member
+			break
+		}
+	}
+
 	notificationID, status, err := g.CreateRequestJoiningNotification(ctx, invitation)
 	if err != nil {
 		return 0, status, err
 	}
-	// now after getting group information send to the admin via websocket
+
+	// Create notification message
+	notification := entity.Notification{
+		Type:       entity.GroupParticipationNotification,
+		GroupId:    invitation.GroupId,
+		SenderId:   userId,
+		ReceiverID: group.Admin,
+		Message:    fmt.Sprintf("%s requested to join the group '%s'", requester.Nickname, group.Name),
+	}
+	notificationBytes, err := json.Marshal(notification)
+	if err != nil {
+		g.loger.Error.Printf("Error marshaling notification: %v", err)
+		return notificationID, http.StatusOK, nil // Return success even if notification fails
+	}
+
+	// Send notification to the group admin
+	g.Hub.SendNotification(uint(group.Admin), notificationBytes)
+	g.loger.Info.Printf("Sent join request notification to admin %d", group.Admin)
+
 	return notificationID, http.StatusOK, nil
 }
 
@@ -155,12 +230,38 @@ func (g *group) CreateEventService(ctx context.Context, event entity.Event) (int
 	if err != nil {
 		return 0, status, err
 	}
-	notificationID, status, err := g.CreateEventNotification(ctx, event)
+	_, status, err = g.CreateEventNotification(ctx, event)
 	if err != nil {
 		return 0, status, err
 	}
-	// upstreat the notificationId and there information in the websocket to all the group members
-	g.loger.Info.Println("the notification id is", notificationID)
+
+	// Get all group members to send notification
+	groupMembers, err := g.GetGroupMembersRepository(ctx, event.GroupID)
+	if err != nil {
+		g.loger.Error.Printf("Error getting group members: %v", err)
+		return eventId, status, nil // Return success even if notification fails
+	}
+
+	// Create notification message
+	notification := entity.Notification{
+		Type:     entity.EventNotification,
+		GroupId:  event.GroupID,
+		EventID:  eventId,
+		Message:  fmt.Sprintf("New event created: %s", event.Title),
+		SenderId: ctx.Value(entity.ContextID).(int),
+	}
+	notificationBytes, err := json.Marshal(notification)
+	if err != nil {
+		g.loger.Error.Printf("Error marshaling notification: %v", err)
+		return eventId, status, nil
+	}
+
+	// Send notification to all group members
+	for _, member := range groupMembers {
+		g.Hub.SendNotification(uint(member.ID), notificationBytes)
+	}
+	g.loger.Info.Printf("Sent event notification to %d group members", len(groupMembers))
+
 	return eventId, status, nil
 }
 
