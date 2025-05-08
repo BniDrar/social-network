@@ -90,7 +90,13 @@ func (g *group) inviteToJoinGroupService(ctx context.Context, invitation entity.
 			break
 		}
 	}
-
+	if inviter.ID == 0 {
+		inviter, err = g.GetUserByIdRepository(ctx, invitation.InviterID)
+		if err != nil {
+			g.loger.Error.Printf("Error getting inviter info: %v", err)
+			return http.StatusInternalServerError, err
+		}
+	}	
 	// Create notification message
 	notification := entity.Notification{
 		Type:       entity.GroupInvitationNotification,
@@ -148,36 +154,24 @@ func (g *group) requestToJoingGroupService(ctx context.Context, invitation entit
 	if err != nil {
 		return 0, http.StatusBadRequest, errors.New("invalid group id")
 	}
-	invitation.InvitedID = group.Admin
-
-	// Get requester information from group members
-	groupMembers, err := g.GetGroupMembersRepository(ctx, invitation.GroupId)
+	
+	requester, err := g.GetUserByIdRepository(ctx, userId)
 	if err != nil {
-		g.loger.Error.Printf("Error getting group members: %v", err)
 		return 0, http.StatusInternalServerError, err
-	}
-
-	// Find the requester in group members
-	var requester entity.User
-	for _, member := range groupMembers {
-		if member.ID == uint(userId) {
-			requester = member
-			break
-		}
-	}
-
-	notificationID, status, err := g.CreateRequestJoiningNotification(ctx, invitation)
-	if err != nil {
-		return 0, status, err
 	}
 
 	// Create notification message
 	notification := entity.Notification{
 		Type:       entity.GroupParticipationNotification,
-		GroupId:    invitation.GroupId,
+		GroupId:    group.ID,
 		SenderId:   userId,
 		ReceiverID: group.Admin,
-		Message:    fmt.Sprintf("%s requested to join the group '%s'", requester.Nickname.String, group.Name),
+		Message:    fmt.Sprintf("%s requested to join the group '%s'", requester.First, group.Name),
+	}
+
+	notificationID, status, err := g.CreateRequestJoiningNotification(ctx, notification)
+	if err != nil {
+		return 0, status, err
 	}
 	notificationBytes, err := json.Marshal(notification)
 	if err != nil {

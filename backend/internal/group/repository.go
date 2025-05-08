@@ -9,6 +9,28 @@ import (
 	"socialNetwork/entity"
 )
 
+func (g *group) GetUserByIdRepository(ctx context.Context,  userID int) (entity.User, error) {
+	query := `
+		SELECT id, first_name
+		FROM users
+		WHERE id = ?
+	`
+	stmt, err := g.db.PrepareContext(ctx, query)
+	if err != nil {
+		return entity.User{}, err
+	}
+	defer stmt.Close()
+	var user entity.User
+	err = stmt.QueryRowContext(ctx, userID).Scan(
+		&user.ID,
+		&user.First,
+	)
+	if err != nil {
+		return entity.User{}, err
+	}
+	return user, nil
+}
+
 func (g *group) GetGroupsByUserID(ctx context.Context, userID int, limit int, offset int) (entity.Groups, error) {
 	query := `
 	SELECT 
@@ -179,6 +201,7 @@ func (g *group) GetGroupMembersRepository(ctx context.Context, groupID int) ([]e
 			SELECT admin as id FROM groups WHERE id = ?
 		) as combined_members
 		JOIN users u ON u.id = combined_members.id
+		LEFT JOIN groups g ON g.id = ?
 		WHERE u.id IS NOT NULL
 	`
 	stmt, err := g.db.PrepareContext(ctx, query)
@@ -186,7 +209,7 @@ func (g *group) GetGroupMembersRepository(ctx context.Context, groupID int) ([]e
 		return nil, err
 	}
 	defer stmt.Close()
-	rows, err := stmt.QueryContext(ctx, groupID, groupID)
+	rows, err := stmt.QueryContext(ctx, groupID, groupID, groupID)
 	if err != nil {
 		return nil, err
 	}
@@ -361,15 +384,15 @@ func (g *group) CreateInvitationNotification(ctx context.Context, invt entity.In
 	return int(eventID), http.StatusOK, nil
 }
 
-func (g *group) CreateRequestJoiningNotification(ctx context.Context, invt entity.Invitation) (int, int, error) {
-	query := `INCERT INTO notification (type, sender_id, group_id)
-	VALUES (?, ?)`
+func (g *group) CreateRequestJoiningNotification(ctx context.Context, notif entity.Notification) (int, int, error) {
+	query := `INSERT INTO notification (type, sender_id, group_id, receiver_id)
+	VALUES (?, ?, ?, ?)`
 	stmt, err := g.db.PrepareContext(ctx, query)
 	if err != nil {
 		return 0, http.StatusInternalServerError, err
 	}
 	defer stmt.Close()
-	result, err := stmt.ExecContext(ctx, entity.GroupParticipationNotification, invt.InviterID, invt.GroupId)
+	result, err := stmt.ExecContext(ctx, entity.GroupParticipationNotification, notif.SenderId, notif.GroupId, notif.ReceiverID)
 	if err != nil {
 		return 0, http.StatusBadRequest, err
 	}

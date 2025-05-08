@@ -16,7 +16,7 @@ type User struct {
 	IsFollowed     bool       `json:"is_followed"`  // target user follows the current user
 	FollowersCount uint       `json:"followers_count"`
 	FollowingCount uint       `json:"following_count"`
-	IsAdmin        bool       `json:"is_admin"`     // whether the user is an admin of a group
+	IsAdmin        bool       `json:"is_admin"` // whether the user is an admin of a group
 }
 
 type Contact struct {
