@@ -41,7 +41,7 @@ func main() {
 	sessionManager.Lifetime = 12 * time.Hour
 
 	hub := websocket.NewHub(1024)
-	hub.Run()
+	go hub.Run()
 	Dep := &config.Dependencies{
 		SessionManager: sessionManager,
 		DB:             db,
