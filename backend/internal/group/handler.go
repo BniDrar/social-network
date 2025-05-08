@@ -370,7 +370,7 @@ func (g *group) GetGroupEvents(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Invalid group ID"})
 		return
 	}
-	
+
 	events, status, err := g.GetGroupEventsService(r.Context(), groupID)
 	if err != nil {
 		g.loger.Error.Println(err)
@@ -382,3 +382,4 @@ func (g *group) GetGroupEvents(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(status)
 	json.NewEncoder(w).Encode(events)
 }
+

@@ -303,7 +303,12 @@ func (g *group) CreateEventRepository(ctx context.Context, event entity.Event) (
 
 func (g *group) GetEventsRepository(ctx context.Context, groupID int) ([]entity.Event, error) {
 	query := `
-		SELECT * FROM events WHERE group_id = ?
+		SELECT 
+			e.id, e.group_id, e.user_id, e.title, e.description, e.date, e.created_at,
+			COALESCE(en.status, 0) as going
+		FROM events e
+		LEFT JOIN engagement en ON en.event_id = e.id AND en.user_id = ?
+		WHERE e.id = ?
 	`
 	var events []entity.Event
 	stmt, err := g.db.PrepareContext(ctx, query)
@@ -338,18 +343,24 @@ func (g *group) GetEventsRepository(ctx context.Context, groupID int) ([]entity.
 	return events, nil
 }
 
-func (g *group) GetEventRepository(ctx context.Context, EventID int) (entity.Event, error) {
+func (g *group) GetEventRepository(ctx context.Context, eventID int, userID int) (entity.Event, error) {
 	query := `
-		SELECT * FROM events WHERE id = ?
+		SELECT 
+			e.id, e.group_id, e.user_id, e.title, e.description, e.date, e.created_at,
+			COALESCE(en.status, 0) as going
+		FROM events e
+		LEFT JOIN engagement en ON en.event_id = e.id AND en.user_id = ?
+		WHERE e.id = ?
 	`
+
 	var event entity.Event
 	stmt, err := g.db.PrepareContext(ctx, query)
 	if err != nil {
 		return event, err
 	}
 	defer stmt.Close()
-	row := stmt.QueryRowContext(ctx, EventID)
-	err = row.Scan(
+
+	err = stmt.QueryRowContext(ctx, userID, eventID).Scan(
 		&event.ID,
 		&event.GroupID,
 		&event.UserID,
@@ -357,12 +368,14 @@ func (g *group) GetEventRepository(ctx context.Context, EventID int) (entity.Eve
 		&event.Description,
 		&event.Date,
 		&event.CreatedAt,
+		&event.Going, // New field for engagement status
 	)
 	if err != nil {
 		return event, err
 	}
 	return event, nil
 }
+
 
 func (g *group) VoteEventRepository(ctx context.Context, eventId, status int) (int, int, error) {
 	// search in engagement table when user voted an event if exist then return status code 400

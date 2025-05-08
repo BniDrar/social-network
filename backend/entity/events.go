@@ -10,4 +10,5 @@ type Event struct {
 	Location    string `json:"location"`
 	GroupID     int    `json:"group_id"`
 	CreatedAt   string `json:"created_at"`
+	Going       int   `json:"going"`
 }
