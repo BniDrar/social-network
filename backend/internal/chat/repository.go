@@ -68,7 +68,7 @@ func (r *chat) CreateMessage(message entity.Message) (int, error) {
 	return id, nil
 }
 
-func (r *chat) SaveMessage(ctx context.Context, message entity.Message) error {
+func (r *chat) SaveMessage(ctx context.Context, message entity.Message, isOnline bool) error {
 	query := `INSERT INTO messages (sender_id, receiver_id,created_at ,content) VALUES (?, ?, ?, ?)`
 	stmt, err := r.db.PrepareContext(ctx, query)
 	if err != nil {

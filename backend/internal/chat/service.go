@@ -41,7 +41,8 @@ func (c *chat) WsListing(conn *websocket.Conn, ctx context.Context) error {
 		// Save message to database
 		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 		defer cancel()
-		go c.SaveMessage(ctx, msg)
+		isOnline := c.Hub.IsOnline(uint(*msg.ReceiverID))
+		go c.SaveMessage(ctx, msg, isOnline)
 
 		// Send message to receiver
 		byteData, err := json.Marshal(msg)

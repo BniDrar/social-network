@@ -65,6 +65,15 @@ func NewHub(bufferSize int) *Hub {
 	}
 }
 
+// check if user is online
+func (h *Hub) IsOnline(userID uint) bool {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+
+	_, exists := h.Clients[userID]
+	return exists
+}
+
 func (h *Hub) AddClient(userID uint, conn *websocket.Conn) {
 	client := &Client{
 		userID: userID,
