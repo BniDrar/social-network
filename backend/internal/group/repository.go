@@ -121,7 +121,7 @@ func (g *group) CreateGroupRepository(ctx context.Context, group entity.Group) (
 }
 
 func (g *group) GetAllGroupsRepository(ctx context.Context, typeGroup int) (entity.Groups, error) {
-	userId:= ctx.Value(entity.ContextID).(int)
+	userId := ctx.Value(entity.ContextID).(int)
 	query := `
 		SELECT
 			g.id,
@@ -168,17 +168,25 @@ func (g *group) GetAllGroupsRepository(ctx context.Context, typeGroup int) (enti
 
 func (g *group) GetGroupMembersRepository(ctx context.Context, groupID int) ([]entity.User, error) {
 	query := `
- 		SELECT gm.member_id, u.nickname, u.avatar
- 		FROM group_members gm
- 		JOIN users u ON gm.member_id = u.id
- 		WHERE gm.group_id = ?
- 	`
+		SELECT 
+			u.id,
+			u.nickname,
+			u.avatar,
+			(g.admin = u.id) as is_admin
+		FROM (
+			SELECT member_id as id FROM group_members WHERE group_id = ?
+			UNION
+			SELECT admin as id FROM groups WHERE id = ?
+		) as combined_members
+		JOIN users u ON u.id = combined_members.id
+		WHERE u.id IS NOT NULL
+	`
 	stmt, err := g.db.PrepareContext(ctx, query)
 	if err != nil {
 		return nil, err
 	}
 	defer stmt.Close()
-	rows, err := stmt.QueryContext(ctx, groupID)
+	rows, err := stmt.QueryContext(ctx, groupID, groupID)
 	if err != nil {
 		return nil, err
 	}
@@ -186,14 +194,17 @@ func (g *group) GetGroupMembersRepository(ctx context.Context, groupID int) ([]e
 	var groupMembers []entity.User
 	for rows.Next() {
 		var groupMember entity.User
+		var isAdmin bool
 		err := rows.Scan(
 			&groupMember.ID,
 			&groupMember.Nickname,
 			&groupMember.Avatar,
+			&isAdmin,
 		)
 		if err != nil {
 			return nil, err
 		}
+		groupMember.IsAdmin = isAdmin
 		groupMembers = append(groupMembers, groupMember)
 	}
 	if err := rows.Err(); err != nil {
@@ -243,7 +254,6 @@ func (g *group) IsMemberRepository(ctx context.Context, userID, groupID int) (bo
 	}
 	return exists, nil
 }
-
 
 // --------------------events----------------------------
 // --------------------events----------------------------

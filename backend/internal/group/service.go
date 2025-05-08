@@ -19,7 +19,7 @@ func (g *group) GetGroupByIdService(ctx context.Context, groupID int) (int, enti
 	userID := ctx.Value(entity.ContextID).(int)
 	exist, err := g.IsMemberRepository(ctx, userID, groupID)
 	if err != nil || !exist {
-		return http.StatusForbidden, entity.Group{}, errors.New("You can't access this group")
+		return http.StatusForbidden, entity.Group{}, errors.New("you can't access this group")
 	}
 	group, err := g.GetGroupByIdRepository(ctx, userID, groupID)
 	if err != nil {
@@ -97,7 +97,7 @@ func (g *group) inviteToJoinGroupService(ctx context.Context, invitation entity.
 		GroupId:    invitation.GroupId,
 		SenderId:   invitation.InviterID,
 		ReceiverID: invitation.InvitedID,
-		Message:    fmt.Sprintf("%s invited you to join the group '%s'", inviter.Nickname, group.Name),
+		Message:    fmt.Sprintf("%s invited you to join the group '%s'", inviter.Nickname.String, group.Name),
 	}
 	notificationBytes, err := json.Marshal(notification)
 	if err != nil {
@@ -177,7 +177,7 @@ func (g *group) requestToJoingGroupService(ctx context.Context, invitation entit
 		GroupId:    invitation.GroupId,
 		SenderId:   userId,
 		ReceiverID: group.Admin,
-		Message:    fmt.Sprintf("%s requested to join the group '%s'", requester.Nickname, group.Name),
+		Message:    fmt.Sprintf("%s requested to join the group '%s'", requester.Nickname.String, group.Name),
 	}
 	notificationBytes, err := json.Marshal(notification)
 	if err != nil {
