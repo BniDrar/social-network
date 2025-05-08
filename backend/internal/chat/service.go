@@ -13,47 +13,37 @@ import (
 )
 
 func (c *chat) WsListing(conn *websocket.Conn, ctx context.Context) error {
-	val := ctx.Value(entity.ContextID)
-	idInt, ok := val.(int)
-	if !ok {
-		return errors.New("user ID missing or invalid in context")
-	}
-	id := uint(idInt)
+	id := ctx.Value(entity.ContextID).(int)
 
 	// Add client to hub
-	c.Hub.AddClient(id, conn)
+	c.Hub.AddClient(uint(id), conn)
 
 	// Listen for messages from the client
 	for {
-		_, message, err := conn.ReadMessage()
+		var msg entity.Message
+		err := conn.ReadJSON(&msg)
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
-				log.Printf("error: %v", err)
+				c.loger.Error.Printf("error: %v\n", err)
 			}
 			return err
 		}
 
-		var msg entity.Message
-		data, err := DecodeMessage(message, &msg)
-		if err != nil {
-			log.Printf("Error decoding message: %v", err)
-			continue
-		}
-
-		data.SenderID = idInt
-		log.Printf("Received message: %+v", data)
+		// Set sender ID
+		msg.SenderID = id
+		c.loger.Info.Printf("Received message: %+v\n", msg)
 
 		// Save message to database
-		go c.SaveMessage(*data)
+		go c.SaveMessage(msg)
 
 		// Send message to receiver
-		byteData, err := json.Marshal(data)
+		byteData, err := json.Marshal(msg)
 		if err != nil {
-			log.Printf("Error marshaling message: %v", err)
+			c.loger.Error.Printf("Error marshaling message: %v\n", err)
 			continue
 		}
 
-		c.Hub.SendPrivateMessage(uint(*data.ReceiverID), byteData)
+		c.Hub.SendPrivateMessage(uint(*msg.ReceiverID), byteData)
 	}
 }
 
