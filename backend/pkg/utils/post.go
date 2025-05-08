@@ -23,7 +23,7 @@ func ParseAndValidatePostForm(r *http.Request) (entity.Post, []byte, error) {
 	}
 
 	status, err := strconv.Atoi(r.FormValue("status"))
-	if err != nil || status < 0 || status > 2 {
+	if err != nil || status < 0 || status > entity.PostStatusGroup {
 		return post, nil, fmt.Errorf("invalid status value")
 	}
 	post.Status = status
