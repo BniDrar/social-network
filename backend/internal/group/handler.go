@@ -356,3 +356,29 @@ func (g *group) GetEvent(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(status)
 	json.NewEncoder(w).Encode(event)
 }
+
+func (g *group) GetGroupEvents(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	// get the event data from the request body
+	groupID, err := strconv.Atoi(r.URL.Query().Get("id"))
+	if err != nil || groupID <= 0 {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Invalid group ID"})
+		return
+	}
+	
+	events, status, err := g.GetGroupEventsService(r.Context(), groupID)
+	if err != nil {
+		g.loger.Error.Println(err)
+		w.WriteHeader(status)
+		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
+		return
+	}
+	// send the created event to the client
+	w.WriteHeader(status)
+	json.NewEncoder(w).Encode(events)
+}

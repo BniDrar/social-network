@@ -294,3 +294,16 @@ func (g *group) VoteEventService(ctx context.Context, vote entity.Engagement) (i
 
 	return eventId, status, nil
 }
+
+
+func (g *group) GetGroupEventsService(ctx context.Context, groupID int) ([]entity.Event, int, error) {
+	exist, err := g.IsMemberRepository(ctx, ctx.Value(entity.ContextID).(int), groupID)
+	if err != nil || !exist {
+		return nil, http.StatusForbidden, errors.New("you are not allowed to that")
+	}
+	events, err := g.GetEventsRepository(ctx, groupID)
+	if err != nil {
+		return nil, http.StatusInternalServerError, err
+	}
+	return events, http.StatusOK, nil
+}

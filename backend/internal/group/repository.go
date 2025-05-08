@@ -301,6 +301,43 @@ func (g *group) CreateEventRepository(ctx context.Context, event entity.Event) (
 	return int(eventID), http.StatusOK, nil
 }
 
+func (g *group) GetEventsRepository(ctx context.Context, groupID int) ([]entity.Event, error) {
+	query := `
+		SELECT * FROM events WHERE group_id = ?
+	`
+	var events []entity.Event
+	stmt, err := g.db.PrepareContext(ctx, query)
+	if err != nil {
+		return events, err
+	}
+	defer stmt.Close()
+	rows, err := stmt.QueryContext(ctx, groupID)
+	if err != nil {
+		return events, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var event entity.Event
+		err := rows.Scan(
+			&event.ID,
+			&event.GroupID,
+			&event.UserID,
+			&event.Title,
+			&event.Description,
+			&event.Date,
+			&event.CreatedAt,
+		)
+		if err != nil {
+			return events, err
+		}
+		events = append(events, event)
+	}
+	if err := rows.Err(); err != nil {
+		return events, err
+	}
+	return events, nil
+}
+
 func (g *group) GetEventRepository(ctx context.Context, EventID int) (entity.Event, error) {
 	query := `
 		SELECT * FROM events WHERE id = ?
