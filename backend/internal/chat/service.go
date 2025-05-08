@@ -61,21 +61,20 @@ func (c *chat) getUserContactsService(ctx context.Context) ([]entity.Contact, in
 		log.Println("err get contacts 0")
 		return nil, http.StatusInternalServerError, err
 	}
-	for i := range contacts {
-		contacts[i].Online = true
+	for i, contact := range contacts {
+		if c.Hub.IsOnline(uint(contact.ID)) {
+			contacts[i].Online = true
+		}
 	}
 	return contacts, http.StatusOK, nil
 }
 
 func (c *chat) getOnlineUsers(ctx context.Context) ([]entity.Contact, int, error) {
-	userId := ctx.Value(entity.ContextID).(int)
-	contacts, err := c.getOnlines(ctx, userId)
+	userId:= ctx.Value(entity.ContextID).(int)
+	onlineIDs:=  c.Hub.GetOnlineUsers()
+	contacts, err:= c.getOnlines(ctx, onlineIDs, userId)
 	if err != nil {
-		log.Println("err get contacts 0")
 		return nil, http.StatusInternalServerError, err
-	}
-	for i := range contacts {
-		contacts[i].Online = true
 	}
 	return contacts, http.StatusOK, nil
 }

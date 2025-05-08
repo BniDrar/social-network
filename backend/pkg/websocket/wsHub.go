@@ -250,3 +250,15 @@ func (h *Hub) SendNotification(userID uint, message []byte) {
 		Data:   message,
 	}
 }
+
+func (h *Hub) GetOnlineUsers() []uint {
+	onlineUsers := make([]uint, 0)
+	for userID := range h.Clients {
+		onlineUsers = append(onlineUsers, userID)
+	}
+	return onlineUsers
+}
+
+func (h *Hub) IsOnline(userId uint) bool {
+	return h.Clients[userId] != nil
+}

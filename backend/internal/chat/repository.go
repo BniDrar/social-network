@@ -2,7 +2,6 @@ package chat
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"socialNetwork/entity"
 	"strings"
@@ -156,72 +155,46 @@ func (c *chat) getContacts(ctx context.Context, userId int) ([]entity.Contact, e
 	return contacts, nil
 }
 
-func (c *chat) getOnlines(ctx context.Context, userId int) ([]entity.Contact, error) {
-	query := `
-		SELECT DISTINCT 
-			u.id,
-			NULL AS group_name,
-			u.first_name,
-			u.last_name,
-			u.avatar
-		FROM users u
-		JOIN messages m ON (u.id = m.sender_id AND m.receiver_id = ?) OR (u.id = m.receiver_id AND m.sender_id = ?)
-		WHERE u.id != ?
+func (c *chat) getOnlines(ctx context.Context, onlineIDs []uint, excludeID int) ([]entity.Contact, error) {
+	// Filter out the excludeID from onlineIDs
+	filtered := make([]uint, 0, len(onlineIDs))
+	for _, id := range onlineIDs {
+		if id != (uint)(excludeID) {
+			filtered = append(filtered, id)
+		}
+	}
 
-		UNION
+	if len(filtered) == 0 {
+		return []entity.Contact{}, nil
+	}
 
-		SELECT DISTINCT
-			g.id,
-			g.name AS group_name,
-			NULL AS first_name,
-			NULL AS last_name,
-			NULL AS avatar
-		FROM groups g
-		JOIN group_members gm ON gm.group_id = g.id
-		WHERE gm.member_id = ? AND g.type IN (0, 2)
-	`
+	query := `SELECT id, nickname, first_name, last_name, avatar FROM users WHERE id IN (?` + strings.Repeat(",?", len(filtered)-1) + `)`
 
-	rows, err := c.db.QueryContext(ctx, query, userId, userId, userId, userId)
+	args := make([]interface{}, len(filtered))
+	for i, id := range filtered {
+		args[i] = id
+	}
+
+	stmt, err := c.db.PrepareContext(ctx, query)
 	if err != nil {
-		return nil, fmt.Errorf("query contacts: %w", err)
+		return nil, err
+	}
+	defer stmt.Close()
+
+	rows, err := stmt.QueryContext(ctx, args...)
+	if err != nil {
+		return nil, err
 	}
 	defer rows.Close()
 
 	var contacts []entity.Contact
 	for rows.Next() {
 		var contact entity.Contact
-		var avatar entity.NullString
-		var groupName entity.NullString
-		var firstName entity.NullString
-		var lastName entity.NullString
-
-		if err := rows.Scan(
-			&contact.ID,
-			&groupName,
-			&firstName,
-			&lastName,
-			&avatar,
-		); err != nil {
-			return nil, fmt.Errorf("scan contact: %w", err)
+		if err := rows.Scan(&contact.ID, &contact.FirstName, &contact.LastName, &contact.Avatar); err != nil {
+			return nil, err
 		}
-
-		contact.GroupName = groupName.String
-		contact.FirstName = firstName.String
-		contact.LastName = lastName.String
-		contact.Avatar = avatar.String
-
 		contacts = append(contacts, contact)
 	}
 
-	if err = rows.Err(); err != nil {
-		return nil, fmt.Errorf("rows error: %w", err)
-	}
-
 	return contacts, nil
-}
-func DecodeMessage(data []byte, msg *entity.Message) (*entity.Message, error) {
-	if err := json.Unmarshal(data, msg); err != nil {
-		return msg, err
-	}
-	return msg, nil
 }
