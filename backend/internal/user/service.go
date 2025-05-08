@@ -2,6 +2,7 @@ package user
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -124,18 +125,41 @@ func (u *user) FollowService(ctx context.Context, followedID int) (int, error) {
 		return http.StatusBadRequest, errors.New("you can't follow yourself")
 	}
 	//check if the followed account is private
-	user, err := u.GetUserProfileById(ctx, userId)
+	user, err := u.GetUserProfileById(ctx, followedID)
 	if err != nil {
-		return http.StatusBadRequest, errors.New("unvailable user")
+		return http.StatusBadRequest, errors.New("unavailable user")
 	}
 	if user.Status == entity.PrivateUser {
-		// create notification in data base
-		id, err := u.CreateFollowNotification(ctx, userId, int(user.ID))
+		// create notification in database
+		_, err := u.CreateFollowNotification(ctx, userId, followedID)
 		if err != nil {
 			return http.StatusInternalServerError, err
 		}
-		print(id)
-		// notify the user by websocket
+
+		// Get follower information
+		follower, err := u.GetUserProfileById(ctx, userId)
+		if err != nil {
+			u.loger.Error.Printf("Error getting follower info: %v", err)
+			return http.StatusInternalServerError, err
+		}
+
+		// Create notification message
+		notification := entity.Notification{
+			Type:       entity.FollowingNotification,
+			SenderId:   userId,
+			ReceiverID: followedID,
+			Message:    fmt.Sprintf("%s requested to follow you", follower.Nickname),
+		}
+		notificationBytes, err := json.Marshal(notification)
+		if err != nil {
+			u.loger.Error.Printf("Error marshaling notification: %v", err)
+			return http.StatusInternalServerError, err
+		}
+
+		// Send notification to the followed user
+		u.hub.SendNotification(uint(followedID), notificationBytes)
+		u.loger.Info.Printf("Sent follow request notification to user %d", followedID)
+
 		return http.StatusOK, nil
 	}
 	notify, err := u.FollowRepository(userId, followedID)
@@ -143,10 +167,29 @@ func (u *user) FollowService(ctx context.Context, followedID int) (int, error) {
 		return http.StatusInternalServerError, err
 	}
 	if notify {
-		// go u.hub.SendMessage(websocket.Message{
-		//     UserID: userId,
-		//     Text:   fmt.Sprintf("%d started following %d", userId, followedID),
-		// })
+		// Get follower information
+		follower, err := u.GetUserProfileById(ctx, userId)
+		if err != nil {
+			u.loger.Error.Printf("Error getting follower info: %v", err)
+			return http.StatusOK, nil // Return success even if notification fails
+		}
+
+		// Create notification message
+		notification := entity.Notification{
+			Type:       entity.FollowingNotification,
+			SenderId:   userId,
+			ReceiverID: followedID,
+			Message:    fmt.Sprintf("%s started following you", follower.Nickname),
+		}
+		notificationBytes, err := json.Marshal(notification)
+		if err != nil {
+			u.loger.Error.Printf("Error marshaling notification: %v", err)
+			return http.StatusOK, nil
+		}
+
+		// Send notification to the followed user
+		u.hub.SendNotification(uint(followedID), notificationBytes)
+		u.loger.Info.Printf("Sent follow notification to user %d", followedID)
 	}
 
 	return http.StatusOK, nil
