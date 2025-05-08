@@ -8,54 +8,52 @@ import (
 	"net/http"
 
 	"socialNetwork/entity"
-	ws "socialNetwork/pkg/websocket"
 
 	"github.com/gorilla/websocket"
 )
 
-var Manager = ws.NewManager()
-
 func (c *chat) WsListing(conn *websocket.Conn, ctx context.Context) error {
-	// defer conn.Close() i don't see why closing the connection here ?
-	// and also closing it in the parent function
-	// so for now i removed it from here ?
-
-	m := Manager
 	val := ctx.Value(entity.ContextID)
 	idInt, ok := val.(int)
-	id := uint(idInt) // convert after
 	if !ok {
-		// handle the error: not found or wrong type
 		return errors.New("user ID missing or invalid in context")
 	}
-	m.AddClient(id, conn)
-	defer m.RemoveClient(id)
+	id := uint(idInt)
+
+	// Add client to hub
+	c.Hub.AddClient(id, conn)
+
 	// Listen for messages from the client
 	for {
 		_, message, err := conn.ReadMessage()
 		if err != nil {
-			log.Println(err)
-		}
-		var msg entity.Message
-		data, err := DecodeMessage(message, &msg)
-		data.SenderID = idInt
-		log.Println("recieved package:", data)
-		if err != nil {
-			log.Println(msg)
-		}
-
-		if err != nil {
-			log.Println(1, err)
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
 				log.Printf("error: %v", err)
 			}
 			return err
 		}
-		// message = bytes.TrimSpace(bytes.Replace(message, []byte("\n"), []byte(" "), -1))
-		byteData, _ := json.Marshal(data)
+
+		var msg entity.Message
+		data, err := DecodeMessage(message, &msg)
+		if err != nil {
+			log.Printf("Error decoding message: %v", err)
+			continue
+		}
+
+		data.SenderID = idInt
+		log.Printf("Received message: %+v", data)
+
+		// Save message to database
 		go c.SaveMessage(*data)
-		go Manager.SendMessage(uint(*data.ReceiverID), byteData)
-		log.Println("message sent:", len(m.Clients))
+
+		// Send message to receiver
+		byteData, err := json.Marshal(data)
+		if err != nil {
+			log.Printf("Error marshaling message: %v", err)
+			continue
+		}
+
+		c.Hub.SendPrivateMessage(uint(*data.ReceiverID), byteData)
 	}
 }
 
