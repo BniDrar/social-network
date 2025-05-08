@@ -1,0 +1,5 @@
+*.log
+*.db
+*.json
+node_modules
+/backend/media/

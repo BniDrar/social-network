@@ -1,0 +1,222 @@
+package server
+
+import (
+	"net/http"
+	"socialNetwork/pkg/config"
+)
+
+type Route struct {
+	Path    string
+	handler http.HandlerFunc
+	Role    uint
+}
+
+const (
+	Auth uint = iota
+	User
+)
+
+func (app *App) InitRoutes(conf *config.Conf) http.Handler {
+	mux := http.NewServeMux()
+	routes := app.createRoutes()
+	for _, route := range routes {
+		if requireLogin(route.Role) {
+			mux.Handle(route.Path, app.SessionManager.LoadAndSave(app.authenticate(app.requireAuthentication(http.HandlerFunc(route.handler)))))
+		} else {
+			mux.Handle(route.Path, app.SessionManager.LoadAndSave(app.authenticate(http.HandlerFunc(route.handler))))
+		}
+	}
+	return app.recoverPanic(app.logRequest(secureHeaders(mux)))
+}
+
+func (app *App) createRoutes() []Route {
+	return []Route{
+		/*testing handlers*/
+		{
+			Path:    "/ping",
+			handler: ping,
+			Role:    Auth,
+		},
+		{
+			Path:    "/ping/user",
+			handler: ping,
+			Role:    User,
+		},
+		/*user handlers*/
+		{
+			Path:    "/api/user/register",
+			handler: app.User.Register,
+			Role:    Auth,
+		},
+		{
+			Path:    "/api/user/login",
+			handler: app.User.Login,
+			Role:    Auth,
+		},
+		{
+			Path:    "/api/user/logout",
+			handler: app.Logout,
+			Role:    User,
+		},
+		{
+			Path:    "/api/user/follow/",
+			handler: app.Follow,
+			Role:    User,
+		},
+		{
+			Path:    "/api/user/profile",
+			handler: app.Profile,
+			Role:    User,
+		},
+		{
+			Path:    "/api/user/follow/response",
+			handler: app.HandleFollowRequestResponse,
+			Role:    User,
+		},
+		{
+			Path:    "/api/user/follower_and_followed",
+			handler: app.FollowersAndFollowed,
+			Role:    User,
+		},
+		{
+			Path:    "/api/user/posts",
+			handler: app.GetUserPosts,
+			Role:    User,
+		},
+		{
+			Path:    "/api/user/notifications",
+			handler: app.GetUserNotification,
+			Role:    User,
+		},
+		{
+			Path:    "/api/user/changestatus",
+			handler: app.ChangeStatus,
+			Role:    User,
+		},
+		/*group handlers*/
+		{
+			Path:    "/api/user/groups",
+			handler: app.GetUserGroups,
+			Role:    User,
+		},
+		{
+			Path:    "/api/group",
+			handler: app.GetGroupById,
+			Role:    User,
+		},
+		{
+			Path:    "/api/group/create",
+			handler: app.CreateGroup,
+			Role:    User,
+		},
+		{
+			Path:    "/api/groups",
+			handler: app.GetAllGroups,
+			Role:    User,
+		},
+		{
+			Path:    "/api/group/members",
+			handler: app.GetGroupMembers,
+			Role:    User,
+		},
+		{
+			Path: "/api/group/posts",
+			handler: app.GetGroupPosts,
+			Role: User,
+		},
+		{
+			Path:    "/api/group/invite/response",
+			handler: app.InvitationResponse,
+			Role:    User,
+		},
+		{
+			Path:    "/api/group/invite/request",
+			handler: app.InviteToJoinGroup,
+			Role:    User,
+		},
+		{
+			Path:    "/api/group/join/request",
+			handler: app.RequestToJoinGroup,
+			Role:    User,
+		},
+		{
+			Path:    "/api/group/join/response",
+			handler: app.RequestToJoinResponse,
+			Role:    User,
+		},
+		// events handlers
+		{
+			Path:    "/api/event/create",
+			handler: app.CreateEvent,
+			Role:    User,
+		},
+		{
+			Path:    "/api/event/vote",
+			handler: app.VoteEvent,
+			Role:    User,
+		},
+		{
+			Path:    "/api/event/get",
+			handler: app.GetEvent,
+			Role:    User,
+		},
+		/*post handlers*/
+		{
+			Path:    "/api/posts",
+			handler: app.GetPosts,
+			Role:    User,
+		},
+		{
+			Path:    "/api/post/create",
+			handler: app.CreatePost,
+			Role:    User,
+		},
+		{
+			Path:    "/api/post/",
+			handler: app.GetPost,
+			Role:    User,
+		},
+		{
+			Path:    "/api/pictures/",
+			handler: app.ServeMedia,
+			Role:    User,
+		},
+		{
+			Path:    "/api/post/vote",
+			handler: app.ReactPost,
+			Role:    User,
+		},
+		// comments handlers
+		{
+			Path:    "/api/comment/add",
+			handler: app.AddComment,
+			Role:    User,
+		},
+		{
+			Path:    "/api/comment/get",
+			handler: app.GetComments,
+			Role:    User,
+		},
+		// ws handlers
+		{
+			Path:    "/api/ws",
+			handler: app.WebSocket,
+			Role:    User,
+		},
+		{
+			Path: "/api/messages",
+			handler: app.GetMessages,
+			Role: User,
+		},
+		{
+			Path:    "/api/contacts",
+			handler: app.GetUserContacts,
+			Role:    User,
+		},
+		/*... handlers*/
+	}
+}
+
+func requireLogin(Auth uint) bool {
+	return Auth == User
+}
