@@ -31,7 +31,6 @@ type Group interface {
 type group struct {
 	Hub   *websocket.Hub
 	db    *sql.DB
-	ws    websocket.WsManager
 	loger loger.CstmLogger
 }
 
