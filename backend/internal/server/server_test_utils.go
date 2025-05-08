@@ -55,7 +55,7 @@ func NewTestApplication() (*App, *config.Conf) {
 		Loger:          loger,
 		/*Legislation is the process or result of enrolling, enacting, or promulgating laws by a legislature, parliament, or analogous governing body.*/
 		//hub := websocket.NewHub() // need console legislation
-		Hub: websocket.NewHub(),
+		Hub: websocket.NewHub(1024),
 	}
 
 	return &App{
