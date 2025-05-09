@@ -305,7 +305,7 @@ func (r *post) SavePost(ctx context.Context, userID int, post entity.Post) (int,
 func (r *post) createCustomGroup(tx *sql.Tx, viewers []int) (int, error) {
 	// Create new custom group
 	var groupID int
-	err := tx.QueryRow(`INSERT INTO groups (type) VALUES (?) RETURNING id`, entity.PostStatusCustom).Scan(&groupID)
+	err := tx.QueryRow(`INSERT INTO groups (type) VALUES (?) RETURNING id`, entity.FakeGroup).Scan(&groupID)
 	if err != nil {
 		r.loger.Error.Println(err)
 		return 0, err
