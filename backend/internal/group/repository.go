@@ -282,7 +282,7 @@ func (g *group) IsMemberRepository(ctx context.Context, userID, groupID int) (bo
 // --------------------events----------------------------
 func (g *group) CreateEventRepository(ctx context.Context, event entity.Event) (int, int, error) {
 	query := `
-		INSERT INTO events (user_id, group_id, title, description, event_time)
+		INSERT INTO events (user_id, group_id, title, description, date)
 		VALUES (?, ?, ?, ?, ?)
 	`
 	stmt, err := g.db.PrepareContext(ctx, query)
@@ -308,19 +308,22 @@ func (g *group) GetEventsRepository(ctx context.Context, groupID int) ([]entity.
 			COALESCE(en.status, 0) as going
 		FROM events e
 		LEFT JOIN engagement en ON en.event_id = e.id AND en.user_id = ?
-		WHERE e.id = ?
+		WHERE e.group_id = ?
 	`
+
 	var events []entity.Event
 	stmt, err := g.db.PrepareContext(ctx, query)
 	if err != nil {
 		return events, err
 	}
 	defer stmt.Close()
-	rows, err := stmt.QueryContext(ctx, groupID)
+
+	rows, err := stmt.QueryContext(ctx, ctx.Value(entity.ContextID).(int), groupID)
 	if err != nil {
 		return events, err
 	}
 	defer rows.Close()
+
 	for rows.Next() {
 		var event entity.Event
 		err := rows.Scan(
@@ -331,6 +334,7 @@ func (g *group) GetEventsRepository(ctx context.Context, groupID int) ([]entity.
 			&event.Description,
 			&event.Date,
 			&event.CreatedAt,
+			&event.Going, 
 		)
 		if err != nil {
 			return events, err
@@ -342,6 +346,7 @@ func (g *group) GetEventsRepository(ctx context.Context, groupID int) ([]entity.
 	}
 	return events, nil
 }
+
 
 func (g *group) GetEventRepository(ctx context.Context, eventID int, userID int) (entity.Event, error) {
 	query := `
@@ -368,7 +373,7 @@ func (g *group) GetEventRepository(ctx context.Context, eventID int, userID int)
 		&event.Description,
 		&event.Date,
 		&event.CreatedAt,
-		&event.Going, // New field for engagement status
+		&event.Going, 
 	)
 	if err != nil {
 		return event, err

@@ -3,6 +3,7 @@ package group
 import (
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -22,6 +23,7 @@ type Group interface {
 	CreateEvent(w http.ResponseWriter, r *http.Request)
 	VoteEvent(w http.ResponseWriter, r *http.Request)
 	GetEvent(w http.ResponseWriter, r *http.Request)
+	GetGroupEvents(w http.ResponseWriter, r *http.Request)
 	InvitationResponse(w http.ResponseWriter, r *http.Request)
 	InviteToJoinGroup(w http.ResponseWriter, r *http.Request)
 	RequestToJoinGroup(w http.ResponseWriter, r *http.Request)
@@ -108,7 +110,7 @@ func (g *group) CreateGroup(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Invalid request body"})
 		return
 	}
-	err = utils.ValidGroupCredentials(group) 
+	err = utils.ValidGroupCredentials(group)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
@@ -362,6 +364,7 @@ func (g *group) GetGroupEvents(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
+	fmt.Println("inside the handler")
 	w.Header().Set("Content-Type", "application/json")
 	// get the event data from the request body
 	groupID, err := strconv.Atoi(r.URL.Query().Get("id"))
@@ -382,4 +385,3 @@ func (g *group) GetGroupEvents(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(status)
 	json.NewEncoder(w).Encode(events)
 }
-

@@ -160,6 +160,11 @@ func (app *App) createRoutes() []Route {
 			handler: app.GetEvent,
 			Role:    User,
 		},
+		{
+			Path:    "/api/group/events",
+			handler: app.GetGroupEvents,
+			Role:    User,
+		},
 		/*post handlers*/
 		{
 			Path:    "/api/posts",
