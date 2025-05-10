@@ -14,6 +14,6 @@ type Event struct {
 
 const (
 	EventStatusNotVoted = iota
-	EventStatusNotGoing 
+	EventStatusNotGoing
 	EventStatusGoing
 )

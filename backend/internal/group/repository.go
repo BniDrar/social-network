@@ -282,15 +282,15 @@ func (g *group) IsMemberRepository(ctx context.Context, userID, groupID int) (bo
 // --------------------events----------------------------
 func (g *group) CreateEventRepository(ctx context.Context, event entity.Event) (int, int, error) {
 	query := `
-		INSERT INTO events (user_id, group_id, title, description, date)
-		VALUES (?, ?, ?, ?, ?)
+		INSERT INTO events (user_id, group_id, title, description, date, location)
+		VALUES (?, ?, ?, ?, ?, ?)
 	`
 	stmt, err := g.db.PrepareContext(ctx, query)
 	if err != nil {
 		return 0, http.StatusInternalServerError, err
 	}
 	defer stmt.Close()
-	result, err := stmt.ExecContext(ctx, ctx.Value(entity.ContextID).(int), event.GroupID, event.Title, event.Description, event.Date)
+	result, err := stmt.ExecContext(ctx, ctx.Value(entity.ContextID).(int), event.GroupID, event.Title, event.Description, event.Date, event.Location)
 	if err != nil {
 		return 0, http.StatusBadRequest, err
 	}
@@ -304,7 +304,7 @@ func (g *group) CreateEventRepository(ctx context.Context, event entity.Event) (
 func (g *group) GetEventsRepository(ctx context.Context, groupID int) ([]entity.Event, error) {
 	query := `
 		SELECT 
-			e.id, e.group_id, e.user_id, e.title, e.description, e.date, e.created_at,
+			e.id, e.group_id, e.user_id, e.title, e.description, e.date, e.created_at, e.location,
 			COALESCE(en.status, 0) as going
 		FROM events e
 		LEFT JOIN engagement en ON en.event_id = e.id AND en.user_id = ?
@@ -334,6 +334,7 @@ func (g *group) GetEventsRepository(ctx context.Context, groupID int) ([]entity.
 			&event.Description,
 			&event.Date,
 			&event.CreatedAt,
+			&event.Location,
 			&event.Going, 
 		)
 		if err != nil {
@@ -351,7 +352,7 @@ func (g *group) GetEventsRepository(ctx context.Context, groupID int) ([]entity.
 func (g *group) GetEventRepository(ctx context.Context, eventID int, userID int) (entity.Event, error) {
 	query := `
 		SELECT 
-			e.id, e.group_id, e.user_id, e.title, e.description, e.date, e.created_at,
+			e.id, e.group_id, e.user_id, e.title, e.description, e.date, e.created_at, e.location,
 			COALESCE(en.status, 0) as going
 		FROM events e
 		LEFT JOIN engagement en ON en.event_id = e.id AND en.user_id = ?
@@ -373,6 +374,7 @@ func (g *group) GetEventRepository(ctx context.Context, eventID int, userID int)
 		&event.Description,
 		&event.Date,
 		&event.CreatedAt,
+		&event.Location,
 		&event.Going, 
 	)
 	if err != nil {
