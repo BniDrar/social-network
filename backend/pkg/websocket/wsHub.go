@@ -106,6 +106,7 @@ func (h *Hub) handlePingPong(client *Client) {
 			}
 			if err := client.conn.WriteControl(websocket.PingMessage, []byte{}, time.Now().Add(time.Second)); err != nil {
 				log.Printf("Error sending ping to client %d: %v", client.userID, err)
+				h.unregister <- client
 				return
 			}
 		}
@@ -261,4 +262,8 @@ func (h *Hub) GetOnlineUsers() []uint {
 
 func (h *Hub) IsOnline(userId uint) bool {
 	return h.Clients[userId] != nil
+}
+
+func (h *Hub) Unregister(userID uint) {
+	h.unregister <- &Client{userID: userID}
 }
