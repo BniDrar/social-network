@@ -61,10 +61,11 @@ func (u *user) UserProfile(ctx context.Context, targetId int) (int, entity.User,
 		return http.StatusOK, user, nil
 	}
 	userId := ctx.Value(entity.ContextID).(int)
-	exists, err := u.isFollowedBy(userId, int(user.ID))
+	exists, err := u.isFollowingEither(userId, int(user.ID))
 	if err != nil || !exists {
 		if err == nil {
-			return http.StatusUnauthorized, entity.User{}, errors.New("you can't access to the user profile")
+			user.DateOfBirth, user.AboutMe = "", ""
+			return http.StatusOK, user, nil
 		}
 		return http.StatusInternalServerError, entity.User{}, err
 	}
