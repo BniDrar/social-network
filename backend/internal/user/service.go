@@ -110,11 +110,13 @@ func (u *user) FollowersAndFollowedService(ctx context.Context, id int) (int, en
 		u.loger.Error.Println(err)
 		return http.StatusInternalServerError, follows, errors.New("invalid user id")
 	}
+	utils.SetOnlineStatus(follows.Followers, u.hub.IsOnline)
 	follows.Following, err = u.GetFollowing(ctx, id)
 	if err != nil {
 		u.loger.Error.Println(err)
 		return http.StatusInternalServerError, follows, err
 	}
+	utils.SetOnlineStatus(follows.Following, u.hub.IsOnline)
 
 	return http.StatusOK, follows, nil
 }
