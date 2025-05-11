@@ -13,6 +13,7 @@ type Post struct {
 	First          string     `json:"first_name"`
 	Last           string     `json:"last_name"`
 	UserName       NullString `json:"username"`
+	UserID         int        `json:"user_id"`
 	Content        string     `json:"content"`
 	Image          NullString `json:"image"`
 	Comments       uint       `json:"comments"`
@@ -25,7 +26,6 @@ type Post struct {
 	AllowedViewers []int      `json:"allowed_viewers"`
 	UpdatedAt      time.Time  `json:"updated_at"`
 }
-
 // -- 0: custom, 1: friends, 2: global
 const (
 	PostStatusCustom = iota
