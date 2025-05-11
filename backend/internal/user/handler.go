@@ -35,6 +35,7 @@ type User interface {
 	FollowersAndFollowed(w http.ResponseWriter, r *http.Request)
 	GetUserPosts(w http.ResponseWriter, r *http.Request)
 	ChangeStatus(w http.ResponseWriter, r *http.Request)
+	Authenticate(w http.ResponseWriter, r *http.Request)
 	DeleteUserByNickName(Nickname string) error
 	IsUserExist(id uint) (bool, error)
 }
@@ -172,6 +173,14 @@ func (u *user) Login(w http.ResponseWriter, r *http.Request) {
 	}
 	u.sessionManager.Put(r.Context(), "authenticatedUserID", id)
 
+	w.WriteHeader(http.StatusOK)
+}
+
+func (u *user) Authenticate(w http.ResponseWriter, r *http.Request) {
+	isAuthenticated:= r.Context().Value(entity.IsAuthenticatedContextKey).(bool)
+	if !isAuthenticated {
+		w.WriteHeader(http.StatusUnauthorized)
+	}
 	w.WriteHeader(http.StatusOK)
 }
 
