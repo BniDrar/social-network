@@ -134,6 +134,7 @@ func (h *Hub) Run() {
 			log.Printf("Client %d registered", client.userID)
 
 		case client := <-h.unregister:
+			log.Println("here")
 			h.mu.Lock()
 			if _, ok := h.Clients[client.userID]; ok {
 				delete(h.Clients, client.userID)
@@ -265,5 +266,5 @@ func (h *Hub) IsOnline(userId uint) bool {
 }
 
 func (h *Hub) Unregister(userID uint) {
-	h.unregister <- &Client{userID: userID}
+	h.unregister <- h.Clients[userID]
 }

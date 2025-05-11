@@ -189,6 +189,8 @@ func (u *user) Logout(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
+	userId := r.Context().Value(entity.ContextID).(int)
+
 	// Use the RenewToken() method on the current session to change the session
 	// ID again. for  session fixation attacks
 	err := u.sessionManager.RenewToken(r.Context())
@@ -203,7 +205,7 @@ func (u *user) Logout(w http.ResponseWriter, r *http.Request) {
 	// Add a flash message to the session to confirm to the user that they've been
 	// logged out.
 	u.sessionManager.Put(r.Context(), "flash", "You've been logged out successfully!")
-	u.hub.Unregister(r.Context().Value(entity.ContextID).(uint))
+	u.hub.Unregister(uint(userId))
 	w.WriteHeader(http.StatusOK)
 }
 
