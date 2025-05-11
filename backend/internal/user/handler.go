@@ -177,7 +177,7 @@ func (u *user) Login(w http.ResponseWriter, r *http.Request) {
 }
 
 func (u *user) Authenticate(w http.ResponseWriter, r *http.Request) {
-	isAuthenticated:= r.Context().Value(entity.IsAuthenticatedContextKey).(bool)
+	isAuthenticated := r.Context().Value(entity.IsAuthenticatedContextKey).(bool)
 	if !isAuthenticated {
 		w.WriteHeader(http.StatusUnauthorized)
 	}
@@ -203,7 +203,7 @@ func (u *user) Logout(w http.ResponseWriter, r *http.Request) {
 	// Add a flash message to the session to confirm to the user that they've been
 	// logged out.
 	u.sessionManager.Put(r.Context(), "flash", "You've been logged out successfully!")
-
+	u.hub.Unregister(r.Context().Value(entity.ContextID).(uint))
 	w.WriteHeader(http.StatusOK)
 }
 
