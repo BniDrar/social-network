@@ -264,6 +264,10 @@ func (u *user) GetUserPosts(w http.ResponseWriter, r *http.Request) {
 }
 
 func (u *user) Follow(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
 	w.Header().Set("Content-Type", "application/json")
 	followed := r.URL.Query().Get("followed")
 	followedID, err := strconv.Atoi(followed)
