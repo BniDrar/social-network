@@ -3,7 +3,6 @@ package group
 import (
 	"database/sql"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strconv"
 
@@ -20,6 +19,7 @@ type Group interface {
 	CreateGroup(w http.ResponseWriter, r *http.Request)
 	GetAllGroups(w http.ResponseWriter, r *http.Request)
 	GetGroupMembers(w http.ResponseWriter, r *http.Request)
+	GetUsersThatCanJoinGroup(w http.ResponseWriter, r *http.Request)
 	CreateEvent(w http.ResponseWriter, r *http.Request)
 	VoteEvent(w http.ResponseWriter, r *http.Request)
 	GetEvent(w http.ResponseWriter, r *http.Request)
@@ -364,7 +364,6 @@ func (g *group) GetGroupEvents(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
-	fmt.Println("inside the handler")
 	w.Header().Set("Content-Type", "application/json")
 	// get the event data from the request body
 	groupID, err := strconv.Atoi(r.URL.Query().Get("id"))
@@ -384,4 +383,29 @@ func (g *group) GetGroupEvents(w http.ResponseWriter, r *http.Request) {
 	// send the created event to the client
 	w.WriteHeader(status)
 	json.NewEncoder(w).Encode(events)
+}
+
+// function go get the users that can join the group
+func (g *group) GetUsersThatCanJoinGroup(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	// get the group data from the request body
+	groupID, err := strconv.Atoi(r.URL.Query().Get("id"))
+	if err != nil || groupID <= 0 {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Invalid group ID"})
+		return
+	}
+	users, status, err := g.GetUsersThatCanJoinGroupService(r.Context(), groupID)
+	if err != nil {
+		g.loger.Error.Println(err)
+		w.WriteHeader(status)
+		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
+		return
+	}
+	w.WriteHeader(status)
+	json.NewEncoder(w).Encode(&users)
 }

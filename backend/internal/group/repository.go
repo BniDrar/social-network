@@ -278,6 +278,45 @@ func (g *group) IsMemberRepository(ctx context.Context, userID, groupID int) (bo
 	return exists, nil
 }
 
+func (g *group) GetUsersThatCanJoinGroupRepository(ctx context.Context, groupID int) ([]entity.User, error) {
+	query := `
+		SELECT u.id, u.nickname, u.avatar
+		FROM users u
+		WHERE u.id NOT IN (
+			SELECT gm.member_id
+			FROM group_members gm
+			WHERE gm.group_id = ?
+		)
+		AND u.id != (
+			SELECT g.admin
+			FROM groups g
+			WHERE g.id = ?
+		)
+	`
+	stmt, err := g.db.PrepareContext(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	defer stmt.Close()
+	rows, err := stmt.QueryContext(ctx, groupID, groupID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var users []entity.User
+	for rows.Next() {
+		var user entity.User
+		err := rows.Scan(&user.ID, &user.Nickname, &user.Avatar)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return users, nil
+}
+
 // --------------------events----------------------------
 // --------------------events----------------------------
 func (g *group) CreateEventRepository(ctx context.Context, event entity.Event) (int, int, error) {

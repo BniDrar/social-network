@@ -42,6 +42,18 @@ func (g *group) GetGroupMembersService(ctx context.Context, groupID int) ([]enti
 	return g.GetGroupMembersRepository(ctx, groupID)
 }
 
+func (g *group) GetUsersThatCanJoinGroupService(ctx context.Context, groupID int) ([]entity.User, int, error) {
+	exist, err:= g.IsMemberRepository(ctx, ctx.Value(entity.ContextID).(int), groupID)
+	if err != nil || !exist {
+		return nil, http.StatusForbidden, errors.New("you are not allowed to that")
+	}
+	users, err:= g.GetUsersThatCanJoinGroupRepository(ctx, groupID) 
+	if err != nil {
+		return nil, http.StatusInternalServerError, err
+	}
+	return users, http.StatusOK, nil
+}
+
 /*---------------notification related functions ---------------------*/
 func (g *group) inviteToJoinGroupService(ctx context.Context, invitation entity.Invitation) (int, error) {
 	invitation.InviterID = ctx.Value(entity.ContextID).(int)
