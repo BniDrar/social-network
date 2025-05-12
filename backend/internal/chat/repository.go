@@ -113,7 +113,7 @@ func (c *chat) getContacts(ctx context.Context, userId int) ([]entity.Contact, e
 			NULL AS avatar
 		FROM groups g
 		JOIN group_members gm ON gm.group_id = g.id
-		WHERE (gm.member_id = ? OR g.admin = ?) AND g.type IN (0, 2)
+		WHERE (gm.member_id = ? OR g.admin = ?) AND g.type IN (0, 1)
 	`
 
 	rows, err := c.db.QueryContext(ctx, query, userId, userId, userId, userId, userId)
