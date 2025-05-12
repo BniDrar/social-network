@@ -67,7 +67,7 @@ func (u *user) UserProfile(ctx context.Context, targetId int) (int, entity.User,
 	exists, err := u.isFollowingEither(userId, int(user.ID))
 	if err != nil || !exists {
 		if err == nil {
-			user.DateOfBirth, user.AboutMe = "", ""
+			user.DateOfBirth, user.AboutMe, user.Email = "", "", ""
 			return http.StatusOK, user, nil
 		}
 		return http.StatusInternalServerError, entity.User{}, err
