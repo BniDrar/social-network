@@ -78,6 +78,25 @@ func (r *user) GetUserByUsername(username string) (entity.User, error) {
 	return user, nil
 }
 
+func (u *user) GetGroupById(ctx context.Context, groupId int) (entity.Group, error) {
+	var group entity.Group
+	query := `
+		SELECT
+			g.id, g.name
+		FROM groups g
+		WHERE g.id = $1
+	`
+
+	err := u.db.QueryRowContext(ctx, query, ctx.Value(entity.ContextID).(int), groupId).Scan(&group.Name)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return group, fmt.Errorf("group not found")
+		}
+		return group, err
+	}
+	return group, nil
+}
+
 // this function is used to create new user
 func (u *user) CreateUser(user entity.User) error {
 	if user.Nickname.String != "" {
@@ -445,19 +464,34 @@ func (u *user) userNotificationRepo(ctx context.Context) ([]entity.Notification,
 
 	var notifications []entity.Notification
 	for rows.Next() {
-		var n entity.Notification
+		var (
+			n entity.Notification
+			groupId sql.NullInt64
+			eventId sql.NullInt64
+			receiverId sql.NullInt64
+		)
 		err = rows.Scan(
 			&n.Id,
 			&n.Type,
-			&n.GroupId,
+			&groupId,
 			&n.SenderId,
-			&n.ReceiverID,
-			&n.EventID,
+			&receiverId,
+			&eventId,
 		)
 		if err != nil {
 			return nil, http.StatusInternalServerError,
 				fmt.Errorf("error scanning notification: %w", err)
 		}
+		if groupId.Valid {
+			n.GroupId = int(groupId.Int64)
+		}
+		if eventId.Valid {
+			n.EventID = int(eventId.Int64)
+		}
+		if receiverId.Valid {
+			n.ReceiverID = int(receiverId.Int64)
+		}
+		
 		notifications = append(notifications, n)
 	}
 

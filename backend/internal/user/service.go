@@ -220,6 +220,54 @@ func (u *user) processRequestResponse(ctx context.Context, notification entity.N
 	return http.StatusOK, nil
 }
 
+// const (
+// 	//type of notification
+// 	FollowingNotification = iota
+// 	EventNotification 
+// 	GroupInvitationNotification 
+// 	GroupParticipationNotification 
+// )
+
 func (u *user) userNotificationSerice(ctx context.Context) ([]entity.Notification, int, error) {
-	return u.userNotificationRepo(ctx)
+	notifications, status, err:=  u.userNotificationRepo(ctx)
+	for i, notification:= range notifications {
+		if notification.Type == entity.FollowingNotification {
+			follower, err := u.GetUserProfileById(ctx, notification.SenderId)
+			if err != nil {
+				u.loger.Error.Printf("Error getting follower info: %v", err)
+				return nil, http.StatusInternalServerError, err
+			}
+			notifications[i].Message = fmt.Sprintf("%s requested to follow you", follower.Nickname.String)
+		}
+		if notification.Type == entity.EventNotification {
+			group, err:= u.GetGroupById(ctx, notification.GroupId)
+			if err != nil {
+				u.loger.Error.Printf("Error getting group info: %v", err)
+				return nil, http.StatusInternalServerError, err
+			}
+			notifications[i].Message = fmt.Sprintf("Event starting soon in %s", group.Name)
+		}
+		if notification.Type == entity.GroupInvitationNotification {
+			group, err := u.GetGroupById(ctx, notification.GroupId)
+			if err != nil {
+				u.loger.Error.Printf("Error getting group info: %v", err)
+				return nil, http.StatusInternalServerError, err
+			}
+			notifications[i].Message = fmt.Sprintf("You have been invited to join %s", group.Name)
+		}
+		if notification.Type == entity.GroupParticipationNotification {
+			group, err := u.GetGroupById(ctx, notification.GroupId)
+			if err != nil {
+				u.loger.Error.Printf("Error getting group info: %v", err)
+				return nil, http.StatusInternalServerError, err
+			}
+			user, err := u.GetUserProfileById(ctx, notification.SenderId)
+			if err != nil {
+				u.loger.Error.Printf("Error getting user info: %v", err)
+				return nil, http.StatusInternalServerError, err
+			}
+			notifications[i].Message = fmt.Sprintf("%s has request to joing the groupp %s", user.Nickname.String, group.Name)
+		}
+	}
+	return notifications, status, err
 }
