@@ -27,7 +27,7 @@ func (r *user) GetUserProfileById(ctx context.Context, targetId int) (entity.Use
 			(SELECT COUNT(*) FROM follows WHERE follower_id = u.id) AS following_count,
 			CASE
 				WHEN EXISTS (SELECT 1 FROM follows WHERE follower_id = $1 AND followed_id = $2) THEN 1
-				WHEN EXISTS (SELECT 1 FROM notification WHERE sender_id = $1 AND receiver_id = $2 AND status = $3) THEN 2
+				WHEN EXISTS (SELECT 1 FROM notification WHERE sender_id = $1 AND receiver_id = $2 AND type = $3) THEN 2
 				ELSE 0
 			END AS following_status
 		FROM users u
