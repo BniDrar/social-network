@@ -56,6 +56,9 @@ func (u *user) UserProfile(ctx context.Context, targetId int) (int, entity.User,
 	if err != nil {
 		return http.StatusInternalServerError, user, fmt.Errorf("erro while getting the profile from the database, err: %v", err)
 	}
+	if u.hub.IsOnline(uint(targetId)) {
+		user.Online = true
+	}
 	user.ProfileOwner = int(user.ID) == ctx.Value(entity.ContextID).(int)
 	if user.Status == entity.PublicUser || user.ProfileOwner {
 		return http.StatusOK, user, nil
