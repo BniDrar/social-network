@@ -25,7 +25,7 @@ type Contact struct {
 	LastName  string `json:"last_name"`
 	GroupName string `json:"group_name"`
 	Avatar    string `json:"avatar"`
-	Online    bool
+	Online    bool    `json:"online"`
 }
 
 type Follows struct {
