@@ -90,7 +90,7 @@ func (u *user) GetGroupById(ctx context.Context, groupId int) (entity.Group, err
 		WHERE g.id = $1
 	`
 
-	err := u.db.QueryRowContext(ctx, query, ctx.Value(entity.ContextID).(int), groupId).Scan(&group.Name)
+	err := u.db.QueryRowContext(ctx, query, ctx.Value(entity.ContextID).(int), groupId).Scan(&group.ID, &group.Name)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return group, fmt.Errorf("group not found")
