@@ -135,7 +135,7 @@ func (h *Hub) Run() {
 
 		case client := <-h.unregister:
 			h.mu.Lock()
-			if _, ok := h.Clients[client.userID]; ok {
+			if _, ok := h.Clients[client.userID]; ok && h.IsOnline(client.userID){
 				delete(h.Clients, client.userID)
 				close(client.send)
 				client.conn.Close() // Close the connection
