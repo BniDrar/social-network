@@ -280,26 +280,19 @@ func (g *group) IsMemberRepository(ctx context.Context, userID, groupID int) (bo
 
 func (g *group) GetUsersThatCanJoinGroupRepository(ctx context.Context, groupID int) ([]entity.User, error) {
 	userId:= ctx.Value(entity.ContextID).(int)
-	query := `
-		SELECT u.id, u.nickname, u.avatar
+	query:= `
+		SELECT DISTINCT u.id, u.nickname, u.avatar
 		FROM users u
-		WHERE u.id IN (
-			SELECT f.friend_id
-			FROM friends f
-			WHERE f.follower_id = $1 OR f.followed_id = $1
-		)
+		JOIN follows f ON u.id = f.follower_id OR u.id = f.followed_id
+		WHERE $1 IN (f.follower_id, f.followed_id)
+		AND u.id != $1
 		AND u.id NOT IN (
-			SELECT gm.member_id
-			FROM group_members gm
-			WHERE gm.group_id = $2
+		SELECT gm.member_id FROM group_members gm WHERE gm.group_id = $2
 		)
 		AND u.id != (
-			SELECT g.admin
-			FROM groups g
-			WHERE g.id = $2
+		SELECT g.admin FROM groups g WHERE g.id = $2
 		)
-	
-	`
+`
 	stmt, err := g.db.PrepareContext(ctx, query)
 	if err != nil {
 		return nil, err
@@ -317,6 +310,7 @@ func (g *group) GetUsersThatCanJoinGroupRepository(ctx context.Context, groupID 
 		if err != nil {
 			return nil, err
 		}
+		users = append(users, user)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
