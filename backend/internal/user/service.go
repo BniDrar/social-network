@@ -151,10 +151,10 @@ func (u *user) FollowService(ctx context.Context, followedID int) (int, error) {
 
 		// Create notification message
 		notification := entity.Notification{
-			Type:       entity.FollowingNotification,
+			Type:       entity.FollowingRequestNotification,
 			SenderId:   userId,
 			ReceiverID: followedID,
-			Message:    fmt.Sprintf("%s requested to follow you", follower.Nickname),
+			Message:    fmt.Sprintf("%s requested to follow you", follower.Nickname.String),
 		}
 		notificationBytes, err := json.Marshal(notification)
 		if err != nil {
