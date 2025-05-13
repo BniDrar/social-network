@@ -20,8 +20,9 @@ const (
 
 const (
 		//type of notification
-		FollowingNotification = iota
+		FollowingNotification = iota 
 		EventNotification 
 		GroupInvitationNotification 
 		GroupParticipationNotification 
+		FollowingRequestNotification //need action
 )
