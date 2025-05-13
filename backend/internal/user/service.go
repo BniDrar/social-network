@@ -233,7 +233,11 @@ func (u *user) processRequestResponse(ctx context.Context, notification entity.N
 
 func (u *user) userNotificationSerice(ctx context.Context) ([]entity.Notification, int, error) {
 	notifications, status, err:=  u.userNotificationRepo(ctx)
+	if err != nil {
+		return nil, status, err
+	}
 	for i, notification:= range notifications {
+		fmt.Println("the notification is: ", notification)
 		if notification.Type == entity.FollowingNotification {
 			follower, err := u.GetUserProfileById(ctx, notification.SenderId)
 			if err != nil {
@@ -261,7 +265,7 @@ func (u *user) userNotificationSerice(ctx context.Context) ([]entity.Notificatio
 		if notification.Type == entity.GroupParticipationNotification {
 			group, err := u.GetGroupById(ctx, notification.GroupId)
 			if err != nil {
-				u.loger.Error.Printf("Error getting group info: %v", err)
+				u.loger.Error.Printf("Error getting group %d info: %v", notification.GroupId, err)
 				return nil, http.StatusInternalServerError, err
 			}
 			user, err := u.GetUserProfileById(ctx, notification.SenderId)

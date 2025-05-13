@@ -2,6 +2,7 @@ package group
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"fmt"
 	"net/http"
@@ -9,7 +10,7 @@ import (
 	"socialNetwork/entity"
 )
 
-func (g *group) GetUserByIdRepository(ctx context.Context,  userID int) (entity.User, error) {
+func (g *group) GetUserByIdRepository(ctx context.Context, userID int) (entity.User, error) {
 	query := `
 		SELECT id, first_name
 		FROM users
@@ -279,8 +280,8 @@ func (g *group) IsMemberRepository(ctx context.Context, userID, groupID int) (bo
 }
 
 func (g *group) GetUsersThatCanJoinGroupRepository(ctx context.Context, groupID int) ([]entity.User, error) {
-	userId:= ctx.Value(entity.ContextID).(int)
-	query:= `
+	userId := ctx.Value(entity.ContextID).(int)
+	query := `
 		SELECT DISTINCT u.id, u.nickname, u.avatar, u.first_name, u.last_name
 		FROM users u
 		JOIN follows f ON u.id = f.follower_id OR u.id = f.followed_id
@@ -375,7 +376,7 @@ func (g *group) GetEventsRepository(ctx context.Context, groupID int) ([]entity.
 			&event.Date,
 			&event.CreatedAt,
 			&event.Location,
-			&event.Going, 
+			&event.Going,
 		)
 		if err != nil {
 			return events, err
@@ -387,7 +388,6 @@ func (g *group) GetEventsRepository(ctx context.Context, groupID int) ([]entity.
 	}
 	return events, nil
 }
-
 
 func (g *group) GetEventRepository(ctx context.Context, eventID int, userID int) (entity.Event, error) {
 	query := `
@@ -415,14 +415,13 @@ func (g *group) GetEventRepository(ctx context.Context, eventID int, userID int)
 		&event.Date,
 		&event.CreatedAt,
 		&event.Location,
-		&event.Going, 
+		&event.Going,
 	)
 	if err != nil {
 		return event, err
 	}
 	return event, nil
 }
-
 
 func (g *group) VoteEventRepository(ctx context.Context, eventId, status int) (int, int, error) {
 	// search in engagement table when user voted an event if exist then return status code 400
@@ -530,16 +529,33 @@ func (g *group) getNotificationById(ctx context.Context, id int) (entity.Notific
 	}
 	defer stmt.Close()
 	row := stmt.QueryRowContext(ctx, id)
+	var (
+		groupID, eventID, senderID, receiverID sql.NullInt16
+	)
 	err = row.Scan(
 		&notification.Id,
 		&notification.Type,
-		&notification.GroupId,
-		&notification.SenderId,
-		&notification.ReceiverID,
+		&groupID,
+		&senderID,
+		&receiverID,
+		&eventID,
 		&notification.Accepted,
 	)
 	if err != nil {
+		fmt.Println(err)
 		return notification, err
+	}
+	if groupID.Valid {
+		notification.GroupId = int(groupID.Int16)
+	}
+	if senderID.Valid {
+		notification.SenderId = int(senderID.Int16)
+	}
+	if receiverID.Valid {
+		notification.ReceiverID = int(receiverID.Int16)
+	}
+	if eventID.Valid {
+		notification.EventID = int(eventID.Int16)
 	}
 	return notification, nil
 }

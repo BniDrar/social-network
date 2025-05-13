@@ -75,7 +75,7 @@ func (g *group) inviteToJoinGroupService(ctx context.Context, invitation entity.
 		return http.StatusBadRequest, err
 	}
 
-	_, status, err := g.CreateInvitationNotification(ctx, invitation)
+	notificationID, status, err := g.CreateInvitationNotification(ctx, invitation)
 	if err != nil {
 		return status, err
 	}
@@ -111,6 +111,7 @@ func (g *group) inviteToJoinGroupService(ctx context.Context, invitation entity.
 	}
 	// Create notification message
 	notification := entity.Notification{
+		Id: notificationID,
 		Type:       entity.GroupInvitationNotification,
 		GroupId:    invitation.GroupId,
 		SenderId:   invitation.InviterID,
@@ -134,6 +135,7 @@ func (g *group) proccessInvitationResponse(ctx context.Context, notf entity.Noti
 	userId := ctx.Value(entity.ContextID).(int)
 	notification, err := g.getNotificationById(ctx, notf.Id)
 	if err != nil {
+		fmt.Println(err)
 		return http.StatusBadRequest, errors.New("invalid credentials")
 	}
 	if userId != notification.ReceiverID {
@@ -144,7 +146,7 @@ func (g *group) proccessInvitationResponse(ctx context.Context, notf entity.Noti
 		return http.StatusInternalServerError, err
 	}
 	if notf.Accepted {
-		status, err := g.addGroupMember(ctx, notf.Id, notf.GroupId)
+		status, err := g.addGroupMember(ctx, notification.SenderId, notf.GroupId)
 		if err != nil {
 			return status, err
 		}
@@ -185,6 +187,7 @@ func (g *group) requestToJoingGroupService(ctx context.Context, invitation entit
 	if err != nil {
 		return 0, status, err
 	}
+	notification.Id = notificationID
 	notificationBytes, err := json.Marshal(notification)
 	if err != nil {
 		g.loger.Error.Printf("Error marshaling notification: %v", err)
