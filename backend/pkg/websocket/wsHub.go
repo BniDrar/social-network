@@ -30,6 +30,7 @@ type Client struct {
 	userID uint
 	conn   *websocket.Conn
 	send   chan []byte
+	done   chan struct{}
 }
 
 type Hub struct {
@@ -70,6 +71,7 @@ func (h *Hub) AddClient(userID uint, conn *websocket.Conn) {
 		userID: userID,
 		conn:   conn,
 		send:   make(chan []byte, h.bufferSize),
+		done:   make(chan struct{}),
 	}
 	h.register <- client
 
@@ -80,21 +82,19 @@ func (h *Hub) AddClient(userID uint, conn *websocket.Conn) {
 }
 
 func (h *Hub) handlePingPong(client *Client) {
-	// Set ping handler
+	ticker := time.NewTicker(10 * time.Second)
+	defer ticker.Stop()
+
+	lastPongTime := time.Now()
+
 	client.conn.SetPingHandler(func(appData string) error {
 		return client.conn.WriteControl(websocket.PongMessage, []byte{}, time.Now().Add(time.Second))
 	})
 
-	// Set pong handler
-	lastPongTime := time.Now() // Initialize with current time
 	client.conn.SetPongHandler(func(appData string) error {
 		lastPongTime = time.Now()
 		return nil
 	})
-
-	// Send ping every 10 seconds
-	ticker := time.NewTicker(10 * time.Second)
-	defer ticker.Stop()
 
 	for {
 		select {
@@ -109,9 +109,13 @@ func (h *Hub) handlePingPong(client *Client) {
 				h.unregister <- client
 				return
 			}
+		case <-client.done:
+			log.Printf("PingPong for client %d terminated", client.userID)
+			return
 		}
 	}
 }
+
 
 func (h *Hub) writeMessage(client *Client) {
 	for message := range client.send {
@@ -138,6 +142,7 @@ func (h *Hub) Run() {
 			if _, ok := h.Clients[client.userID]; ok && h.IsOnline(client.userID){
 				delete(h.Clients, client.userID)
 				close(client.send)
+				close(client.done)
 				client.conn.Close() // Close the connection
 				log.Printf("Client %d unregistered", client.userID)
 			}

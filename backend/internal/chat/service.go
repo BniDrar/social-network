@@ -27,6 +27,7 @@ func (c *chat) WsListing(conn *websocket.Conn, ctx context.Context) error {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
 				c.loger.Error.Printf("error: %v\n", err)
 			}
+			c.Hub.Unregister(uint(id))
 			return err
 		}
 		if msg.ReceiverID == nil {
