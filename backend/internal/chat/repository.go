@@ -2,6 +2,7 @@ package chat
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"socialNetwork/entity"
 	"strings"
@@ -47,7 +48,9 @@ func (c *chat) getMessagesRepo(ctx context.Context, cursor entity.Cursor, userId
 	var messages []entity.Message
 	for rows.Next() {
 		var message entity.Message
-		err := rows.Scan(&message.ID, &message.SenderID, &message.ReceiverID, &message.GroupID, &message.CreatedAt, &message.Content)
+		var receiverID sql.NullInt16
+		var groupID sql.NullInt16
+		err := rows.Scan(&message.ID, &message.SenderID, &receiverID, &groupID, &message.CreatedAt, &message.Content)
 		if err != nil {
 			c.loger.Error.Println(err)
 			continue
@@ -68,13 +71,13 @@ func (r *chat) CreateMessage(message entity.Message) (int, error) {
 }
 
 func (r *chat) SaveMessage(ctx context.Context, message entity.Message) error {
-	query := `INSERT INTO messages (sender_id, receiver_id,created_at ,content) VALUES (?, ?, ?, ?)`
+	query := `INSERT INTO messages (sender_id, receiver_id,created_at ,content, group_id) VALUES (?, ?, ?, ?, ?)`
 	stmt, err := r.db.PrepareContext(ctx, query)
 	if err != nil {
 		return err
 	}
 	defer stmt.Close()
-	_, err = stmt.ExecContext(ctx, message.SenderID, message.ReceiverID, message.CreatedAt, message.Content)
+	_, err = stmt.ExecContext(ctx, message.SenderID, message.ReceiverID, message.CreatedAt, message.Content, message.GroupID)
 	if err != nil {
 		return err
 	}
@@ -200,7 +203,8 @@ func (c *chat) getOnlines(ctx context.Context, onlineIDs []uint, excludeID int) 
 }
 
 func (c *chat) getGroupMembers(ctx context.Context, groupID int) []uint {
-	query := `SELECT member_id FROM group_members WHERE group_id = ?`
+	query := `SELECT member_id FROM group_members WHERE group_id = ?
+	UNION SELECT admin FROM groups WHERE id = ?`
 	rows, err := c.db.QueryContext(ctx, query, groupID)
 	if err != nil {
 		return nil
