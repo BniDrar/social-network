@@ -1,0 +1,111 @@
+/*!*********************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[13].oneOf[5].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[13].oneOf[5].use[3]!./src/app/(auth)/login/login.module.css ***!
+  \*********************************************************************************************************************************************************************************************************************************************************************************/
+.login_container__6x_TJ {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--color-background) 0%, var(--color-background-secondary) 100%);
+  padding: 20px;
+}
+
+.login_formWrapper__4QMuk {
+  background: var(--color-white);
+  padding: 40px;
+  border-radius: 20px;
+  box-shadow: 0 10px 25px var(--color-shadow);
+  width: 100%;
+  max-width: 480px;
+}
+
+.login_title__NKHB8 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--color-black);
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+.login_subtitle__BtFxo {
+  color: var(--color-gray-dark);
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.login_form__s4exH {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.login_inputGroup__dslfL {
+  position: relative;
+}
+
+.login_input___VACN {
+  width: 100%;
+  padding: 16px;
+  border: 2px solid var(--color-gray);
+  border-radius: 12px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.login_input___VACN:focus {
+  border-color: var(--color-primary);
+  outline: none;
+  box-shadow: 0 0 0 4px var(--color-focus-shadow);
+}
+
+.login_options__x__mX {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: -8px;
+}
+
+.login_remember__NLZJ_ {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-gray-dark);
+}
+
+.login_forgot__c_oZ2 {
+  color: var(--color-primary);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.login_button__TuE7R {
+  background: var(--color-primary);
+  color: var(--color-white);
+  padding: 16px;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.login_button__TuE7R:hover {
+  background: var(--color-primary-hover);
+}
+
+.login_register__9IM7U {
+  text-align: center;
+  margin-top: 24px;
+  color: var(--color-gray-dark);
+}
+
+.login_link__Gbcyd {
+  color: var(--color-primary);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.login_link__Gbcyd:hover {
+  text-decoration: underline;
+}
