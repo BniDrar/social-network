@@ -80,7 +80,7 @@ func (p *post) getAllPostsRepo(ctx context.Context, userID int, cursor entity.Cu
 			user.id,
 			post.content,
 			post.image,
-			(SELECT COUNT(*) FROM engagement AS eng WHERE eng.user_id = $1 AND eng.post_id = post.id) AS likes_count,
+			(SELECT COUNT(*) FROM engagement AS eng WHERE eng.post_id = post.id) AS likes_count,
 			(SELECT COUNT(*) FROM comments AS c WHERE c.post_id = post.id) AS comments,
 			(SELECT nickname FROM users AS u WHERE post.user_id = u.id) AS creator,
 			CASE 
