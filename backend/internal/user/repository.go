@@ -454,12 +454,13 @@ func (u *user) userNotificationRepo(ctx context.Context) ([]entity.Notification,
                       SELECT 1 FROM group_members gm
                       JOIN groups g ON gm.group_id = g.id
                       WHERE gm.member_id = $1
-                      AND gm.group_id = n.group_id
+                      AND (gm.group_id = n.group_id OR g.admin = $1)
+			    AND g.type = $2
                   )
               )
               ORDER BY n.id DESC`
 
-	rows, err := u.db.QueryContext(ctx, query, ctx.Value(entity.ContextID).(int))
+	rows, err := u.db.QueryContext(ctx, query, ctx.Value(entity.ContextID).(int), entity.EventNotification)
 	if err != nil {
 		return nil, http.StatusInternalServerError,
 			fmt.Errorf("error querying notifications: %w", err)
