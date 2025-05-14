@@ -2,6 +2,7 @@ package websocket
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"sync"
 	"time"
@@ -116,7 +117,6 @@ func (h *Hub) handlePingPong(client *Client) {
 	}
 }
 
-
 func (h *Hub) writeMessage(client *Client) {
 	for message := range client.send {
 		err := client.conn.WriteMessage(websocket.TextMessage, message)
@@ -139,7 +139,7 @@ func (h *Hub) Run() {
 
 		case client := <-h.unregister:
 			h.mu.Lock()
-			if _, ok := h.Clients[client.userID]; ok && h.IsOnline(client.userID){
+			if _, ok := h.Clients[client.userID]; ok && h.IsOnline(client.userID) {
 				delete(h.Clients, client.userID)
 				close(client.send)
 				close(client.done)
@@ -170,6 +170,7 @@ func (h *Hub) Run() {
 				log.Printf("Error marshaling message: %v", err)
 				continue
 			}
+			fmt.Println(message.GroupMembers)
 			h.mu.Lock()
 			for _, userID := range message.GroupMembers {
 				if userID == message.UserID {

@@ -138,11 +138,23 @@ const ChatCard = ({ id, first, last, status, position, onClose, isGroup }) => {
 
   const handleSend = () => {
     if (message.trim() === "") return; // Do nothing if message is empty
-    const pack = {
-      to: id,
-      text: message,
-      created_at: new Date().toISOString(),
-    };
+    console.log("the group status is:", isGroup)
+    let pack = {}
+    if (isGroup) {
+      pack = {
+        text: message,
+        created_at: new Date().toISOString(),
+        is_group: isGroup,
+        group_id: id,
+      };
+    } else {
+      pack = {
+        to: id,
+        text: message,
+        created_at: new Date().toISOString(),
+        is_group: isGroup,
+      };
+    }
     ws.send(JSON.stringify(pack));
 
     setMessages([
