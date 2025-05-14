@@ -10,11 +10,13 @@ import Header from "./header/header";
 import Footer from "./footer/footer";
 import ChatBody from "./chatBody/chatBody";
 import { getUserInfoClient } from "@/services/profileClient";
+import { getGroupInfoClient } from "@/services/profileClient";
 
 import { useWebSocket } from "@/context/wsContext";
 import { useUser } from "@/context/userContext";
 
-function Chat({ id }) {
+function Chat({ id, isGroup }) {
+  console.log('is grouoooooooooop', isGroup)
   const { user } = useUser();
   const ws = useWebSocket();
 
@@ -28,18 +30,32 @@ function Chat({ id }) {
 
   /*________________________fetch user info___________________________*/
   const [userInfo, setUserInfo] = useState(null);
+
   useEffect(() => {
     const fetchUser = async () => {
-      const info = await getUserInfoClient(id);
-      setUserInfo(info)
+      let info
+      if (!isGroup) {
+        info = await getUserInfoClient(id);
+        setUserInfo(info)
+        console.log('info', info)
+      } else if (isGroup) {
+        info = await getGroupInfoClient(id)
+        console.log('info', info)
+        setUserInfo(info)
+      }
+      console.log('user info 001-->', info)
     };
+    console.log('user function to fetch info', userInfo)
     fetchUser();
+    console.log(' info fetched by the function ', userInfo)
   }, [id]);
 
 
   /*________________________fetch more data___________________*/
   const [isFetching, setIsFetching] = useState(false);
   const [hasMore, setHasMore] = useState(true);
+
+
 
   // Throttled fetch more function
   const fetchMore = useCallback(
@@ -56,7 +72,7 @@ function Chat({ id }) {
           id: id,
           creation_time: messages[0].created_at,
           last_id: messages[0].from,
-          is_group: false,
+          is_group: isGroup,
           limit: 15,
         };
 
@@ -104,7 +120,7 @@ function Chat({ id }) {
     const cursor = {
       id: id,
       limit: 15,
-      is_group: false,
+      is_group: isGroup,
     };
     const fetchMessages = async () => {
       const data = await postMessages(cursor); // or your cursor
@@ -146,24 +162,33 @@ function Chat({ id }) {
 
   /*____________________________return component___________________________*/
 
+
+  let name = ""
+  if (!isGroup) {
+    name = `${userInfo?.first} ${userInfo?.last}`
+  } else {
+    name = userInfo?.name
+  }
+
+
   if (!userInfo) return <div>Loading...</div>;
 
   return (
     <>
       <Header
         id={id}
-        first={userInfo.first}
-        last={userInfo.last}
+        name={name}
         image={userInfo.avatar}
         status={userInfo.online}
         className={styles.header}
       />
       <ChatBody
-        id={id} message={message}
+        id={id}
         messages={messages}
         className={styles.body}
         scroll={scroll}
         chatBodyRef={chatBodyRef}
+        isGroup={isGroup}
       />
       <Footer
         id={id}
@@ -174,6 +199,7 @@ function Chat({ id }) {
         className={styles.footer}
         scroll={scroll}
         setScroll={setScroll}
+        isGroup={isGroup}
       />
     </>
   );

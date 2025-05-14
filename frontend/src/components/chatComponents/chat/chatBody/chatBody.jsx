@@ -4,7 +4,7 @@ import styles from "./chatBody.module.css"; // Ensure you create the CSS file an
 import { useUser } from "@/context/userContext";
 import { useWebSocket } from "@/context/wsContext";
 
-const ChatBody = ({ id, messages, scroll, chatBodyRef }) => {
+const ChatBody = ({ id, messages, scroll, chatBodyRef, isGroup }) => {
   const { user } = useUser();
   const ws = useWebSocket();
 

@@ -5,7 +5,7 @@ import Image from "next/image";
 import { GetContacts } from "@/services/contacts";
 import { useState, useEffect, useRef } from "react";
 
-function Contacts({ setId }) {
+function Contacts({ setId, setIsGroup }) {
   const [contacts, setContacts] = useState([]);
 
   useEffect(() => {
@@ -30,6 +30,8 @@ function Contacts({ setId }) {
             image={contact.avatar}
             status={contact.online}
             setId={setId}
+            setIsGroup={setIsGroup}
+            groupName={contact.group_name}
           />
         ))}
       </div>
@@ -37,13 +39,32 @@ function Contacts({ setId }) {
   );
 }
 
-function Contact({ id, first, last, image, status, setId }) {
+function Contact({ id, first, last, image, status, setId, setIsGroup, groupName }) {
   const contactRef = useRef(null);
 
   const handleContactClick = (e) => {
     setId(id);
+    if (first === "") {
+      setIsGroup(true)
+    }
   };
 
+  let name = ""
+  if (first === "") {
+    name = groupName
+  } else {
+    name = `${first} ${last}`
+  }
+  let source = ""
+  if (image !== "") {
+    source = `${process.env.BACKEND_URL}/api/pictures/${image}`
+  } else {
+    if (!setIsGroup) {
+      source = 'default-avatar.jpeg'
+    }else{
+      source = 'default-group.jpeg'
+    }
+  }
   return (
     <>
       {/* Contact Item */}
@@ -54,7 +75,7 @@ function Contact({ id, first, last, image, status, setId }) {
       >
         <div className={styles.profilePic}>
           <Image
-            src={`${process.env.BACKEND_URL}/api/pictures/${image}` || 'default-avatar.jpeg'}
+            src={source}
             width={50}
             height={50}
             alt={'avatar'}
@@ -66,7 +87,7 @@ function Contact({ id, first, last, image, status, setId }) {
           ></div>
         </div>
         <div className={styles.info}>
-          <p>{`${first} ${last}`}</p>
+          <p>{name}</p>
         </div>
       </div >
     </>

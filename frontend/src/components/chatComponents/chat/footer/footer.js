@@ -5,7 +5,7 @@ import { useWebSocket } from "@/context/wsContext";
 import { useUser } from "@/context/userContext";
 import { useRef, useState } from "react"
 
-export default function Footer({ id, setMessage, setMessages, message, messages, scroll, setScroll }) {
+export default function Footer({ id, setMessage, setMessages, message, messages, scroll, setScroll, isGroup }) {
   const { user } = useUser();
   const ws = useWebSocket();
 
