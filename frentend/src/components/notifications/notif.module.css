@@ -1,0 +1,47 @@
+.notificationButton {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  border-radius: 0.4rem;
+  background-color: var(--color-white);
+  box-shadow: 0 2px 4px var(--color-shadow);
+  transition: box-shadow 0.3s ease;
+  padding: 0 0.5rem;
+  border: none;
+}
+
+.notificationButton:hover {
+  box-shadow: 0 2px 4px var(--color-gray-dark);
+}
+
+
+.notificationCount {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: var(--color-primary);
+  color: var(--color-white);
+  font-size: 0.7rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.notificationIcon {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  color: var(--color-black);
+  border-radius: 0.4rem;
+}
