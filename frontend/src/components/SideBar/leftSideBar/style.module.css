@@ -1,0 +1,35 @@
+.rightSideBar {
+    position: fixed;
+    top: 80px;
+    width: 200px;
+    height: calc(100vh - 80px);
+    border-right: 2px solid white;
+}
+
+.search {
+    background-color: burlywood;
+    height: 10%;
+    border-bottom: 1px solid white;
+}
+
+.contacts {
+    background-color: pink;
+    height: 60%;
+    border-bottom: 1px solid white;
+}
+
+.events {
+    background-color: rgb(14, 255, 255);
+    height: 30%;
+    border-bottom: 1px solid white;
+}
+
+
+/*________________________________*/
+
+.leftSideBar {
+    background-color: rgb(8, 0, 255);
+    justify-content: end;
+    width: 20%;
+    /* height: 100%; */
+}
