@@ -239,6 +239,7 @@ func (g *group) CreateEventService(ctx context.Context, event entity.Event) (int
 	if err != nil {
 		return 0, status, err
 	}
+	event.ID = eventId
 	_, status, err = g.CreateEventNotification(ctx, event)
 	if err != nil {
 		return 0, status, err
