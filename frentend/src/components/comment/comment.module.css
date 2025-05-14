@@ -1,0 +1,83 @@
+.comment {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1rem;
+  border-radius: 1rem;
+  background-color: var(--color-white);
+  box-shadow: 0 2px 5px var(--color-shadow);
+}
+
+.commentHeader{
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 1rem;
+}
+
+.commentHeader .avatar{
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  overflow: hidden;
+  background-color: var(--color-gray-light);
+}
+
+.commentUser{
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.commentUserInfo{
+  display: flex;
+  flex-direction: column;
+}
+
+.commentUserInfo h3{
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--color-black);
+}
+
+.commentDate{
+  font-size: 0.8rem;
+  font-weight: 400;
+  color: var(--color-gray-dark);
+}
+
+.commentContent{
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+  text-align: justify;
+  background-color: var(--color-shadow);
+  border-radius: 0.5rem;
+  padding: 0.5rem;
+}
+
+.commentContent p{
+  color: var(--color-black);
+  line-height: 1.5rem;
+}
+
+.commentImage{
+  width: 100%;
+  height: 250px;
+  background-color: var(--color-gray-light);
+  border-radius: 0.5rem;
+  margin: 0.5rem 0;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+}

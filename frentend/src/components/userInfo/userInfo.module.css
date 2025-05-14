@@ -1,0 +1,119 @@
+.showBtn {
+    width: 100%;
+    color: var(--color-black);
+    background-color: var(--color-background);
+    border: none;
+    border-radius: 6px;
+    padding: 10px 20px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 0 4px var(--color-shadow);
+}
+.box {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    top: 5px;
+    right: 20px;
+    width: 120px;
+    height: max-content;
+    /* border: 2px solid white; */
+}
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    z-index: 999;
+    background-color: #000000d2;
+    display: none;
+}
+
+.card {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%,-50%);
+    padding: 20px;
+    border-radius: 10px;
+    width: 600px;
+    height: max-content;
+    overflow: hidden;
+    display: none;
+    max-width: 90%;
+    color: var(--color-black);
+    background-color: var(--color-background);
+    box-shadow: 0 0 4px var(--color-shadow);
+    z-index: 1000;
+    transition: all .5s ease-in-out;
+}
+
+.card_header {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: start;
+    gap: 20px;
+    font-size: 24px;
+    font-weight: 700;
+    text-transform: capitalize;
+    border-bottom: 1px solid var(--color-black);
+    padding: 20px 0;
+}
+
+.closeBtn {
+    font-size: 30px;
+    position: absolute;
+    top: 0;
+    right: 0;
+    cursor: pointer;
+}
+.closeBtn:hover {
+    color: red;
+}
+
+.avatar {
+    border-radius: 50%;
+    /* filter: drop-shadow(0 0 4px black); */
+}
+
+.privacy {
+    border: none;
+    outline: none;
+    padding: 2px;
+    color: var(--color-gr);
+    background-color: var(--color-background);
+    font-weight: 700;
+    font-size: 10px;
+    text-transform: uppercase;
+    cursor: pointer;
+}
+.privacy option {
+    cursor: pointer;
+    font-weight: 600;
+    text-transform: lowercase;
+}
+.friends {
+    width: 100%;
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    border-bottom: 1px solid var(--color-black);
+}
+
+.friends_link {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--color-black);
+}
+
+
+.text {
+    padding: 10px;
+    font-size: 18px;
+    font-weight: 500;
+}

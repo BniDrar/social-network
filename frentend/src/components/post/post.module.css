@@ -1,0 +1,193 @@
+/* :root {
+  --color-primary: #007AFF;
+  --color-primary-hover: #026ada;
+  --color-background: #f5f7fa;
+  --color-background-secondary: #c3cfe2;
+  --color-white: #ffffff;
+  --color-gray-light: #f5f5f5;
+  --color-gray: #ddd;
+  --color-gray-dark: #666;
+  --color-black: #1a1a1a;
+  --color-shadow: rgba(0, 0, 0, 0.05);
+  --color-focus-shadow: rgba(0, 122, 255, 0.1);
+} */
+
+.post {
+  width: 100%;
+  background-color: var(--color-white);
+  border-radius: 1rem;
+  padding: 1rem;
+  box-shadow: 0 6px 20px var(--color-shadow);
+  margin: 10px auto;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 1rem;
+}
+
+.postHeader{
+  position: relative;
+  padding: 0.5rem;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 0.5rem;
+}
+.postUser{
+  display: flex;
+  flex-direction: column;
+  gap:0.5rem;
+}
+
+.avatar{
+  width: 40px;
+  height: 40px;
+  border-radius:50% ;
+}
+.postUserInfo{
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.postUserInfo h3{
+  font-size: large;
+  font-weight: 600;
+  color: var(--color-black);
+}
+
+.postDate{
+  font-size: small;
+  font-weight: 400;
+  color: var(--color-gray-dark);
+}
+
+.groupName{
+  position: absolute;
+  top: 1rem;
+  right: 2rem;
+  font-size: medium;
+  font-weight: 500;
+  color: var(--color-black);
+}
+
+.postContent{
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+  /* overflow:auto; */
+  text-align: start;
+  background-color: var(--color-shadow);
+  border-radius: 1rem;
+  padding: 0.5rem;
+}
+.content{
+  padding: 0.5rem;
+  font-size: medium;
+  font-weight: 500;
+  color: var(--color-black);
+  line-height: 1.5rem;
+  overflow-wrap: break-word;
+  white-space: pre-wrap; 
+  word-break: break-all;
+}
+.postImage{
+  width: 100%;
+  height: 340px;
+  object-fit: cover;
+  border-radius: 0.5rem;
+}
+.postActions{
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem;
+}
+.postActions button{
+  padding: 0.5rem;
+  border: none;
+  border-radius: 0.5rem;
+  background-color: var(--color-gray-light);
+  color: var(--color-black);
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+}
+.postActionsLeft{
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 0.5rem;
+}
+.postActionsRight{
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.5rem;
+}
+.postActionsLeft button,.postActionsRight button{
+  padding: 0.5rem;
+  border: none;
+  border-radius: 0.5rem;
+  background-color: var(--color-gray-light);
+  color: var(--color-black);
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+}
+.postActionsLeft button:hover{
+  background-color: var(--color-primary);
+  color: var(--color-white);
+}
+.postActionsLeft button:focus{
+  outline: none;
+  box-shadow: 0 0 0 2px var(--color-primary);
+}
+.postActionsLeft button:active{
+  transform: scale(0.95);
+}
+
+.postActionsRight button:hover{
+  background-color: var(--color-primary);
+  color: var(--color-white);
+}
+.postActionsRight button:focus{
+  outline: none;
+  box-shadow: 0 0 0 2px var(--color-primary);
+}
+.postActionsRight button:active{
+  transform: scale(0.95);
+}
+
+.postIcon,.postIconLiked{
+  width: 20px;
+  height: 20px;
+  color: var(--color-black);
+  transition: all 0.3s ease-in-out;
+}
+.postIconLiked {
+  fill: var(--color-red);
+}
+
+
+.noPosts{
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem;
+  font-size: large;
+  font-weight: 500;
+  color: var(--color-gray-dark);
+}
+
+
