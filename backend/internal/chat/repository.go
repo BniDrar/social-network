@@ -84,15 +84,7 @@ func (r *chat) SaveMessage(ctx context.Context, message entity.Message) error {
 	return nil
 }
 
-/*
-type Contact struct {
-	ID int `json:"id"`
-	GrouptName 'json:"group_name"
-	FirstName string `json:"first_name"`
-	LastName string `json:"last_name"`
-	Avatar NullString `json:"avatar"`
-	Online bool
-}*/
+
 
 func (c *chat) getContacts(ctx context.Context, userId int) ([]entity.Contact, error) {
 	query := `

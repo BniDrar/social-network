@@ -4,9 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
-	"time"
 
 	"socialNetwork/entity"
 
@@ -30,18 +30,19 @@ func (c *chat) WsListing(conn *websocket.Conn, ctx context.Context) error {
 			c.Hub.Unregister(uint(id))
 			return err
 		}
-		if msg.ReceiverID == nil {
-			c.loger.Error.Println("ReceiverID is nil. Ignoring message.")
-			continue
-		}
+		// if msg.ReceiverID == nil {
+		// 	c.loger.Error.Println("ReceiverID is nil. Ignoring message.")
+		// 	continue
+		// }
+		fmt.Println("777", msg.IsGroup, *msg.GroupID, msg.ReceiverID)
 
 		// Set sender ID
 		msg.SenderID = id
 		c.loger.Info.Printf("Received message: %v\n", id)
 
 		// Save message to database
-		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
-		defer cancel()
+		// ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+		// defer cancel()
 		go c.SaveMessage(ctx, msg)
 
 		// Send message to receiver
@@ -51,7 +52,7 @@ func (c *chat) WsListing(conn *websocket.Conn, ctx context.Context) error {
 			continue
 		}
 		if msg.IsGroup {
-			groupMembers := c.getGroupMembers(ctx, *msg.ReceiverID)
+			groupMembers := c.getGroupMembers(ctx, *msg.GroupID)
 			c.Hub.SendGroupMessage(uint(*msg.ReceiverID), groupMembers, byteData)
 			continue
 		}
@@ -75,9 +76,9 @@ func (c *chat) getUserContactsService(ctx context.Context) ([]entity.Contact, in
 }
 
 func (c *chat) getOnlineUsers(ctx context.Context) ([]entity.Contact, int, error) {
-	userId:= ctx.Value(entity.ContextID).(int)
-	onlineIDs:=  c.Hub.GetOnlineUsers()
-	contacts, err:= c.getOnlines(ctx, onlineIDs, userId)
+	userId := ctx.Value(entity.ContextID).(int)
+	onlineIDs := c.Hub.GetOnlineUsers()
+	contacts, err := c.getOnlines(ctx, onlineIDs, userId)
 	if err != nil {
 		return nil, http.StatusInternalServerError, err
 	}
