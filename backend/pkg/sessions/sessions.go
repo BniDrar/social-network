@@ -224,7 +224,7 @@ func (sw *sessionResponseWriter) WriteHeader(code int) {
 	if !sw.written {
 		sw.sessionManager.commitAndWriteSessionCookie(sw.ResponseWriter, sw.request)
 		sw.written = true
+		sw.ResponseWriter.WriteHeader(code)
 	}
 
-	sw.ResponseWriter.WriteHeader(code)
 }

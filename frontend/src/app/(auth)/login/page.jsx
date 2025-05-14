@@ -1,5 +1,6 @@
 "use client";
 
+import { useUser } from "@/context/userContext";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -7,6 +8,7 @@ import styles from "./login.module.css";
 import { login } from "@/services/auth";
 
 export default function Login() {
+  const { setIsLoggedIn } = useUser();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const router = useRouter();
@@ -19,14 +21,14 @@ export default function Login() {
     };
     let resp = await login(loginData);
     if (resp.ok) {
-      window.location.href = "/";
+      setIsLoggedIn(true);
+      router.push("/");
     } else {
       let errorForm = document.querySelector("#errorForm");
-      console.log(resp);
       errorForm.innerHTML = resp.error || "An error occurred";
       setInterval(() => {
         errorForm.innerHTML = "";
-      }, 2000);
+      }, 3000);
     }
   };
 
@@ -67,7 +69,7 @@ export default function Login() {
               Forgot password?
             </Link>
           </div>
-          <div className={styles.error} id="errorForm"></div>
+          <div className="error" id="errorForm"></div>
           <button type="submit" className={styles.button}>
             Sign in
           </button>

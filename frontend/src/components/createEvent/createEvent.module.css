@@ -1,0 +1,403 @@
+.createEventContainer {
+      width: calc(100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      background-color: var(--color-white);
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+      transition: transform 0.2s ease-in-out;
+}
+
+.createEventContainer:hover {
+      transform: translateY(-2px);
+}
+
+.createEventHeader {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      padding: 1rem;
+      gap: 16px;
+      border-bottom: 2px solid var(--color-gray-light);
+}
+
+.avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.createEventForm {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      border-radius: 16px;
+      gap: 16px;
+}
+
+.createEventInput {
+      width: 100%;
+      padding: 16px 20px;
+      border: 1.5px solid var(--color-gray);
+      border-radius: 12px;
+      font-size: 1rem;
+      transition: all 0.2s ease-in-out;
+      background-color: var(--color-white);
+}
+
+.createEventInput:focus {
+      border-color: var(--color-primary);
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb), 0.2);
+}
+
+.createEventButton {
+      width: 20%;
+      padding: 16px 20px;
+      background-color: var(--color-primary);
+      color: var(--color-white);
+      border: none;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease-in-out;
+      white-space: nowrap;
+}
+
+.createEventButton:focus {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb), 0.2);
+}
+
+.createEventFooter {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      gap: 12px;
+}
+
+.createEventActions {
+      display: flex;
+      justify-content: start;
+      align-items: center;
+      width: 100%;
+      padding: 16px;
+      gap: 12px;
+}
+
+.createEventActions button {
+      padding: 10px 20px;
+      background-color: var(--color-gray-light);
+      color: var(--color-black);
+      border: none;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease-in-out;
+}
+
+.createEventActions button:hover {
+      background-color: var(--color-primary);
+      color: var(--color-white);
+      transform: translateY(-1px);
+}
+
+.createEventActions button:focus {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb), 0.2);
+}
+
+.createEventSelect {
+      padding: 10px 20px;
+      font-size: 1rem;
+      font-weight: 500;
+      margin-right: 1rem;
+      background-color: var(--color-white);
+      color: var(--color-black);
+      transition: all 0.2s ease-in-out;
+      cursor: pointer;
+      border: none;
+      outline: none;
+}
+
+/* create Event popup */
+
+.createEventPopup {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 50%;
+      background-color: var(--color-white);
+      border-radius: 1rem;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+      padding: 1rem;
+      z-index: 100;
+}
+
+.createEventPopupHeader {
+      display: flex;
+      align-items: center;
+      justify-content: start;
+      padding: 1rem;
+      gap: 1rem;
+}
+
+.createEventPopupUser {
+      display: flex;
+      align-items: center;
+      justify-content: start;
+      gap: 1rem;
+}
+
+.createEventPopupUserInfo {
+      display: flex;
+      flex-direction: column;
+      align-items: start;
+      justify-content: center;
+}
+
+.createEventPopupUserInfo h3 {
+      font-size: 1.2rem;
+      font-weight: 500;
+      color: var(--color-black);
+}
+
+.EventStatus {
+      font-size: 0.9rem;
+      color: var(--color-gray-dark);
+      padding: 0.3rem 1rem;
+      font-weight: 500;
+      background: none;
+      cursor: pointer;
+      border: none;
+      outline: none;
+      border-radius: 1rem;
+}
+
+.createEventPopupContent {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      padding: 1rem;
+}
+
+.formRow {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+}
+
+.formGroup {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: start;
+      justify-content: center;
+      padding: 0.5rem;
+}
+
+.formGroup textarea {
+      width: 100%;
+      max-height: 300px;
+      padding: 16px;
+      border: 1.5px solid var(--color-gray);
+      border-radius: 12px;
+      font-size: 1rem;
+      color: var(--color-black);
+      transition: all 0.2s ease-in-out;
+      background-color: var(--color-gray-light);
+      resize: vertical;
+      box-sizing: border-box;
+}
+
+.formGroup textarea:focus {
+      border-color: var(--color-primary);
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb), 0.2);
+}
+
+.formGroup label {
+      font-size: 1rem;
+      font-weight: 500;
+      color: var(--color-black);
+      text-align: start;
+      margin-bottom: 0.5rem;
+}
+
+.formGroup input {
+      width: 100%;
+      padding: 16px;
+      border: 1.5px solid var(--color-gray);
+      border-radius: 12px;
+      font-size: 1rem;
+      color: var(--color-black);
+      transition: all 0.2s ease-in-out;
+      background-color: var(--color-gray-light);
+      box-sizing: border-box;
+}
+
+.formGroup input:focus {
+      border-color: var(--color-primary);
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb), 0.2);
+}
+
+.createEventPopupActions {
+      display: flex;
+      justify-content: start;
+      align-items: center;
+      width: 100%;
+      padding: 0.5rem;
+      gap: 1rem;
+}
+
+.createEventPopupActions button {
+      padding: 10px 20px;
+      background-color: var(--color-gray-light);
+      color: var(--color-black);
+      border: none;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      cursor: pointer;
+      transition: all 0.2s ease-in-out;
+}
+
+/* not displayed */
+.createEventPopupActions button:hover {
+      background-color: var(--color-primary);
+      color: var(--color-white);
+      transform: translateY(-1px);
+}
+
+.createEventPopupActions button:focus {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb), 0.2);
+}
+
+.createEventPopupActions button:disabled {
+      background-color: var(--color-gray-light);
+      color: var(--color-gray-dark);
+      cursor: not-allowed;
+}
+
+.createEventPopupSubmitButton {
+      width: 100%;
+      padding: 10px 20px;
+      background-color: var(--color-primary);
+      opacity: 0.8;
+      color: var(--color-white);
+      border: none;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease-in-out;
+}
+
+.createEventPopupSubmitButton:focus {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(var(--color-primary), 0.2);
+}
+
+.createEventPopupCancelButton {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      border: none;
+      display: flex;
+      color: var(--color-black);
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      background: none;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease-in-out;
+}
+
+.imagePreviewContainer {
+      width: 100%;
+      height: 50px;
+      overflow: hidden;
+      display: flex;
+      justify-content: start;
+      align-items: center;
+      gap: 1rem;
+}
+
+.imagePreview {
+      max-width: 50px;
+      max-height: 50px;
+      height: auto;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      transition: transform 0.2s ease-in-out;
+}
+
+.hidden {
+      display: none;
+}
+
+.active {
+      display: block;
+}
+
+.successMessage {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background-color: #4caf50;
+      color: white;
+      padding: 12px 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      z-index: 1000;
+      animation: fadeInOut 3s ease forwards;
+}
+
+.errorMessage {
+      text-align: center;
+      color: var(--color-red);
+      padding: 1rem;
+}
+
+@keyframes fadeInOut {
+      0% {
+            opacity: 0;
+            transform: translateY(-10px);
+      }
+
+      10% {
+            opacity: 1;
+            transform: translateY(0);
+      }
+
+      90% {
+            opacity: 1;
+            transform: translateY(0);
+      }
+
+      100% {
+            opacity: 0;
+            transform: translateY(-10px);
+      }
+}

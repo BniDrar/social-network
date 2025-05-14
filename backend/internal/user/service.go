@@ -56,15 +56,19 @@ func (u *user) UserProfile(ctx context.Context, targetId int) (int, entity.User,
 	if err != nil {
 		return http.StatusInternalServerError, user, fmt.Errorf("erro while getting the profile from the database, err: %v", err)
 	}
+	if u.hub.IsOnline(uint(targetId)) {
+		user.Online = true
+	}
 	user.ProfileOwner = int(user.ID) == ctx.Value(entity.ContextID).(int)
 	if user.Status == entity.PublicUser || user.ProfileOwner {
 		return http.StatusOK, user, nil
 	}
 	userId := ctx.Value(entity.ContextID).(int)
-	exists, err := u.isFollowedBy(userId, int(user.ID))
+	exists, err := u.isFollowingEither(userId, int(user.ID))
 	if err != nil || !exists {
 		if err == nil {
-			return http.StatusUnauthorized, entity.User{}, errors.New("you can't access to the user profile")
+			user.DateOfBirth, user.AboutMe, user.Email = "", "", ""
+			return http.StatusOK, user, nil
 		}
 		return http.StatusInternalServerError, entity.User{}, err
 	}
@@ -110,11 +114,13 @@ func (u *user) FollowersAndFollowedService(ctx context.Context, id int) (int, en
 		u.loger.Error.Println(err)
 		return http.StatusInternalServerError, follows, errors.New("invalid user id")
 	}
+	utils.SetOnlineStatus(follows.Followers, u.hub.IsOnline)
 	follows.Following, err = u.GetFollowing(ctx, id)
 	if err != nil {
 		u.loger.Error.Println(err)
 		return http.StatusInternalServerError, follows, err
 	}
+	utils.SetOnlineStatus(follows.Following, u.hub.IsOnline)
 
 	return http.StatusOK, follows, nil
 }
@@ -145,10 +151,10 @@ func (u *user) FollowService(ctx context.Context, followedID int) (int, error) {
 
 		// Create notification message
 		notification := entity.Notification{
-			Type:       entity.FollowingNotification,
+			Type:       entity.FollowingRequestNotification,
 			SenderId:   userId,
 			ReceiverID: followedID,
-			Message:    fmt.Sprintf("%s requested to follow you", follower.Nickname),
+			Message:    fmt.Sprintf("%s requested to follow you", follower.Nickname.String),
 		}
 		notificationBytes, err := json.Marshal(notification)
 		if err != nil {
@@ -217,6 +223,58 @@ func (u *user) processRequestResponse(ctx context.Context, notification entity.N
 	return http.StatusOK, nil
 }
 
+// const (
+// 	//type of notification
+// 	FollowingNotification = iota
+// 	EventNotification 
+// 	GroupInvitationNotification 
+// 	GroupParticipationNotification 
+// )
+
 func (u *user) userNotificationSerice(ctx context.Context) ([]entity.Notification, int, error) {
-	return u.userNotificationRepo(ctx)
+	notifications, status, err:=  u.userNotificationRepo(ctx)
+	if err != nil {
+		return nil, status, err
+	}
+	for i, notification:= range notifications {
+		fmt.Println("the notification is: ", notification)
+		if notification.Type == entity.FollowingNotification {
+			follower, err := u.GetUserProfileById(ctx, notification.SenderId)
+			if err != nil {
+				u.loger.Error.Printf("Error getting follower info: %v", err)
+				return nil, http.StatusInternalServerError, err
+			}
+			notifications[i].Message = fmt.Sprintf("%s requested to follow you", follower.Nickname.String)
+		}
+		if notification.Type == entity.EventNotification {
+			group, err:= u.GetGroupById(ctx, notification.GroupId)
+			if err != nil {
+				u.loger.Error.Printf("Error getting group info: %v", err)
+				return nil, http.StatusInternalServerError, err
+			}
+			notifications[i].Message = fmt.Sprintf("Event starting soon in %s", group.Name)
+		}
+		if notification.Type == entity.GroupInvitationNotification {
+			group, err := u.GetGroupById(ctx, notification.GroupId)
+			if err != nil {
+				u.loger.Error.Printf("Error getting group info: %v", err)
+				return nil, http.StatusInternalServerError, err
+			}
+			notifications[i].Message = fmt.Sprintf("You have been invited to join %s", group.Name)
+		}
+		if notification.Type == entity.GroupParticipationNotification {
+			group, err := u.GetGroupById(ctx, notification.GroupId)
+			if err != nil {
+				u.loger.Error.Printf("Error getting group %d info: %v", notification.GroupId, err)
+				return nil, http.StatusInternalServerError, err
+			}
+			user, err := u.GetUserProfileById(ctx, notification.SenderId)
+			if err != nil {
+				u.loger.Error.Printf("Error getting user info: %v", err)
+				return nil, http.StatusInternalServerError, err
+			}
+			notifications[i].Message = fmt.Sprintf("%s has request to joing the groupp %s", user.Nickname.String, group.Name)
+		}
+	}
+	return notifications, status, err
 }

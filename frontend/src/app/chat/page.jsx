@@ -1,96 +1,53 @@
 "use client";
-// components/SocketComponent.js
-import styles from "./style.module.css";
-import { useContext, useEffect } from "react";
-import { Context } from "../../context/context.js";
 
-const ChatComponent = () => {
-  // useEffect(() => {
-  //   const ws = new WebSocket("ws://localhost:8080/api/ws");
-  //   ws.onopen = () => {
-  //     console.log("Connected to WebSocket");
-  //     ws.send("Hello, WebSocket!");
-  //   };
-  //   ws.onmessage = (event) => {
-  //     console.log("Message received:", event.data);
-  //   };
-  //   ws.onclose = () => {
-  //     console.log("WebSocket connection closed");
-  //   };
-  //   return () => {
-  //     ws.close();
-  //   };
-  // }, []);
-  // const { username } = useContext(Context);
+import styles from "./chat.module.css";
+// import Profile1 from "@/components/chatComponents/profile/profile";
+import Contacts from "@/components/chatComponents/contacts/contacs";
+import Chat from "@/components/chatComponents/chat/chat";
+import { useState } from "react";
+import Navbar from "@/components/naveBar/nave";
+import Menu from "@/components/menu/menu";
+import Profile from "@/components/profile/profile";
+import CreateGroup from "@/components/createGroup/createGroup";
+import Groups from "@/components/groups/groups";
 
-  // useEffect(() => {
-    // console.log("Username in context has been set:", username); // This will log the updated username
-  // }, [username]); // Track username changes
+export default function ChatPage() {
+  const [id, setId] = useState(null);
 
-  // return <div>Current Username: {username}</div>;
   return (
-    <div className="main">
-      <Sidebar />
-      <Main />
-    </div>
-  );
-};
-
-function Main() {
-  return (
-    <div className="main-section">
-      <ChatWindow />
-      <MessageInput />
+    <div className={styles.page}>
+      <Navbar />
+      <main className={styles.main}>
+        <div className={styles.leftSidebar}>
+          <Profile />
+          <Menu />
+        </div>
+        <div className={styles.container}>
+          <Side setId={setId} />
+          <Main id={id} />
+        </div>
+        <div className={styles.rightSidebar}>
+          <Groups />
+          <CreateGroup />
+        </div>
+      </main>
     </div>
   );
 }
 
-function Sidebar() {
+function Side({ setId }) {
   return (
-      <div className="sidebar">
-        <div className="user-info">USER INFO</div>
-        <button className="compose">+ Compose</button>
-        <div className="contact-list">CONTACT list</div>
-      </div>
-  );
-}
-
-function ChatWindow() {
-  return (
-    <div className="chat-window">
-      <div className="chat-header">
-        <div className="chat-user-info">
-          <img src="user-avatar.jpg" alt="User" className="avatar" />
-          <div>
-            <strong>Anthony M. Conley</strong>
-            <p className="location">Timisoara, Romania</p>
-          </div>
-        </div>
-      </div>
-
-      <div className="messages">
-        <div className="message received">
-          Vivendo periculis mel ut, eam ei quem tota.
-        </div>
-        <div className="message received">
-          In nec mucius recteque concludaturque.
-        </div>
-        <div className="date-separator">Today</div>
-        <div className="message sent">Dicunt delectus salutatus nam te.</div>
-        <div className="message sent">
-          Vivendo periculis mel ut, eam ei quem tota.
-        </div>
-      </div>
+    <div className={styles.side}>
+      <Contacts setId={setId} />
     </div>
   );
 }
 
-function MessageInput() {
+function Main({ id }) {
   return (
-    <div className="message-input">
-      <input placeholder="Write a reply..." />
-      <button className="send">Send</button>
+    <div className={styles.chatForm}>
+      {!id && <div className={styles.search}>Search</div>}
+      {id && <Chat id={id} />}
     </div>
   );
 }
-export default ChatComponent;

@@ -12,11 +12,11 @@ type User struct {
 	AboutMe        string     `json:"about_me"`
 	Status         uint       `json:"status"`
 	ProfileOwner   bool       `json:"profile_owner"`
-	IsFollowing    bool       `json:"is_following"` // current user follows the target user
-	IsFollowed     bool       `json:"is_followed"`  // target user follows the current user
+	FollowingState int        `json:"following_state"`
 	FollowersCount uint       `json:"followers_count"`
 	FollowingCount uint       `json:"following_count"`
 	IsAdmin        bool       `json:"is_admin"` // whether the user is an admin of a group
+	Online         bool       `json:"online"`
 }
 
 type Contact struct {
@@ -25,7 +25,7 @@ type Contact struct {
 	LastName  string `json:"last_name"`
 	GroupName string `json:"group_name"`
 	Avatar    string `json:"avatar"`
-	Online    bool
+	Online    bool    `json:"online"`
 }
 
 type Follows struct {

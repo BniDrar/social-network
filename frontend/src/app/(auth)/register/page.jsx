@@ -50,16 +50,18 @@ export default function Register() {
     // Here you would typically send the data to your backend
     const formDataToSend = {
       ...formData,
-      status: 0, // private by default
+      status: 1, // public by default
       avatar: formData.avatar,
-    }
+    };
     let resp = await register(formDataToSend);
     if (resp.status === 201) {
       router.push('/login');
     } else {
       let errorForm = document.querySelector('#errorForm');
-      console.log(resp);
       errorForm.innerHTML = resp.error || 'An error occurred';
+      setInterval(() => {
+        errorForm.innerHTML = '';
+      }, 5000);
     }
   };
 
@@ -191,7 +193,7 @@ export default function Register() {
 
           <div className={styles.terms}>
             <label>
-              <input type='checkbox' required /> I agree to the{' '}
+              <input type='checkbox' disabled /> I agree to the{' '}
               <Link href='/terms' className={styles.link}>
                 Terms of Service
               </Link>{' '}
@@ -201,7 +203,7 @@ export default function Register() {
               </Link>
             </label>
           </div>
-          <div id='errorForm' className={styles.error}></div>
+          <div id='errorForm' className='error'></div>
 
           <button type='submit' className={styles.button}>
             Create Account
@@ -218,13 +220,3 @@ export default function Register() {
     </div>
   );
 }
-
-//  const userData = {
-//    nickname: form.nickname.value,
-//    email: form.email.value,
-//    password: form.password.value,
-//    first: form.first.value,
-//    last: form.last.value,
-//    date_of_birth: form.date_of_birth.value,
-//    status: 0, // private by default 1 public
-//  };

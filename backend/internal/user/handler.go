@@ -35,6 +35,7 @@ type User interface {
 	FollowersAndFollowed(w http.ResponseWriter, r *http.Request)
 	GetUserPosts(w http.ResponseWriter, r *http.Request)
 	ChangeStatus(w http.ResponseWriter, r *http.Request)
+	Authenticate(w http.ResponseWriter, r *http.Request)
 	DeleteUserByNickName(Nickname string) error
 	IsUserExist(id uint) (bool, error)
 }
@@ -175,11 +176,21 @@ func (u *user) Login(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
+func (u *user) Authenticate(w http.ResponseWriter, r *http.Request) {
+	isAuthenticated := r.Context().Value(entity.IsAuthenticatedContextKey).(bool)
+	if !isAuthenticated {
+		w.WriteHeader(http.StatusUnauthorized)
+	}
+	w.WriteHeader(http.StatusOK)
+}
+
 func (u *user) Logout(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
+	userId := r.Context().Value(entity.ContextID).(int)
+
 	// Use the RenewToken() method on the current session to change the session
 	// ID again. for  session fixation attacks
 	err := u.sessionManager.RenewToken(r.Context())
@@ -194,7 +205,7 @@ func (u *user) Logout(w http.ResponseWriter, r *http.Request) {
 	// Add a flash message to the session to confirm to the user that they've been
 	// logged out.
 	u.sessionManager.Put(r.Context(), "flash", "You've been logged out successfully!")
-
+	u.hub.Unregister(uint(userId))
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -255,6 +266,10 @@ func (u *user) GetUserPosts(w http.ResponseWriter, r *http.Request) {
 }
 
 func (u *user) Follow(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
 	w.Header().Set("Content-Type", "application/json")
 	followed := r.URL.Query().Get("followed")
 	followedID, err := strconv.Atoi(followed)

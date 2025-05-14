@@ -54,6 +54,11 @@ func (app *App) createRoutes() []Route {
 			Role:    Auth,
 		},
 		{
+			Path:    "/api/user/authenticate",
+			handler: app.Authenticate,
+			Role:    User,
+		},
+		{
 			Path:    "/api/user/logout",
 			handler: app.Logout,
 			Role:    User,
@@ -120,6 +125,11 @@ func (app *App) createRoutes() []Route {
 			Role:    User,
 		},
 		{
+			Path:    "/api/group/suggested_users",
+			handler: app.GetUsersThatCanJoinGroup,
+			Role:    User,
+		},
+		{
 			Path: "/api/group/posts",
 			handler: app.GetGroupPosts,
 			Role: User,
@@ -158,6 +168,11 @@ func (app *App) createRoutes() []Route {
 		{
 			Path:    "/api/event/get",
 			handler: app.GetEvent,
+			Role:    User,
+		},
+		{
+			Path:    "/api/group/events",
+			handler: app.GetGroupEvents,
 			Role:    User,
 		},
 		/*post handlers*/

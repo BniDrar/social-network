@@ -1,14 +1,11 @@
-// export const validbackendUrl = `http://localhost:8080`
-import { validbackendUrl } from '@/utils/ustil'
-
-
 async function GetGroup(groupId) {
   try {
-    const response = await fetch(`${validbackendUrl}/api/group?id=${groupId}`, {
+    const response = await fetch(`${process.env.BACKEND_URL}/api/group?id=${groupId}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
       },
+      credentials: 'include',
     });
     const data = await response.json();
     return data;
@@ -21,31 +18,37 @@ async function GetGroup(groupId) {
 
 async function CreateGroup(groupData) {
   try {
-    const response = await fetch(`${validbackendUrl}/api/group/create`, {
+    const response = await fetch(`${process.env.BACKEND_URL}/api/group/create`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
+      credentials: 'include',
       body: JSON.stringify(groupData),
     });
     const data = await response.json();
-    return data;
+    if (!response.ok) {
+      const error = (data && data.error) || response.statusText;
+      return { status: response.status, error: error };
+    }
+
+    return { status: response.status, data: data };
 
   } catch (error) {
     console.error('Error creating group:', error);
-    throw error;
+    return { status: 500, error: 'An unexpected error occurred' };
   }
 }
 
-async function GetAllGroups(ReqData) {
+async function GetAllGroups() {
 
   try {
-    const response = await fetch(`${validbackendUrl}/api/groups`, {
+    const response = await fetch(`${process.env.BACKEND_URL}/api/groups`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(ReqData),
+      credentials: 'include',
     });
     const data = await response.json();
     return data;
@@ -57,11 +60,12 @@ async function GetAllGroups(ReqData) {
 
 async function GetUserGroups() {
   try {
-    const response = await fetch(`${validbackendUrl}/api/user/groups`, {
+    const response = await fetch(`${process.env.BACKEND_URL}/api/user/groups`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
       },
+      credentials: 'include',
     });
     const data = await response.json();
     return data;
@@ -73,11 +77,12 @@ async function GetUserGroups() {
 
 async function GetGroupMembers(groupId) {
   try {
-    const response = await fetch(`${validbackendUrl}/api/group/members?id=${groupId}`, {
+    const response = await fetch(`${process.env.BACKEND_URL}/api/group/members?id=${groupId}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
       },
+      credentials: 'include',
     });
     const data = await response.json();
     return data;
@@ -89,11 +94,12 @@ async function GetGroupMembers(groupId) {
 
 async function RequestToJoinGroup(groupId) {
   try {
-    const response = await fetch(`${validbackendUrl}/api/group/join/request`, {
+    const response = await fetch(`${process.env.BACKEND_URL}/api/group/join/request`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
+      credentials: 'include',
       body: JSON.stringify({ groupId }),
     });
     const data = await response.json();
@@ -106,11 +112,12 @@ async function RequestToJoinGroup(groupId) {
 
 async function RequestToJoinResponse(data) {
   try {
-    const response = await fetch(`${validbackendUrl}/api/group/join/response`, {
+    const response = await fetch(`${process.env.BACKEND_URL}/api/group/join/response`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
+      credentials: 'include',
       body: JSON.stringify(data),
     });
     const data = await response.json();
@@ -121,17 +128,18 @@ async function RequestToJoinResponse(data) {
   }
 }
 
+
 async function InviteToJoinGroup(ReqData) {
   try {
-    const response = await fetch(`${validbackendUrl}/api/group/invite/request`, {
+    const response = await fetch(`${process.env.BACKEND_URL}/api/group/invite/request`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
+      credentials: 'include',
       body: JSON.stringify(ReqData),
     });
-    const data = await response.json();
-    return data;
+    return response;
   } catch (error) {
     console.error('Error sending group invite:', error);
     throw error;
@@ -139,15 +147,49 @@ async function InviteToJoinGroup(ReqData) {
 }
 async function InvitationResponse(ReqData) {
   try {
-    const response = await fetch(`${validbackendUrl}/api/group/invite/response`, {
+    const response = await fetch(`${process.env.BACKEND_URL}/api/group/invite/response`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
+      credentials: 'include',
       body: JSON.stringify(ReqData),
+    });
+    return response
+    } catch (error) {
+    console.error('Error accepting group invite:', error);
+    throw error;
+  }
+}
+
+async function GetSuggestedUsers(groupId) {
+  try {
+    const response = await fetch(`${process.env.BACKEND_URL}/api/group/suggested_users?id=${groupId}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
     });
     const data = await response.json();
     return data;
+  } catch (error) {
+    console.error('Error fetching groups:', error); 
+    throw error;
+  }
+}
+
+const acceptFollowRequest = async (ReqData) => {
+  try {
+    const response = await fetch(`${process.env.BACKEND_URL}/api/user/follow/response`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify(ReqData),
+    });
+    return response
   } catch (error) {
     console.error('Error accepting group invite:', error);
     throw error;
@@ -164,4 +206,6 @@ export {
   RequestToJoinResponse,
   InviteToJoinGroup,
   InvitationResponse,
+  GetSuggestedUsers,
+  acceptFollowRequest,
 };

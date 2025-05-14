@@ -42,6 +42,18 @@ func (g *group) GetGroupMembersService(ctx context.Context, groupID int) ([]enti
 	return g.GetGroupMembersRepository(ctx, groupID)
 }
 
+func (g *group) GetUsersThatCanJoinGroupService(ctx context.Context, groupID int) ([]entity.User, int, error) {
+	exist, err := g.IsMemberRepository(ctx, ctx.Value(entity.ContextID).(int), groupID)
+	if err != nil || !exist {
+		return nil, http.StatusForbidden, errors.New("you are not allowed to that")
+	}
+	users, err := g.GetUsersThatCanJoinGroupRepository(ctx, groupID)
+	if err != nil {
+		return nil, http.StatusInternalServerError, err
+	}
+	return users, http.StatusOK, nil
+}
+
 /*---------------notification related functions ---------------------*/
 func (g *group) inviteToJoinGroupService(ctx context.Context, invitation entity.Invitation) (int, error) {
 	invitation.InviterID = ctx.Value(entity.ContextID).(int)
@@ -63,7 +75,7 @@ func (g *group) inviteToJoinGroupService(ctx context.Context, invitation entity.
 		return http.StatusBadRequest, err
 	}
 
-	_, status, err := g.CreateInvitationNotification(ctx, invitation)
+	notificationID, status, err := g.CreateInvitationNotification(ctx, invitation)
 	if err != nil {
 		return status, err
 	}
@@ -96,9 +108,10 @@ func (g *group) inviteToJoinGroupService(ctx context.Context, invitation entity.
 			g.loger.Error.Printf("Error getting inviter info: %v", err)
 			return http.StatusInternalServerError, err
 		}
-	}	
+	}
 	// Create notification message
 	notification := entity.Notification{
+		Id: notificationID,
 		Type:       entity.GroupInvitationNotification,
 		GroupId:    invitation.GroupId,
 		SenderId:   invitation.InviterID,
@@ -122,6 +135,7 @@ func (g *group) proccessInvitationResponse(ctx context.Context, notf entity.Noti
 	userId := ctx.Value(entity.ContextID).(int)
 	notification, err := g.getNotificationById(ctx, notf.Id)
 	if err != nil {
+		fmt.Println(err)
 		return http.StatusBadRequest, errors.New("invalid credentials")
 	}
 	if userId != notification.ReceiverID {
@@ -132,7 +146,7 @@ func (g *group) proccessInvitationResponse(ctx context.Context, notf entity.Noti
 		return http.StatusInternalServerError, err
 	}
 	if notf.Accepted {
-		status, err := g.addGroupMember(ctx, notf.Id, notf.GroupId)
+		status, err := g.addGroupMember(ctx, notification.SenderId, notf.GroupId)
 		if err != nil {
 			return status, err
 		}
@@ -154,7 +168,7 @@ func (g *group) requestToJoingGroupService(ctx context.Context, invitation entit
 	if err != nil {
 		return 0, http.StatusBadRequest, errors.New("invalid group id")
 	}
-	
+
 	requester, err := g.GetUserByIdRepository(ctx, userId)
 	if err != nil {
 		return 0, http.StatusInternalServerError, err
@@ -173,6 +187,7 @@ func (g *group) requestToJoingGroupService(ctx context.Context, invitation entit
 	if err != nil {
 		return 0, status, err
 	}
+	notification.Id = notificationID
 	notificationBytes, err := json.Marshal(notification)
 	if err != nil {
 		g.loger.Error.Printf("Error marshaling notification: %v", err)
@@ -212,8 +227,8 @@ func (g *group) processRequestToJoinResponse(ctx context.Context, notf entity.No
 
 // ----------------events---------------------------------
 func (g *group) CreateEventService(ctx context.Context, event entity.Event) (int, int, error) {
-	// check if the user is a member of the group
-	isMember, err := g.IsMemberRepository(ctx, ctx.Value(entity.ContextID).(int), event.GroupID)
+	userId := ctx.Value(entity.ContextID).(int)
+	isMember, err := g.IsMemberRepository(ctx, userId, event.GroupID)
 	if err != nil || !isMember {
 		if err == nil {
 			err = errors.New("user is not a member of the group")
@@ -224,6 +239,7 @@ func (g *group) CreateEventService(ctx context.Context, event entity.Event) (int
 	if err != nil {
 		return 0, status, err
 	}
+	event.ID = eventId
 	_, status, err = g.CreateEventNotification(ctx, event)
 	if err != nil {
 		return 0, status, err
@@ -242,7 +258,7 @@ func (g *group) CreateEventService(ctx context.Context, event entity.Event) (int
 		GroupId:  event.GroupID,
 		EventID:  eventId,
 		Message:  fmt.Sprintf("New event created: %s", event.Title),
-		SenderId: ctx.Value(entity.ContextID).(int),
+		SenderId: userId,
 	}
 	notificationBytes, err := json.Marshal(notification)
 	if err != nil {
@@ -252,6 +268,9 @@ func (g *group) CreateEventService(ctx context.Context, event entity.Event) (int
 
 	// Send notification to all group members
 	for _, member := range groupMembers {
+		if member.ID == uint(userId) {
+			continue // Skip sending notification to the sender
+		}
 		g.Hub.SendNotification(uint(member.ID), notificationBytes)
 	}
 	g.loger.Info.Printf("Sent event notification to %d group members", len(groupMembers))
@@ -276,12 +295,12 @@ func (g *group) GetEventService(ctx context.Context, eventID int) (entity.Event,
 }
 
 func (g *group) VoteEventService(ctx context.Context, vote entity.Engagement) (int, int, error) {
-	userID:= ctx.Value(entity.ContextID).(int)
-	// check if the user is a member of the group
+	userID := ctx.Value(entity.ContextID).(int)
 	event, err := g.GetEventRepository(ctx, vote.EventID, userID)
 	if err != nil {
 		return 0, http.StatusBadRequest, err
 	}
+	// check if the user is a member of the group
 	isMember, err := g.IsMemberRepository(ctx, userID, event.GroupID)
 	if err != nil || !isMember {
 		if err == nil {
@@ -296,7 +315,6 @@ func (g *group) VoteEventService(ctx context.Context, vote entity.Engagement) (i
 
 	return eventId, status, nil
 }
-
 
 func (g *group) GetGroupEventsService(ctx context.Context, groupID int) ([]entity.Event, int, error) {
 	exist, err := g.IsMemberRepository(ctx, ctx.Value(entity.ContextID).(int), groupID)

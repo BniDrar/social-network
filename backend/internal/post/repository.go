@@ -77,6 +77,7 @@ func (p *post) getAllPostsRepo(ctx context.Context, userID int, cursor entity.Cu
 			user.avatar,
 			user.first_name,
 			user.last_name,
+			user.id,
 			post.content,
 			post.image,
 			(SELECT COUNT(*) FROM engagement AS eng WHERE eng.user_id = $1 AND eng.post_id = post.id) AS likes_count,
@@ -139,7 +140,7 @@ func (p *post) getAllPostsRepo(ctx context.Context, userID int, cursor entity.Cu
 	for rows.Next() {
 		var post entity.Post
 		err := rows.Scan(
-			&post.ID, &post.Avatar, &post.First, &post.Last,
+			&post.ID, &post.Avatar, &post.First, &post.Last,&post.UserID,
 			&post.Content, &post.Image, &post.LikesCount, &post.Comments,
 			&post.UserName, &post.Engagement, &post.CreatedAt, // <-- Don't forget created_at!
 		)
@@ -164,6 +165,7 @@ func (p *post) getPostsByGroupId(ctx context.Context, userId int, cursor entity.
 			user.avatar,
 			user.first_name,
 			user.last_name,
+			user.id,
 			post.content,
 			post.image,
 			(SELECT COUNT(*) FROM engagement AS eng WHERE eng.user_id = $1 AND eng.post_id = post.id) AS likes_count,
@@ -216,7 +218,7 @@ func (p *post) getPostsByGroupId(ctx context.Context, userId int, cursor entity.
 	for rows.Next() {
 		var post entity.Post
 		err := rows.Scan(
-			&post.ID, &post.Avatar, &post.First, &post.Last,
+			&post.ID, &post.Avatar, &post.First, &post.Last,&post.UserID,
 			&post.Content, &post.Image, &post.LikesCount, &post.Comments,
 			&post.UserName, &post.Engagement, &post.CreatedAt,
 		)
@@ -235,6 +237,7 @@ func (p *post) GetPostRepo(ctx context.Context, post_id int) (entity.Post, int, 
 	prep, err := p.db.PrepareContext(ctx, `SELECT
 		post.id,
 		user.avatar,
+		user.id,
 		post.content,
 		post.image,
 		user.nickname AS creator,
@@ -255,7 +258,7 @@ func (p *post) GetPostRepo(ctx context.Context, post_id int) (entity.Post, int, 
 	}
 	var post entity.Post
 	res := prep.QueryRowContext(ctx, user_id, post_id)
-	err = res.Scan(&post.ID, &post.Avatar, &post.Content, &post.Image, &post.UserName, &post.LikesCount, &post.Comments, &post.Engagement)
+	err = res.Scan(&post.ID, &post.Avatar,&post.UserID,&post.Content, &post.Image, &post.UserName, &post.LikesCount, &post.Comments, &post.Engagement)
 	if err != nil {
 		return entity.Post{}, http.StatusInternalServerError, err
 	}
@@ -305,7 +308,7 @@ func (r *post) SavePost(ctx context.Context, userID int, post entity.Post) (int,
 func (r *post) createCustomGroup(tx *sql.Tx, viewers []int) (int, error) {
 	// Create new custom group
 	var groupID int
-	err := tx.QueryRow(`INSERT INTO groups (type) VALUES (?) RETURNING id`, entity.PostStatusCustom).Scan(&groupID)
+	err := tx.QueryRow(`INSERT INTO groups (type) VALUES (?) RETURNING id`, entity.FakeGroup).Scan(&groupID)
 	if err != nil {
 		r.loger.Error.Println(err)
 		return 0, err

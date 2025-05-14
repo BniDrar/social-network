@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 
 	"socialNetwork/entity"
 	"socialNetwork/pkg/config"
@@ -36,11 +37,16 @@ func Newpost(dep *config.Dependencies) Post {
 
 func (p *post) ServeMedia(w http.ResponseWriter, r *http.Request) {
 
+	if len(r.URL.Path) <= len("/api/pictures/") || !strings.HasPrefix(r.URL.Path, "/api/pictures/") {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
 	// Clean the path to avoid path traversal
 	path := filepath.Clean("." + r.URL.Path)[len("api/pictures/"):]
 	// Check if file exists and is not a directory
 	info, err := os.Stat(path)
 	if err != nil || info.IsDir() {
+		p.loger.Error.Println("error reading image:", err)
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}

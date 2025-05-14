@@ -1,0 +1,55 @@
+.profileHeaderBox {
+    width: 100%;
+    height: max-content;
+    background-color: var(--color-background-secondary);
+    box-shadow: 0 0 3px var(--color-background-secondary);
+    margin-bottom: 20px;
+}
+.profileHeader {
+    width: 1200px;
+    max-width: 100%;
+    margin: 0 auto;
+}
+.coverBox, .coverImg {
+    width: 100%;
+    max-height: min-content;
+}
+
+.userProfileBox {
+    height: 100px;
+    position: relative;
+    width: 100%;
+}
+
+.userProfileImg {
+    position: absolute;
+    top: -50px;
+    left: 20px;
+    filter: drop-shadow(0 0 4px black);
+    border-radius: 50%;
+}
+
+.username {
+    position: relative;
+    left: 130px;
+    width: max-content;
+    font-size: 24px;
+    text-transform: capitalize;
+    text-shadow: 0 0 3px black;
+}
+
+.container {
+    width: 1200px;
+    max-width: 90%;
+    margin: 0 auto;
+}
+
+.noPosts {
+    text-align: center;
+    font-size: 30px;
+    font-weight: 700;
+    color: var(--color-background-secondary);
+    border: 1px solid var(--color-background-secondary);
+    padding: 10px;
+    border-radius: 10px;
+}

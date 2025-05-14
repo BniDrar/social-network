@@ -19,9 +19,11 @@ type Group interface {
 	CreateGroup(w http.ResponseWriter, r *http.Request)
 	GetAllGroups(w http.ResponseWriter, r *http.Request)
 	GetGroupMembers(w http.ResponseWriter, r *http.Request)
+	GetUsersThatCanJoinGroup(w http.ResponseWriter, r *http.Request)
 	CreateEvent(w http.ResponseWriter, r *http.Request)
 	VoteEvent(w http.ResponseWriter, r *http.Request)
 	GetEvent(w http.ResponseWriter, r *http.Request)
+	GetGroupEvents(w http.ResponseWriter, r *http.Request)
 	InvitationResponse(w http.ResponseWriter, r *http.Request)
 	InviteToJoinGroup(w http.ResponseWriter, r *http.Request)
 	RequestToJoinGroup(w http.ResponseWriter, r *http.Request)
@@ -108,7 +110,7 @@ func (g *group) CreateGroup(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Invalid request body"})
 		return
 	}
-	err = utils.ValidGroupCredentials(group) 
+	err = utils.ValidGroupCredentials(group)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
@@ -383,3 +385,27 @@ func (g *group) GetGroupEvents(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(events)
 }
 
+// function go get the users that can join the group
+func (g *group) GetUsersThatCanJoinGroup(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	// get the group data from the request body
+	groupID, err := strconv.Atoi(r.URL.Query().Get("id"))
+	if err != nil || groupID <= 0 {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Invalid group ID"})
+		return
+	}
+	users, status, err := g.GetUsersThatCanJoinGroupService(r.Context(), groupID)
+	if err != nil {
+		g.loger.Error.Println(err)
+		w.WriteHeader(status)
+		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
+		return
+	}
+	w.WriteHeader(status)
+	json.NewEncoder(w).Encode(&users)
+}

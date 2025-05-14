@@ -25,17 +25,20 @@ func (r *user) GetUserProfileById(ctx context.Context, targetId int) (entity.Use
 			u.status,
 			(SELECT COUNT(*) FROM follows WHERE followed_id = u.id) AS followers_count,
 			(SELECT COUNT(*) FROM follows WHERE follower_id = u.id) AS following_count,
-			(SELECT EXISTS (SELECT 1 FROM follows WHERE follower_id = $1 AND followed_id = $2)) AS is_following,
-			(SELECT EXISTS (SELECT 1 FROM follows WHERE follower_id = $2 AND followed_id = $1)) AS is_followed
+			CASE
+				WHEN EXISTS (SELECT 1 FROM follows WHERE follower_id = $1 AND followed_id = $2) THEN 1
+				WHEN EXISTS (SELECT 1 FROM notification WHERE sender_id = $1 AND receiver_id = $2 AND type = $3) THEN 2
+				ELSE 0
+			END AS following_status
 		FROM users u
 		WHERE u.id = $2
 
 	`
 
-	err := r.db.QueryRowContext(ctx, query, requesterId, targetId).Scan(
+	err := r.db.QueryRowContext(ctx, query, requesterId, targetId, entity.FollowingNotification).Scan(
 		&user.ID, &user.Nickname, &user.Email, &user.Avatar,
 		&user.First, &user.Last, &user.DateOfBirth, &user.AboutMe, &user.Status,
-		&user.FollowersCount, &user.FollowingCount, &user.IsFollowing, &user.IsFollowed)
+		&user.FollowersCount, &user.FollowingCount, &user.FollowingState)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return user, fmt.Errorf("user not found")
@@ -76,6 +79,26 @@ func (r *user) GetUserByUsername(username string) (entity.User, error) {
 		}
 	}
 	return user, nil
+}
+
+func (u *user) GetGroupById(ctx context.Context, groupId int) (entity.Group, error) {
+	var group entity.Group
+	query := `
+		SELECT
+			g.id, g.name
+		FROM groups g
+		WHERE g.id = $1
+	`
+
+	err := u.db.QueryRowContext(ctx, query, groupId).Scan(&group.ID, &group.Name)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			fmt.Println("no rows")
+			return group, fmt.Errorf("group not found")
+		}
+		return group, err
+	}
+	return group, nil
 }
 
 // this function is used to create new user
@@ -431,12 +454,13 @@ func (u *user) userNotificationRepo(ctx context.Context) ([]entity.Notification,
                       SELECT 1 FROM group_members gm
                       JOIN groups g ON gm.group_id = g.id
                       WHERE gm.member_id = $1
-                      AND gm.group_id = n.group_id
+                      AND (gm.group_id = n.group_id OR g.admin = $1)
+			    AND g.type = $2
                   )
               )
               ORDER BY n.id DESC`
 
-	rows, err := u.db.QueryContext(ctx, query, ctx.Value(entity.ContextID).(int))
+	rows, err := u.db.QueryContext(ctx, query, ctx.Value(entity.ContextID).(int), entity.EventNotification)
 	if err != nil {
 		return nil, http.StatusInternalServerError,
 			fmt.Errorf("error querying notifications: %w", err)
@@ -445,19 +469,34 @@ func (u *user) userNotificationRepo(ctx context.Context) ([]entity.Notification,
 
 	var notifications []entity.Notification
 	for rows.Next() {
-		var n entity.Notification
+		var (
+			n entity.Notification
+			groupId sql.NullInt64
+			eventId sql.NullInt64
+			receiverId sql.NullInt64
+		)
 		err = rows.Scan(
 			&n.Id,
 			&n.Type,
-			&n.GroupId,
+			&groupId,
 			&n.SenderId,
-			&n.ReceiverID,
-			&n.EventID,
+			&receiverId,
+			&eventId,
 		)
 		if err != nil {
 			return nil, http.StatusInternalServerError,
 				fmt.Errorf("error scanning notification: %w", err)
 		}
+		if groupId.Valid {
+			n.GroupId = int(groupId.Int64)
+		}
+		if eventId.Valid {
+			n.EventID = int(eventId.Int64)
+		}
+		if receiverId.Valid {
+			n.ReceiverID = int(receiverId.Int64)
+		}
+		
 		notifications = append(notifications, n)
 	}
 

@@ -5,15 +5,15 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  background: linear-gradient(135deg, var(--color-background-secondary) 0%, var(--color-gray-light) 100%);
   padding: 20px;
 }
 
 .formWrapper {
-  background: white;
+  background: var(--color-white);
   padding: 1.8rem 2rem;
   border-radius: 20px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 10px 25px var(--color-shadow);
   width: 100%;
   max-width: 480px;
 }
@@ -21,13 +21,13 @@
 .title {
   font-size: 2.5rem;
   font-weight: 700;
-  color: #1a1a1a;
+  color: var(--color-black);
   margin-bottom: 8px;
   text-align: center;
 }
 
 .subtitle {
-  color: #666;
+  color: var(--color-gray-dark);
   text-align: center;
   margin-bottom: 20px;
 }
@@ -51,11 +51,11 @@
   height: 100px;
   border-radius: 50%;
   overflow: hidden;
-  background-color: #f5f5f5;
+  background-color: var(--color-gray-light);
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 2px dashed #ddd;
+  border: 2px dashed var(--color-gray);
 }
 
 .avatarImage {
@@ -65,7 +65,7 @@
 }
 
 .avatarPlaceholder {
-  color: #666;
+  color: var(--color-gray-dark);
   font-size: 0.875rem;
   text-align: center;
 }
@@ -75,15 +75,15 @@
 }
 
 .avatarLabel {
-  color: #007AFF;
+  color: var(--color-primary);
   cursor: pointer;
   font-size: 0.875rem;
   text-decoration: none;
   padding: 8px 16px;
   border-radius: 12px;
-  background-color: #f0f8ff;
+  background-color: var(--color-background-secondary);
   transition: background-color 0.3s ease;
-  border: 2px solid #007AFF;
+  border: 2px solid var(--color-primary);
 }
 
 .inputGroup {
@@ -105,16 +105,16 @@
 .input {
   width: 100%;
   padding: 12px;
-  border: 2px solid #ddd;
+  border: 2px solid var(--color-gray);
   border-radius: 12px;
   font-size: 1rem;
   transition: all 0.3s ease;
 }
 
 .input:focus {
-  border-color: #007AFF;
+  border-color: var(--color-primary);
   outline: none;
-  box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.1);
+  box-shadow: 0 0 0 4px var(--color-focus-shadow);
 }
 
 .textarea {
@@ -125,7 +125,7 @@
 }
 
 .input[type="date"] {
-  color: #666;
+  color: var(--color-gray-dark);
 }
 
 .input[type="date"]::-webkit-calendar-picker-indicator {
@@ -133,7 +133,7 @@
 }
 
 .terms {
-  color: #666;
+  color: var(--color-gray-dark);
   font-size: 0.9rem;
 }
 
@@ -144,8 +144,8 @@
 }
 
 .button {
-  background: #007AFF;
-  color: white;
+  background: var(--color-primary);
+  color: var(--color-black);
   padding: 16px;
   border: none;
   border-radius: 12px;
@@ -156,17 +156,17 @@
 }
 
 .button:hover {
-  background: #0056b3;
+  background: var(--color-primary-hover);
 }
 
 .login {
   text-align: center;
   margin-top: 24px;
-  color: #666;
+  color: var(--color-gray-dark);
 }
 
 .link {
-  color: #007AFF;
+  color: var(--color-primary);
   text-decoration: none;
   font-weight: 500;
 }

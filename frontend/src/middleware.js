@@ -1,18 +1,34 @@
-// middleware.js
 import { NextResponse } from "next/server";
 
-export function middleware(request) {
+export async function middleware(request) {
   const session = request.cookies.get("session");
 
-  const isLoggedIn = !!session?.value;
+  const isAuthPage = ["/login", "/register"].includes(request.nextUrl.pathname);
 
-  if (!isLoggedIn && request.nextUrl.pathname !== "/login") {
+  let isLoggedIn = false;
+
+  if (session?.value) {
+    try {
+      const res = await fetch(`${process.env.BACKEND_URL}/ping/user`, {
+        headers: { cookie: `session=${session.value}` },
+      });
+      isLoggedIn = res.ok;
+    } catch (err) {
+      isLoggedIn = false;
+    }
+  }
+
+  if (!isLoggedIn && !isAuthPage) {
     return NextResponse.redirect(new URL("/login", request.url));
+  }
+
+  if (isLoggedIn && isAuthPage) {
+    return NextResponse.redirect(new URL("/", request.url));
   }
 
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/", "/chat"], // Protect these routes
+  matcher: ["/", "/groups/:path*", "/profile/:path*", "/events/:path*", "/login", "/register"],
 };

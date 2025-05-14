@@ -93,30 +93,30 @@ type Contact struct {
 
 func (c *chat) getContacts(ctx context.Context, userId int) ([]entity.Contact, error) {
 	query := `
-		SELECT DISTINCT 
-			u.id,
-			NULL AS group_name,
-			u.first_name,
-			u.last_name,
-			u.avatar
-		FROM users u
-		JOIN messages m ON (u.id = m.sender_id AND m.receiver_id = ?) OR (u.id = m.receiver_id AND m.sender_id = ?)
-		WHERE u.id != ?
+	SELECT DISTINCT 
+		u.id,
+		NULL AS group_name,
+		u.first_name,
+		u.last_name,
+		u.avatar
+	FROM users u
+	JOIN messages m ON (u.id = m.sender_id AND m.receiver_id = $1) OR (u.id = m.receiver_id AND m.sender_id = $1)
+	WHERE u.id != $1
 
-		UNION
+	UNION ALL
 
-		SELECT DISTINCT
-			g.id,
-			g.name AS group_name,
-			NULL AS first_name,
-			NULL AS last_name,
-			NULL AS avatar
-		FROM groups g
-		JOIN group_members gm ON gm.group_id = g.id
-		WHERE gm.member_id = ? AND g.type IN (0, 2)
-	`
+	SELECT DISTINCT
+		g.id,
+		g.name AS group_name,
+		NULL AS first_name,
+		NULL AS last_name,
+		NULL AS avatar
+	FROM groups g
+	LEFT JOIN group_members gm ON gm.group_id = g.id
+	WHERE (gm.member_id = $1 OR g.admin = $1) AND g.type IN (0, 1)`
 
-	rows, err := c.db.QueryContext(ctx, query, userId, userId, userId, userId)
+
+	rows, err := c.db.QueryContext(ctx, query, userId)
 	if err != nil {
 		return nil, fmt.Errorf("query contacts: %w", err)
 	}
