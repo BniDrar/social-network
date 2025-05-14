@@ -7,7 +7,7 @@ import { useUser } from "@/context/userContext";
 
 import { postMessages } from "@/services/chat";
 
-const ChatCard = ({ id, first, last, status, position, onClose , isGroup}) => {
+const ChatCard = ({ id, first, last, status, position, onClose, isGroup }) => {
   const { user } = useUser();
   const ws = useWebSocket();
 
@@ -50,7 +50,7 @@ const ChatCard = ({ id, first, last, status, position, onClose , isGroup}) => {
           id: id,
           creation_time: messages[0].created_at,
           last_id: messages[0].from,
-          is_group: false,
+          is_group: isGroup,
           limit: 15,
         };
 
@@ -152,6 +152,7 @@ const ChatCard = ({ id, first, last, status, position, onClose , isGroup}) => {
         from: user.myID,
         text: message,
         to: id,
+        is_group: isGroup,
       },
     ]);
     scrollDown();
@@ -210,7 +211,7 @@ const ChatCard = ({ id, first, last, status, position, onClose , isGroup}) => {
             className={`${styles.message} ${
               //outgoing  incoming
               styles[msg.from == user.myID ? "outgoing" : "incoming"]
-            }`}
+              }`}
           >
             <p>{msg.text}</p>
             <span className={styles.timestamp}>

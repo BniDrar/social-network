@@ -41,7 +41,7 @@ function Contacts() {
 }
 
 function Contact({ id, first, last, image, status, groupName }) {
-  const isGroup= !!groupName
+  const isGroup = !!groupName
   const ws = useWebSocket();
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [chatPosition, setChatPosition] = useState(null);
@@ -110,16 +110,16 @@ function Contact({ id, first, last, image, status, groupName }) {
         const decoded = JSON.parse(decodedStr);
         const from = decoded.from
 
-
+        console.log('decoded notif 404', decoded)
 
         switch (notif.Type) {
           case 0: // PrivateMessage
-            if (from === id) {
+            if (from === id && !decoded.is_group) {
               setCount(count => (count ?? 0) + 1);
             }
             break;
           case 1: // GroupMessage
-            if (from === id) {
+            if (from === id && decoded.is_group) {
               setCount(count => (count ?? 0) + 1);
             }
             break;
