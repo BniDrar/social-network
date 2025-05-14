@@ -18,6 +18,7 @@ function Contacts() {
 
     fetchContacts();
   }, []);
+  console.log('fetched contacts 1-->', contacts)
 
   return (
     <div className={styles.contacts}>
@@ -40,12 +41,15 @@ function Contacts() {
 }
 
 function Contact({ id, first, last, image, status, groupName }) {
+  const isGroup= !!groupName
   const ws = useWebSocket();
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [chatPosition, setChatPosition] = useState(null);
   const [count, setCount] = useState(null)
 
   const contactRef = useRef(null);
+
+
 
   const handleContactClick = (e) => {
     if (contactRef.current) {
@@ -79,8 +83,7 @@ function Contact({ id, first, last, image, status, groupName }) {
     defaultPic = "/default-group.jpg"
   }
   let name = ""
-  let isGroup = false
-  if (first && last) {
+  if (first) {
     name = `${first} ${last}`
   } else if (groupName) {
     name = groupName

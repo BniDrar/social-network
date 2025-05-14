@@ -97,7 +97,7 @@ const ChatCard = ({ id, first, last, status, position, onClose , isGroup}) => {
   useEffect(() => {
     const cursor = {
       id: id,
-      is_group: false,
+      is_group: isGroup,
       limit: 15,
     };
     const fetchMessages = async () => {

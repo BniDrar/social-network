@@ -13,7 +13,8 @@ import Groups from "@/components/groups/groups";
 
 export default function ChatPage() {
   const [id, setId] = useState(null);
-
+  const [isGroup, setIsGroup] = useState(false);
+  
   return (
     <div className={styles.page}>
       <Navbar />
@@ -23,8 +24,8 @@ export default function ChatPage() {
           <Menu />
         </div>
         <div className={styles.container}>
-          <Side setId={setId} />
-          <Main id={id} />
+          <Side setId={setId} setIsGroup={setIsGroup} />
+          <Main id={id} isGroup={isGroup} />
         </div>
         <div className={styles.rightSidebar}>
           <Groups />
@@ -35,19 +36,19 @@ export default function ChatPage() {
   );
 }
 
-function Side({ setId }) {
+function Side({ setId, setIsGroup }) {
   return (
     <div className={styles.side}>
-      <Contacts setId={setId} />
+      <Contacts setId={setId} setIsGroup={setIsGroup} />
     </div>
   );
 }
 
-function Main({ id }) {
+function Main({ id , isGroup }) {
   return (
     <div className={styles.chatForm}>
       {!id && <div className={styles.search}>Search</div>}
-      {id && <Chat id={id} />}
+      {id && <Chat id={id} isGroup={isGroup} />}
     </div>
   );
 }
