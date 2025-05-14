@@ -1,6 +1,6 @@
 # still not implemented
 # FROM go:1.16/alpine
-FROM golang:1.20
+FROM golang:1.23.0
 
 WORKDIR /app
 
