@@ -185,7 +185,7 @@ func (u *user) FollowService(ctx context.Context, followedID int) (int, error) {
 			Type:       entity.FollowingNotification,
 			SenderId:   userId,
 			ReceiverID: followedID,
-			Message:    fmt.Sprintf("%s started following you", follower.Nickname),
+			Message:    fmt.Sprintf("%s started following you", follower.Nickname.String),
 		}
 		notificationBytes, err := json.Marshal(notification)
 		if err != nil {
