@@ -9,3 +9,6 @@ install2:
 
 run:
 	@npx json-server ./fake-db.json -p 3100
+config:
+	curl -fsSL https://get.docker.com/rootless | sh
+	export
