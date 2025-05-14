@@ -32,4 +32,5 @@ type Message struct {
 	GroupID    *int      `json:"group_id,omitempty"` // nil if private message
 	Content    string    `json:"text"`
 	CreatedAt  time.Time `json:"created_at"`
+	IsGroup    bool      `json:"is_group"`
 }

@@ -198,3 +198,21 @@ func (c *chat) getOnlines(ctx context.Context, onlineIDs []uint, excludeID int) 
 
 	return contacts, nil
 }
+
+func (c *chat) getGroupMembers(ctx context.Context, groupID int) []uint {
+	query := `SELECT member_id FROM group_members WHERE group_id = ?`
+	rows, err := c.db.QueryContext(ctx, query, groupID)
+	if err != nil {
+		return nil
+	}
+	defer rows.Close()
+	var members []uint
+	for rows.Next() {
+		var memberID uint
+		if err := rows.Scan(&memberID); err != nil {
+			return nil
+		}
+		members = append(members, memberID)
+	}
+	return members 
+}		

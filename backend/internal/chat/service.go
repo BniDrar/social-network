@@ -50,7 +50,11 @@ func (c *chat) WsListing(conn *websocket.Conn, ctx context.Context) error {
 			c.loger.Error.Printf("Error marshaling message: %v\n", err)
 			continue
 		}
-
+		if msg.IsGroup {
+			groupMembers := c.getGroupMembers(ctx, *msg.ReceiverID)
+			c.Hub.SendGroupMessage(uint(*msg.ReceiverID), groupMembers, byteData)
+			continue
+		}
 		c.Hub.SendPrivateMessage(uint(*msg.ReceiverID), byteData)
 	}
 }
