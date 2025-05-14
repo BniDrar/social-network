@@ -7,13 +7,13 @@ services:
       - "8080:8080"
     volumes:
       - ./backend:/app
-    environment:
-      - REDIS_URL=redis:6379
-      - SQLITE_PATH=/app/data/db
-      - MIGRATION_PATH=migrations/sqlite
+    # environment:
+    #   - REDIS_URL=redis:6379
+    #   - SQLITE_PATH=/app/data/db
+    #   - MIGRATION_PATH=migrations/sqlite
 
-    depends_on:
-      - redis
+    # depends_on:
+    #   - redis
 
   frontend:
     build: ./frontend
@@ -24,7 +24,7 @@ services:
     depends_on:
       - backend
 
-  redis:
-    image: redis:7
-    ports:
-      - "6379:6379"
+  # redis:
+  #   image: redis:7
+  #   ports:
+  #     - "6379:6379"
