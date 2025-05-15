@@ -3,7 +3,6 @@ import styles from './comment.module.css';
 import{formatDate} from '@/utils/formateDate';
 import Image from 'next/image';
 export default function Comment({ comment }) {
-      const avatarSrc = comment.avatar ? `${process.env.MEDIA_URL}${comment.avatar}` : "/default-avatar.jpeg";
       const imageSrc = comment.image ? `${process.env.MEDIA_URL}${comment.image}` : null;
       return (
             <div className={styles.comment}>
@@ -11,14 +10,14 @@ export default function Comment({ comment }) {
                         <div className={styles.commentUser}>
                               <Image
                                     className={styles.avatar}
-                                    src={avatarSrc}
+                                    src={comment.avatar || "/default-avatar.jpeg"}
                                     alt="avatar"
                                     width={40}
                                     height={40}
                                     priority
                               />
                               <div className={styles.commentUserInfo}>
-                                    <h3>{comment.creater_name}</h3>
+                                    <h3>{comment.nickname}</h3>
                                     <span className={styles.commentDate}>{formatDate(comment.created_at)}</span>
                               </div>
                         </div>

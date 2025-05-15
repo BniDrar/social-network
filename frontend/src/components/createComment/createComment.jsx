@@ -44,10 +44,11 @@ export default function CreateComment({ postId, setComments, comments }) {
         setImagePreview(null);
         setSuccessMessage("Comment created successfully!");
         setTimeout(() => setSuccessMessage(""), 2000);
+
         const newComment = {
           ...response.data,
           avatar: user.avatar,
-          nickname: user.nickname,
+          nickname: user.nickname || `${user.first} ${user.last}`,
           content,
           created_at: new Date().toLocaleString(),
         }
