@@ -51,7 +51,7 @@ function Contact({ id, first, last, image, status, setId, setIsGroup, groupName 
     setId(id);
     if (first === "") {
       setIsGroup(true)
-    }else{
+    } else {
       setIsGroup(false)
     }
   };
@@ -59,6 +59,7 @@ function Contact({ id, first, last, image, status, setId, setIsGroup, groupName 
   let name = ""
   if (first === "") {
     name = groupName
+    status  = true
   } else {
     name = `${first} ${last}`
   }

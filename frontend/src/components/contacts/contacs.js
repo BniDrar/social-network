@@ -43,6 +43,9 @@ function Contacts() {
 
 function Contact({ id, first, last, image, status, groupName }) {
   const isGroup = !!groupName
+  if (isGroup) {
+    status = true
+  }
   const ws = useWebSocket();
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [chatPosition, setChatPosition] = useState(null);
