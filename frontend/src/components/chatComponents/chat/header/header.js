@@ -2,6 +2,9 @@ import styles from "./header.module.css";
 import Image from "next/image";
 
 function Header({ id, name, image, status, isGroup }) {
+  if (isGroup){
+    status = true
+  }
   let source = ""
   if (image) {
     source = `${process.env.BACKEND_URL}/api/pictures/${image}`
