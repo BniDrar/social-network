@@ -40,6 +40,7 @@
   position: fixed;
   top: 70px;
   width: 20%;
+  min-width: 250px;
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -100,29 +101,27 @@
 }
 
 
-@media (max-width: 600px) {
-  .page {
-    padding-bottom: 80px;
-  }
-
-  .main {
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .leftSidebar,
-  .rightSidebar {
-    width: 100%;
-    align-items: center;
-  }
-
-  .main ol {
-    text-align: center;
-  }
-}
-
 @media (prefers-color-scheme: dark) {
   .logo {
     filter: invert();
+  }
+}
+
+@media (max-width: 768px) {
+  .rightSidebar,.leftSidebar{
+    display: none;
+    width: 300px;
+    z-index: 11;
+
+  }
+  .container {
+    width: 100%;
+  }
+  .posts {
+    width: 100%;
+  }
+  .main {
+    padding: 0;
+    padding-top: 50px;
   }
 }

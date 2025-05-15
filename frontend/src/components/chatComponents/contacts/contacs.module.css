@@ -75,9 +75,17 @@
 }
 
 
-@media screen and (max-width: 550px) {
+@media screen and (max-width: 768px) {
   .contacts {
-    min-width: 100px;
+    width: 100%;
+    max-width: 100%;
+    overflow: auto;
+  }
+  .contactsList{
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: start;
   }
   .contact{
     width: 60px;

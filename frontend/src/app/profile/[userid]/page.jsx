@@ -8,16 +8,18 @@ import UserInfo from "@/components/userInfo/userInfo";
 import { getUserInfo } from "@/services/profile";
 import { Suspense } from "react";
 import Posts from "@/components/posts/posts";
+import SowOnmoble from "@/components/showOnMobile/showOnmoble";
 
 
 async function ProfilePage({ params }) {
     const { userid } = await params
     const info = await getUserInfo(userid)
-    
+
     return (
         <>
             <NavBar />
             {await info != null ? <main>
+                <SowOnmoble />
                 <section className={styles.profileHeaderBox}>
                     <div className={styles.profileHeader}>
                         <div className={styles.coverBox}>

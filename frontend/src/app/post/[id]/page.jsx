@@ -14,6 +14,7 @@ import { useEffect, useState } from "react";
 import { getComments } from '@/services/comment';
 import CreateGroup from "@/components/createGroup/createGroup";
 import Groups from "@/components/groups/groups";
+import SowOnmoble from "@/components/showOnMobile/showOnmoble";
 
 export default function PostPage({ params }) {
   const { id: postId } = use(params)
@@ -57,7 +58,8 @@ export default function PostPage({ params }) {
     <div className={styles.page}>
       <Navbar />
       <main className={styles.main}>
-        <div className={styles.leftSidebar}>
+        <SowOnmoble />
+        <div className={styles.leftSidebar} id="left-sidebar">
           <Profile />
           <Menu />
         </div>
@@ -76,7 +78,7 @@ export default function PostPage({ params }) {
             </div>
           </div>
         </div>
-        <div className={styles.rightSidebar}>
+        <div className={styles.rightSidebar} id='right-sidebar'>
           <Contacts />
           <Groups />
           <CreateGroup />

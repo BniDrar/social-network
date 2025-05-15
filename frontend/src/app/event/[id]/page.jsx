@@ -11,6 +11,7 @@ import { getEventById } from "@/services/events";
 import { useEffect, useState } from "react";
 import CreateGroup from "@/components/createGroup/createGroup";
 import Groups from "@/components/groups/groups";
+import SowOnmoble from "@/components/showOnMobile/showOnmoble";
 
 export default function EventPage({ params }) {
   const { id: groupId } = use(params);
@@ -35,7 +36,8 @@ export default function EventPage({ params }) {
     <div className={styles.page}>
       <Navbar />
       <main className={styles.main}>
-        <div className={styles.leftSidebar}>
+        <SowOnmoble />
+        <div className={styles.leftSidebar} id='left-sidebar'>
           <Profile />
           <Menu />
         </div>
@@ -46,7 +48,7 @@ export default function EventPage({ params }) {
             {!loading && !event && <p>Event not found.</p>}
           </div>
         </div>
-        <div className={styles.rightSidebar}>
+        <div className={styles.rightSidebar} id="right-sidebar">
           <Contacts />
           <Groups />
           <CreateGroup />

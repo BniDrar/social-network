@@ -111,6 +111,7 @@
   box-sizing: border-box;
   z-index: 2;
 }
+
 .SuggestedUsersList {
   position: relative;
   width: 100%;
@@ -130,6 +131,7 @@
   text-align: center;
   box-sizing: border-box;
 }
+
 .groupInfo p {
   width: 100%;
   font-size: 1rem;
@@ -141,6 +143,7 @@
   text-align: center;
   box-sizing: border-box;
 }
+
 .groupStatus {
   min-width: 100px;
   position: absolute;
@@ -166,9 +169,11 @@
   box-sizing: border-box;
   z-index: 2;
 }
-.tabContent{
+
+.tabContent {
   width: 100%;
 }
+
 .menu {
   width: 100%;
   display: flex;
@@ -202,29 +207,26 @@
   color: var(--color-white);
 }
 
-@media (max-width: 600px) {
-  .page {
-    padding-bottom: 80px;
-  }
-
-  .main {
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .leftSidebar,
-  .rightSidebar {
-    width: 100%;
-    align-items: center;
-  }
-
-  .main ol {
-    text-align: center;
-  }
-}
-
 @media (prefers-color-scheme: dark) {
   .logo {
     filter: invert();
+  }
+}
+@media (max-width: 768px) {
+   .rightSidebar,.leftSidebar{
+    display: none;
+    width: 300px;
+    z-index: 11;
+
+  }
+  .container {
+    width: 100%;
+  }
+  .posts {
+    width: 100%;
+  }
+  .main {
+    padding: 0;
+    padding-top: 50px;
   }
 }

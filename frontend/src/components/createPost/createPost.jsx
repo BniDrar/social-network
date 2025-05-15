@@ -131,15 +131,6 @@ export default function CreatePost({ groupId }) {
               style={{ display: "none" }}
               onChange={handleImageChange}
             />
-            <button className={styles.createPostActionButton} disabled>
-              <BiVideo className={styles.createPostIcon} />
-            </button>
-            <button className={styles.createPostActionButton} disabled>
-              <BiPoll className={styles.createPostIcon} />
-            </button>
-            <button className={styles.createPostActionButton} disabled>
-              <BiLocationPlus className={styles.createPostIcon} />
-            </button>
           </div>
           {!groupId &&
             <select
@@ -253,18 +244,6 @@ export default function CreatePost({ groupId }) {
               >
                 <BiImageAdd className={styles.createPostPopupIcon} />
                 Image
-              </button>
-              <button className={styles.createPostPopupButton} disabled>
-                <BiVideo className={styles.createPostPopupIcon} />
-                Video
-              </button>
-              <button className={styles.createPostPopupButton} disabled>
-                <BiPoll className={styles.createPostPopupIcon} />
-                Poll
-              </button>
-              <button className={styles.createPostPopupButton} disabled>
-                <BiLocationPlus className={styles.createPostPopupIcon} />
-                Location
               </button>
             </div>
 

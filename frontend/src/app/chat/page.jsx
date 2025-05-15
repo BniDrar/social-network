@@ -10,24 +10,26 @@ import Menu from "@/components/menu/menu";
 import Profile from "@/components/profile/profile";
 import CreateGroup from "@/components/createGroup/createGroup";
 import Groups from "@/components/groups/groups";
+import SowOnmoble from "@/components/showOnMobile/showOnmoble";
 
 export default function ChatPage() {
   const [id, setId] = useState(null);
   const [isGroup, setIsGroup] = useState(false);
-  
+
   return (
     <div className={styles.page}>
       <Navbar />
       <main className={styles.main}>
-        <div className={styles.leftSidebar}>
+       <SowOnmoble />
+        <div className={styles.leftSidebar} id="left-sidebar">
           <Profile />
           <Menu />
         </div>
         <div className={styles.container}>
-          <Side setId={setId} setIsGroup={setIsGroup} />
+          <Side setId={setId} setIsGroup={setIsGroup} className={styles.side} />
           <Main id={id} isGroup={isGroup} />
         </div>
-        <div className={styles.rightSidebar}>
+        <div className={styles.rightSidebar} id="right-sidebar">
           <Groups />
           <CreateGroup />
         </div>
@@ -44,7 +46,7 @@ function Side({ setId, setIsGroup }) {
   );
 }
 
-function Main({ id , isGroup }) {
+function Main({ id, isGroup }) {
   return (
     <div className={styles.chatForm}>
       {!id && <div className={styles.search}>Search</div>}

@@ -26,7 +26,6 @@ export const NotifPopup = ({ onClose, notifs = [] }) => {
   return (
     <div
       className={styles["chat-card"]}
-      style={{ position: "absolute", top: 70 }}
       ref={cardRef}
     >
       <div className={styles["chat-body"]} ref={chatBodyRef}>

@@ -14,6 +14,7 @@ import Groups from "@/components/groups/groups";
 import GroupEventsTab from "@/components/groupEventTab/groupEventTab";
 import GroupListMumbers from "@/components/groupListMumbers/groupListMumbers";
 import SuggestedUsersList from "@/components/SuggestedUsersList/SuggestedUsersList";
+import SowOnmoble from "@/components/showOnMobile/showOnmoble";
 
 export default function GroupPage({ params }) {
   const { id: groupId } = use(params);
@@ -36,7 +37,8 @@ export default function GroupPage({ params }) {
     <div className={styles.page}>
       <Navbar />
       <main className={styles.main}>
-        <div className={styles.leftSidebar}>
+        <SowOnmoble />
+        <div className={styles.leftSidebar} id="left-sidebar">
           <Profile />
           <Menu />
         </div>
@@ -101,7 +103,7 @@ export default function GroupPage({ params }) {
           </div>
         </div>
 
-        <div className={styles.rightSidebar}>
+        <div className={styles.rightSidebar} id="right-sidebar">
           <Contacts />
           <Groups />
           <CreateGroup />

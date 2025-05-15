@@ -12,6 +12,8 @@ import { useEffect, useState } from "react";
 import CreateGroup from "@/components/createGroup/createGroup";
 import Groups from "@/components/groups/groups";
 import { usePathname } from "next/navigation";
+import SowOnmoble from "@/components/showOnMobile/showOnmoble";
+
 
 export default function Home() {
   const [posts, setPosts] = useState([]);
@@ -89,7 +91,8 @@ export default function Home() {
     <div className={styles.page}>
       <Navbar />
       <main className={styles.main}>
-        <div className={styles.leftSidebar}>
+        <SowOnmoble/>
+        <div className={styles.leftSidebar} id="left-sidebar">
           <Profile />
           <Menu />
         </div>
@@ -108,7 +111,7 @@ export default function Home() {
               <div className={styles.noMorePosts}>No more posts to load</div>
             )}
           </div>
-          <div className={styles.rightSidebar}>
+          <div className={styles.rightSidebar} id="right-sidebar">
             <Contacts />
             <Groups />
             <CreateGroup />

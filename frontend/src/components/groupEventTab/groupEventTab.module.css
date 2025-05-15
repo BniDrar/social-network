@@ -16,3 +16,15 @@
       gap: 1rem;
       box-sizing: border-box;
 }
+
+@media screen and (max-width: 768px) {
+      .events {
+            grid-template-columns: repeat(auto-fill, minmax(100%, 1fr));
+      }
+      .groupEventsTab {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+      }   
+}

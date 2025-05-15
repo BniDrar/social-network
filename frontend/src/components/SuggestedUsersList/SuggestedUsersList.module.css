@@ -136,3 +136,12 @@
 .userList::-webkit-scrollbar {
       width: 0;
 }
+
+@media screen and (max-width: 768px) {
+      .SuggestedUsersListContainer {
+            width: 90%;
+            min-width: 90%;
+            max-height: 80vh;
+      }
+      
+}
