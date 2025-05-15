@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"sync"
-	"time"
 
 	"github.com/gorilla/websocket"
 )
@@ -77,44 +76,8 @@ func (h *Hub) AddClient(userID uint, conn *websocket.Conn) {
 	h.register <- client
 
 	// Start ping/pong handling
-	go h.handlePingPong(client)
 	// Start message writing
 	go h.writeMessage(client)
-}
-
-func (h *Hub) handlePingPong(client *Client) {
-	ticker := time.NewTicker(10 * time.Second)
-	defer ticker.Stop()
-
-	lastPongTime := time.Now()
-
-	client.conn.SetPingHandler(func(appData string) error {
-		return client.conn.WriteControl(websocket.PongMessage, []byte{}, time.Now().Add(time.Second))
-	})
-
-	client.conn.SetPongHandler(func(appData string) error {
-		lastPongTime = time.Now()
-		return nil
-	})
-
-	for {
-		select {
-		case <-ticker.C:
-			if time.Since(lastPongTime) > 20*time.Second {
-				log.Printf("No pong from client %d, closing connection", client.userID)
-				h.unregister <- client
-				return
-			}
-			if err := client.conn.WriteControl(websocket.PingMessage, []byte{}, time.Now().Add(time.Second)); err != nil {
-				log.Printf("Error sending ping to client %d: %v", client.userID, err)
-				h.unregister <- client
-				return
-			}
-		case <-client.done:
-			log.Printf("PingPong for client %d terminated", client.userID)
-			return
-		}
-	}
 }
 
 func (h *Hub) writeMessage(client *Client) {
@@ -171,10 +134,11 @@ func (h *Hub) Run() {
 				log.Printf("Error marshaling message: %v", err)
 				continue
 			}
-			fmt.Println(message.GroupMembers)
+
 			h.mu.Lock()
 			for _, userID := range message.GroupMembers {
 				if userID == message.UserID {
+					fmt.Println("user ID:", userID)
 					continue
 				}
 				if client, exists := h.Clients[userID]; exists {

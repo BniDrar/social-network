@@ -30,15 +30,10 @@ func (c *chat) WsListing(conn *websocket.Conn, ctx context.Context) error {
 			c.Hub.Unregister(uint(id))
 			return err
 		}
-		if msg.IsGroup {
-			fmt.Printf("the msg content is %s, the group id is %d, the sender id is %d", msg.Content, *msg.GroupID, msg.SenderID)
-		}else {
-			fmt.Printf("the msg content is %s, the receiver id is %d, the sender id is %d", msg.Content, *msg.ReceiverID, msg.SenderID)
-		}
-		if msg.ReceiverID == nil && msg.GroupID == nil{
-			c.loger.Error.Println("Invalid data. Ignoring message.")
-			continue
-		}
+		// if msg.ReceiverID == nil {
+		// 	c.loger.Error.Println("ReceiverID is nil. Ignoring message.")
+		// 	continue
+		// }
 
 		// Set sender ID
 		msg.SenderID = id
@@ -56,8 +51,11 @@ func (c *chat) WsListing(conn *websocket.Conn, ctx context.Context) error {
 			continue
 		}
 		if msg.IsGroup {
+			fmt.Println(msg.GroupID)
 			groupMembers := c.getGroupMembers(ctx, *msg.GroupID)
-			c.Hub.SendGroupMessage(uint(*msg.ReceiverID), groupMembers, byteData)
+			fmt.Println("the group members is:", groupMembers)
+			fmt.Println("the group id is:", *msg.GroupID)
+			c.Hub.SendGroupMessage(uint(*msg.GroupID), groupMembers, byteData)
 			continue
 		}
 		c.Hub.SendPrivateMessage(uint(*msg.ReceiverID), byteData)

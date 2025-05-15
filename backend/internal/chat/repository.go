@@ -199,7 +199,7 @@ func (c *chat) getOnlines(ctx context.Context, onlineIDs []uint, excludeID int) 
 func (c *chat) getGroupMembers(ctx context.Context, groupID int) []uint {
 	query := `SELECT member_id FROM group_members WHERE group_id = ?
 	UNION SELECT admin FROM groups WHERE id = ?`
-	rows, err := c.db.QueryContext(ctx, query, groupID)
+	rows, err := c.db.QueryContext(ctx, query, groupID, groupID)
 	if err != nil {
 		return nil
 	}
