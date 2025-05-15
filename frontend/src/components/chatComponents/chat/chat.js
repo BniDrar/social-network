@@ -47,7 +47,10 @@ function Chat({ id, isGroup }) {
     };
     console.log('user function to fetch info', userInfo)
     fetchUser();
-    console.log(' info fetched by the function ', userInfo)
+    // clean chat body on change of id
+    return () => {
+      setMessages([]);
+    };
   }, [id]);
 
 
@@ -183,14 +186,20 @@ function Chat({ id, isGroup }) {
         className={styles.header}
         isGroup={isGroup}
       />
-      <ChatBody
-        id={id}
-        messages={messages}
-        className={styles.body}
-        scroll={scroll}
-        chatBodyRef={chatBodyRef}
-        isGroup={isGroup}
-      />
+      {messages.length > 0 ? (
+        <ChatBody
+          messages={messages}
+          chatBodyRef={chatBodyRef}
+          isGroup={isGroup}
+        />
+      ) : (
+        <div className={styles.noMessages}>
+          <div className={styles.noMessagesText}>
+            <p>No messages yet.</p>
+            <p>Send a message to start the conversation.</p>
+          </div>
+        </div>
+      )}
       <Footer
         id={id}
         setMessage={setMessage}

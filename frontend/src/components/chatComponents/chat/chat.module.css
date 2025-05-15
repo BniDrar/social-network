@@ -61,3 +61,12 @@
 .a {
   background-color: var(--secondary-color);
 }
+.noMessages {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  width: 100%;
+  font-size: 1rem;
+  color: var(--color-gray-dark);
+}

@@ -49,7 +49,6 @@ function Side({ setId, setIsGroup }) {
 function Main({ id, isGroup }) {
   return (
     <div className={styles.chatForm}>
-      {!id && <div className={styles.search}>Search</div>}
       {id && <Chat id={id} isGroup={isGroup} />}
     </div>
   );
