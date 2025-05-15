@@ -137,10 +137,6 @@ func (h *Hub) Run() {
 
 			h.mu.Lock()
 			for _, userID := range message.GroupMembers {
-				if userID == message.UserID {
-					fmt.Println("user ID:", userID)
-					continue
-				}
 				if client, exists := h.Clients[userID]; exists {
 					select {
 					case client.send <- jsonData:

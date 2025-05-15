@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"log"
 	"net/http"
 
@@ -30,18 +29,11 @@ func (c *chat) WsListing(conn *websocket.Conn, ctx context.Context) error {
 			c.Hub.Unregister(uint(id))
 			return err
 		}
-		// if msg.ReceiverID == nil {
-		// 	c.loger.Error.Println("ReceiverID is nil. Ignoring message.")
-		// 	continue
-		// }
 
 		// Set sender ID
 		msg.SenderID = id
 		c.loger.Info.Printf("Received message: %v\n", id)
 
-		// Save message to database
-		// ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
-		// defer cancel()
 		go c.SaveMessage(ctx, msg)
 
 		// Send message to receiver
@@ -51,10 +43,7 @@ func (c *chat) WsListing(conn *websocket.Conn, ctx context.Context) error {
 			continue
 		}
 		if msg.IsGroup {
-			fmt.Println(msg.GroupID)
-			groupMembers := c.getGroupMembers(ctx, *msg.GroupID)
-			fmt.Println("the group members is:", groupMembers)
-			fmt.Println("the group id is:", *msg.GroupID)
+			groupMembers := c.getGroupMembers(ctx, *msg.GroupID, id)
 			c.Hub.SendGroupMessage(uint(*msg.GroupID), groupMembers, byteData)
 			continue
 		}
