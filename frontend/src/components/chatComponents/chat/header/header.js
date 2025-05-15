@@ -1,13 +1,24 @@
 import styles from "./header.module.css";
 import Image from "next/image";
 
-function Header({ id, name, image, status }) {
+function Header({ id, name, image, status, isGroup }) {
+  let source = ""
+  if (image) {
+    source = `${process.env.BACKEND_URL}/api/pictures/${image}`
+  } else {
+    if (!isGroup) {
+      source = 'default-avatar.jpeg'
+    } else {
+      source = 'default-group.jpeg'
+    }
+  }
+  console.log('------------>source------------>', source)
   return (
     <div className={styles.header}>
       <div className={styles.headerContainer}>
         <div className={styles.profilePic}>
           <Image
-            src={`${process.env.BACKEND_URL}/api/pictures/${image}`}
+            src={source}
             alt={'avatar'}
             width={50}
             height={50}

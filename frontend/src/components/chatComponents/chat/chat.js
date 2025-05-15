@@ -181,6 +181,7 @@ function Chat({ id, isGroup }) {
         image={userInfo.avatar}
         status={userInfo.online}
         className={styles.header}
+        isGroup={isGroup}
       />
       <ChatBody
         id={id}
