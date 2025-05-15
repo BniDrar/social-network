@@ -7,16 +7,20 @@ import styles from "./menu.module.css"; // Adjust according to your actual style
 import { useState, useEffect } from "react";
 import { useWebSocket } from "@/context/wsContext";
 
-
 const Menu = () => {
   const ws = useWebSocket();
   const [count, setCount] = useState(null);
+  const pathName = usePathname()
   const notificationSound =
     typeof window !== "undefined" ? new Audio("/sounds/notif.wav") : null;
   useEffect(() => {
     if (!ws) return;
 
     const handleMessage = (event) => {
+      if (pathName === "/chat") {
+        setCount(null)
+        return
+      }
       // PrivateMessage MessageType = iota
       // GroupMessage
       // BroadcastMessage

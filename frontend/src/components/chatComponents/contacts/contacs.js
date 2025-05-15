@@ -4,6 +4,7 @@ import styles from "./contacs.module.css";
 import Image from "next/image";
 import { GetContacts } from "@/services/contacts";
 import { useState, useEffect, useRef } from "react";
+import { useWebSocket } from "@/context/wsContext";
 
 function Contacts({ setId, setIsGroup }) {
   const [contacts, setContacts] = useState([]);
@@ -40,9 +41,13 @@ function Contacts({ setId, setIsGroup }) {
 }
 
 function Contact({ id, first, last, image, status, setId, setIsGroup, groupName }) {
+  const ws = useWebSocket();
+  const [count, setCount] = useState(null)
+
   const contactRef = useRef(null);
 
   const handleContactClick = (e) => {
+    setCount(null)
     setId(id);
     if (first === "") {
       setIsGroup(true)
@@ -61,10 +66,68 @@ function Contact({ id, first, last, image, status, setId, setIsGroup, groupName 
   } else {
     if (!setIsGroup) {
       source = 'default-avatar.jpeg'
-    }else{
+    } else {
       source = 'default-group.jpeg'
     }
   }
+
+
+
+  /*_____________________ notifications _____________________________*/
+  useEffect(() => {
+    if (!ws) return;
+
+    const handleMessage = (event) => {
+      // PrivateMessage MessageType = iota
+      // GroupMessage
+      // BroadcastMessage
+      // NotificationMessage 
+      try {
+        const notif = JSON.parse(event.data);
+        const jsonString = atob(notif.Data);
+        const message = JSON.parse(jsonString);
+
+        const msg64 = notif.Data;
+
+        // Safely decode base64 to UTF-8
+        const decodedStr = decodeURIComponent(escape(atob(msg64)));
+
+        const decoded = JSON.parse(decodedStr);
+        const from = decoded.from
+
+        console.log('decoded notif 404', decoded)
+
+        switch (notif.Type) {
+          case 0: // PrivateMessage
+            if (from === id && !groupName) {
+              setCount(count => (count ?? 0) + 1);
+            }
+            break;
+          case 1: // GroupMessage
+            if (from === id && groupName) {
+              setCount(count => (count ?? 0) + 1);
+            }
+            break;
+          case 2: // BroadcastMessage
+            break;
+          case 3: // NotificationMessage
+            break;
+          default:
+            console.warn("Unknown message type:", message.type);
+        }
+
+      } catch (err) {
+        console.error("Failed to parse message:", err);
+      }
+    };
+
+    ws.addEventListener("message", handleMessage);
+
+    return () => {
+      ws.removeEventListener("message", handleMessage);
+    };
+  }, [ws]);
+  /*_____________________ jsx______________________________________*/
   return (
     <>
       {/* Contact Item */}
@@ -89,6 +152,7 @@ function Contact({ id, first, last, image, status, setId, setIsGroup, groupName 
         <div className={styles.info}>
           <p>{name}</p>
         </div>
+        <span className={count && styles.notificationCount}>{count}</span>
       </div >
     </>
   );

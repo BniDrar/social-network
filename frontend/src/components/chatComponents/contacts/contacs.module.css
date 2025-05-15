@@ -81,22 +81,38 @@
     max-width: 100%;
     overflow: auto;
   }
-  .contactsList{
+
+  .contactsList {
     width: 100%;
     display: flex;
     flex-wrap: wrap;
     justify-content: start;
   }
-  .contact{
+
+  .contact {
     width: 60px;
     margin: 2px;
     justify-content: center;
   }
-  .contact p{
+
+  .contact p {
     display: none;
   }
-  .info{
+
+  .info {
     display: none;
     width: 0;
   }
+}
+
+.notificationCount {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: red;
+  color: var(--color-white);
+  font-size: 0.7rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }

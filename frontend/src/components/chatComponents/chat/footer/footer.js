@@ -18,13 +18,23 @@ export default function Footer({ id, setMessage, setMessages, message, messages,
 
   const handleSend = () => {
     if (message.trim() === "") return; // Do nothing if message is empty
-    const pack = {
-      created_at: new Date().toISOString(),
-      from: user.myID,
-      text: message,
-      to: id,
-      is_group: isGroup
-    };
+    let pack = {};
+    if (isGroup) {
+      pack = {
+        text: message,
+        created_at: new Date().toISOString(),
+        is_group: isGroup,
+        group_id: id,
+      };
+    } else {
+      pack = {
+        to: id,
+        text: message,
+        created_at: new Date().toISOString(),
+        is_group: isGroup,
+      };
+    }
+    
     ws.send(JSON.stringify(pack));
 
     setMessages([
