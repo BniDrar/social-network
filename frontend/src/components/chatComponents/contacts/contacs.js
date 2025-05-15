@@ -51,6 +51,8 @@ function Contact({ id, first, last, image, status, setId, setIsGroup, groupName 
     setId(id);
     if (first === "") {
       setIsGroup(true)
+    }else{
+      setIsGroup(false)
     }
   };
 
