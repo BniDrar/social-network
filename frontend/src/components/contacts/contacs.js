@@ -18,6 +18,7 @@ function Contacts() {
 
     fetchContacts();
   }, []);
+  
   console.log('fetched contacts 1-->', contacts)
 
   return (
