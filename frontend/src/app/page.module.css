@@ -36,12 +36,14 @@
   box-sizing: border-box;
 }
 
-.leftSidebar,.rightSidebar {
+.leftSidebar,
+.rightSidebar {
   position: fixed;
   top: 70px;
   width: 20%;
-  min-width: 250px;
   height: 100%;
+  max-height: calc(100vh - 90px);
+  overflow: auto;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -50,6 +52,12 @@
   background-color: var(--color-white);
   z-index: 2;
   box-sizing: border-box;
+}
+.rightSidebar::-webkit-scrollbar {
+  width: 0;
+}
+.leftSidebar::-webkit-scrollbar {
+  width: 0;
 }
 
 .leftSidebar {
@@ -111,6 +119,7 @@
   .rightSidebar,.leftSidebar{
     display: none;
     width: 300px;
+    min-width: 300px;
     z-index: 11;
 
   }

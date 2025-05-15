@@ -42,6 +42,8 @@
   top: 70px;
   width: 20%;
   height: 100%;
+  max-height: calc(100vh - 90px);
+  overflow: auto;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -50,6 +52,12 @@
   background-color: var(--color-white);
   z-index: 2;
   box-sizing: border-box;
+}
+.rightSidebar::-webkit-scrollbar {
+  width: 0;
+}
+.leftSidebar::-webkit-scrollbar {
+  width: 0;
 }
 
 .leftSidebar {
@@ -212,19 +220,25 @@
     filter: invert();
   }
 }
+
 @media (max-width: 768px) {
-   .rightSidebar,.leftSidebar{
+
+  .rightSidebar,
+  .leftSidebar {
     display: none;
     width: 300px;
+    min-width: 300px;
     z-index: 11;
-
   }
+
   .container {
     width: 100%;
   }
+
   .posts {
     width: 100%;
   }
+
   .main {
     padding: 0;
     padding-top: 50px;
