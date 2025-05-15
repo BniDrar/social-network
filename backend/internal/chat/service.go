@@ -30,11 +30,15 @@ func (c *chat) WsListing(conn *websocket.Conn, ctx context.Context) error {
 			c.Hub.Unregister(uint(id))
 			return err
 		}
-		// if msg.ReceiverID == nil {
-		// 	c.loger.Error.Println("ReceiverID is nil. Ignoring message.")
-		// 	continue
-		// }
-		fmt.Println("777", msg.IsGroup, *msg.GroupID, msg.ReceiverID)
+		if msg.IsGroup {
+			fmt.Printf("the msg content is %s, the group id is %d, the sender id is %d", msg.Content, *msg.GroupID, msg.SenderID)
+		}else {
+			fmt.Printf("the msg content is %s, the receiver id is %d, the sender id is %d", msg.Content, *msg.ReceiverID, msg.SenderID)
+		}
+		if msg.ReceiverID == nil && msg.GroupID == nil{
+			c.loger.Error.Println("Invalid data. Ignoring message.")
+			continue
+		}
 
 		// Set sender ID
 		msg.SenderID = id

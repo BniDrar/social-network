@@ -74,11 +74,13 @@ func (r *chat) SaveMessage(ctx context.Context, message entity.Message) error {
 	query := `INSERT INTO messages (sender_id, receiver_id,created_at ,content, group_id) VALUES (?, ?, ?, ?, ?)`
 	stmt, err := r.db.PrepareContext(ctx, query)
 	if err != nil {
+		r.loger.Error.Println("error praparing context", err)
 		return err
 	}
 	defer stmt.Close()
 	_, err = stmt.ExecContext(ctx, message.SenderID, message.ReceiverID, message.CreatedAt, message.Content, message.GroupID)
 	if err != nil {
+		r.loger.Error.Println("error while executing the context", err)
 		return err
 	}
 	return nil

@@ -119,6 +119,7 @@ func (h *Hub) handlePingPong(client *Client) {
 
 func (h *Hub) writeMessage(client *Client) {
 	for message := range client.send {
+		fmt.Println("Sending message to client:", client.userID)
 		err := client.conn.WriteMessage(websocket.TextMessage, message)
 		if err != nil {
 			log.Printf("Error writing message to client %d: %v", client.userID, err)
