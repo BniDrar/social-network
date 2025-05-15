@@ -114,12 +114,12 @@ function Contact({ id, first, last, image, status, groupName }) {
 
         switch (notif.Type) {
           case 0: // PrivateMessage
-            if (from === id && !decoded.is_group) {
+            if (from === id && !groupName) {
               setCount(count => (count ?? 0) + 1);
             }
             break;
           case 1: // GroupMessage
-            if (from === id && decoded.is_group) {
+            if (from === id && groupName) {
               setCount(count => (count ?? 0) + 1);
             }
             break;
