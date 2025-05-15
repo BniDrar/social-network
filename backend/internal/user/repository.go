@@ -35,7 +35,7 @@ func (r *user) GetUserProfileById(ctx context.Context, targetId int) (entity.Use
 
 	`
 
-	err := r.db.QueryRowContext(ctx, query, requesterId, targetId, entity.FollowingNotification).Scan(
+	err := r.db.QueryRowContext(ctx, query, requesterId, targetId, entity.FollowingRequestNotification).Scan(
 		&user.ID, &user.Nickname, &user.Email, &user.Avatar,
 		&user.First, &user.Last, &user.DateOfBirth, &user.AboutMe, &user.Status,
 		&user.FollowersCount, &user.FollowingCount, &user.FollowingState)
@@ -358,7 +358,7 @@ func (u *user) CreateFollowNotification(ctx context.Context, senderId, receiverI
 	if err != nil {
 		return 0, err
 	}
-	res, err := stmt.ExecContext(ctx, senderId, receiverId, entity.FollowingNotification)
+	res, err := stmt.ExecContext(ctx, senderId, receiverId, entity.FollowingRequestNotification)
 	if err != nil {
 		return 0, err
 	}

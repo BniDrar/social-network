@@ -238,7 +238,7 @@ func (u *user) userNotificationSerice(ctx context.Context) ([]entity.Notificatio
 	}
 	for i, notification:= range notifications {
 		fmt.Println("the notification is: ", notification)
-		if notification.Type == entity.FollowingNotification {
+		if notification.Type == entity.FollowingRequestNotification {
 			follower, err := u.GetUserProfileById(ctx, notification.SenderId)
 			if err != nil {
 				u.loger.Error.Printf("Error getting follower info: %v", err)
