@@ -2,6 +2,7 @@
 # 📦 Docker Compose Commands Utiles pour le Développement
 
 echo "📦 Docker Compose Helper 🚀"
+
 echo "1️⃣  Up (démarrage en arrière-plan)"
 echo "2️⃣  Up avec logs"
 echo "3️⃣  Build/Rebuild"
@@ -11,12 +12,12 @@ echo "6️⃣  Logs (tous)"
 echo "7️⃣  Logs (backend)"
 echo "8️⃣  Logs -f (live)"
 echo "9️⃣  Down (garder volumes)"
-echo "10️⃣ Down (supprimer volumes)"
-echo "11️⃣ Restart (all)"
-echo "12️⃣ Restart (backend)"
-echo "13️⃣ Exec shell (backend)"
-echo "14️⃣ Resources (top)"
-echo "15️⃣ Clean docker system ⚠️"
+echo "1️⃣ 0️⃣  Down (supprimer volumes)"
+echo "1️⃣ 1️⃣  Restart (all)"
+echo "1️⃣ 2️⃣  Restart (backend)"
+echo "1️⃣ 3️⃣  Exec shell (backend)"
+echo "1️⃣ 4️⃣  Resources (top)"
+echo "1️⃣ 5️⃣  Clean docker system ⚠️"
 echo "0️⃣  Quitter"
 echo ""
 
