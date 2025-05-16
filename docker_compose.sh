@@ -1,44 +1,51 @@
 #!/bin/bash
-# Commandes Docker Compose essentielles
+# 📦 Docker Compose Commands Utiles pour le Développement
 
-# Démarrer tous les services en arrière-plan
-docker compose up -d
+echo "📦 Docker Compose Helper 🚀"
+echo "1️⃣  Up (démarrage en arrière-plan)"
+echo "2️⃣  Up avec logs"
+echo "3️⃣  Build/Rebuild"
+echo "4️⃣  Up & Build"
+echo "5️⃣  Status"
+echo "6️⃣  Logs (tous)"
+echo "7️⃣  Logs (backend)"
+echo "8️⃣  Logs -f (live)"
+echo "9️⃣  Down (garder volumes)"
+echo "10️⃣ Down (supprimer volumes)"
+echo "11️⃣ Restart (all)"
+echo "12️⃣ Restart (backend)"
+echo "13️⃣ Exec shell (backend)"
+echo "14️⃣ Resources (top)"
+echo "15️⃣ Clean docker system ⚠️"
+echo "0️⃣  Quitter"
+echo ""
 
-# Démarrer les services et voir les logs
-docker compose up
+read -p "🧠 Choix: " choix
 
-# Construire ou reconstruire les services
-docker compose build
-
-# Démarrer et reconstruire les services
-docker compose up --build
-
-# Voir l'état des services
-docker compose ps
-
-# Voir les logs de tous les services
-docker compose logs
-
-# Voir les logs d'un service spécifique (ex: backend)
-docker compose logs backend
-
-# Voir les logs et les suivre en temps réel
-docker compose logs -f
-
-# Arrêter les services mais conserver les volumes
-docker compose down
-
-# Arrêter les services et supprimer les volumes
-docker compose down -v
-
-# Redémarrer tous les services
-docker compose restart
-
-# Redémarrer un service spécifique
-docker compose restart backend
-
-# Exécuter une commande dans un conteneur en cours d'exécution
-docker compose exec backend sh
-
-# Afficher les ressources utilisées (CPU, mémoire)
-docker compose top
+case $choix in
+  1) docker compose up -d ;;
+  2) docker compose up ;;
+  3) docker compose build ;;
+  4) docker compose up --build ;;
+  5) docker compose ps ;;
+  6) docker compose logs ;;
+  7) docker compose logs backend ;;
+  8) docker compose logs -f ;;
+  9) docker compose down ;;
+  10) docker compose down -v ;;
+  11) docker compose restart ;;
+  12) docker compose restart backend ;;
+  13) docker compose exec backend sh ;;
+  14) docker compose top ;;
+  15) 
+    echo "⚠️ Tu es sur le point de tout nettoyer ! (images, conteneurs, volumes)"
+    read -p "Continuer ? (y/N): " confirm
+    if [[ "$confirm" == "y" || "$confirm" == "Y" ]]; then
+      docker system prune -a --volumes -f
+    else
+      echo "✅ Opération annulée."
+    fi
+    ;;
+  0) echo "👋 Bye!" ;;
+  *) echo "❌ Choix invalide." ;;
+esac
