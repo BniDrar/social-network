@@ -101,7 +101,12 @@ func (u *user) GetUserPostsService(ctx context.Context, cursor entity.Cursor) ([
 
 func (u *user) ChangeStatusService(ctx context.Context) error {
 	id := ctx.Value(entity.ContextID).(int)
-	return u.changeStatusRepo(ctx, id)
+	err:= u.changeStatusRepo(ctx, id)
+	if err != nil {
+		return err
+	}
+	return u.removeFollowingNotifications(ctx)
+	
 }
 
 func (u *user) FollowersAndFollowedService(ctx context.Context, id int) (int, entity.Follows, error) {
@@ -212,6 +217,11 @@ func (u *user) processRequestResponse(ctx context.Context, notification entity.N
 	if notification.ReceiverID != userId {
 
 		return http.StatusForbidden, errors.New("forbidden access to this action")
+	}
+	notification.Type = entity.FollowingRequestNotification
+	err := u.RemoveNotification(ctx, notification)
+	if err != nil {
+		return http.StatusInternalServerError, err
 	}
 	if notification.Accepted {
 		_, err := u.FollowRepository(notification.SenderId, userId)

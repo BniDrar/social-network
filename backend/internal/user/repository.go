@@ -144,11 +144,34 @@ func (u *user) CreateUser(user entity.User) error {
 	return nil
 }
 
-func (u *user) changeStatusRepo(ctx context.Context, id int) error {
+func (u *user) changeStatusRepo(ctx context.Context, id int) (error) {
+	// Toggle the status
 	query := `UPDATE users SET status = 1 - status WHERE id = $1`
 	_, err := u.db.ExecContext(ctx, query, id)
 	return err
 }
+
+func (u *user) removeFollowingNotifications(ctx context.Context) error {
+	query:= `DELETE FROM notification WHERE receiver_id = $1 AND (type = $2 OR type = $3)`
+	_, err:= u.db.ExecContext(ctx, query, ctx.Value(entity.ContextID).(int), entity.FollowingNotification, entity.FollowingRequestNotification)
+	return err
+}
+
+func (g *user) RemoveNotification(ctx context.Context, notif entity.Notification) error {
+	query := `
+		DELETE FROM notification WHERE receiver_id = ? AND sender_id = ? AND type = ?`
+	stmt, err := g.db.PrepareContext(ctx, query)
+	if err != nil {
+		return err
+	}
+	_, err = stmt.ExecContext(ctx, notif.ReceiverID, notif.SenderId, notif.Type)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+
 
 // this function is used to update user
 func (r *user) UpdateUser(user entity.User) error {
