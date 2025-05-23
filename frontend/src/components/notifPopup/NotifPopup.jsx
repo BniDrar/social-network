@@ -30,8 +30,8 @@ export const NotifPopup = ({ onClose, notifs = [] }) => {
     >
       <div className={styles["chat-body"]} ref={chatBodyRef}>
         {notifications.length > 0 ? (
-          notifications.map((msg) => (
-            <NotificationItem key={msg.id} msg={msg} onRemove={removeNotification} />
+          notifications.map((msg, index) => (
+            <NotificationItem key={msg.id? msg.id : `item-${index}`} msg={msg} onRemove={removeNotification} />
           ))
         ) : (
           <div className={`${styles.message} ${styles.incoming}`}>
