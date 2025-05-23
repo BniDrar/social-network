@@ -13,3 +13,7 @@ func ValidGroupCredentials(g entity.Group) error {
 	}
 	return nil
 }
+
+func ValidateEventCredentials(event entity.Event) bool {
+	return event.GroupID > 0 && IsValidName(event.Location) && IsValidText(event.Description)
+}

@@ -4,10 +4,14 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"regexp"
 	"strconv"
 
 	"socialNetwork/entity"
 )
+
+	var re = regexp.MustCompile(`\s+`)
+
 
 func ParseAndValidatePostForm(r *http.Request) (entity.Post, []byte, error) {
 	err := r.ParseMultipartForm(10 << 20)
@@ -18,8 +22,8 @@ func ParseAndValidatePostForm(r *http.Request) (entity.Post, []byte, error) {
 
 	var post entity.Post
 	post.Content = r.FormValue("content")
-	if post.Content == "" {
-		return post, nil, fmt.Errorf("content is required")
+	if IsValidText(post.Content) {
+		return post, nil, fmt.Errorf("invalid Content")
 	}
 
 	status, err := strconv.Atoi(r.FormValue("status"))
@@ -30,7 +34,7 @@ func ParseAndValidatePostForm(r *http.Request) (entity.Post, []byte, error) {
 
 	if status == entity.PostStatusCustom {
 		post.AllowedViewers, err = parseAllowedViewers(r.Form["allowed_viewers"])
-		if err != nil || len(post.AllowedViewers) < 0 {
+		if err != nil || len(post.AllowedViewers) == 0 {
 			if err == nil {
 				err = errors.New("you should enter the allowed viewers")
 			}
@@ -40,7 +44,7 @@ func ParseAndValidatePostForm(r *http.Request) (entity.Post, []byte, error) {
 
 	if status == entity.PostStatusGroup {
 		GroupID, err := strconv.ParseUint(r.FormValue("group_id"), 10, 32)
-		if err != nil || GroupID < 0 {
+		if err != nil || GroupID == 0 {
 			return post, nil, fmt.Errorf("invalid group id")
 		}
 		post.GroupID = uint(GroupID)
@@ -73,4 +77,14 @@ func parseAllowedViewers(values []string) ([]int, error) {
 		return nil, fmt.Errorf("allowed_viewers required when status is custom")
 	}
 	return viewers, nil
+}
+
+func IsValidText(str string) bool {
+	noSpaceStr := re.ReplaceAllString(str, "")
+	return len(noSpaceStr) > 1 && len(str) < 300
+}
+
+func IsValidName(name string) bool {
+	noSpaceName:= re.ReplaceAllString(name, "")
+	return len(noSpaceName) > 3 && len(name) < 15
 }

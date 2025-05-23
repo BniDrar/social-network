@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	"socialNetwork/entity"
+	"socialNetwork/pkg/utils"
 
 	"github.com/gorilla/websocket"
 )
@@ -29,7 +30,9 @@ func (c *chat) WsListing(conn *websocket.Conn, ctx context.Context) error {
 			c.Hub.Unregister(uint(id))
 			return err
 		}
-
+		if !utils.IsValidText(msg.Content) {
+			continue
+		}
 		// Set sender ID
 		msg.SenderID = id
 		c.loger.Info.Printf("Received message: %v\n", id)

@@ -26,7 +26,7 @@ func ValidateLoginCredentials(user entity.Credentials) error {
 
 // this function the register credentials before saving to the database
 func ValidateRegisterCredentials(user entity.User) error {
-	if user.First == "" || user.Last == "" {
+	if !IsValidName(user.First) || !IsValidName(user.Last) {
 		return fmt.Errorf("invalid first or last name")
 	}
 	// if !isValidNickName(user.Nickname) {

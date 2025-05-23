@@ -29,7 +29,7 @@ func ParseAndValidateCommentForm(r *http.Request) (entity.Comment, []byte, error
 
 	// Validate content (required)
 	comment.Content = r.FormValue("content")
-	if comment.Content == "" {
+	if !IsValidText(comment.Content) {
 		return comment, nil, errors.New("content is required")
 	}
 

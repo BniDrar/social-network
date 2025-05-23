@@ -104,6 +104,8 @@ func (u *user) Register(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	
+
 	status, err := u.RegisterService(user)
 	if err != nil {
 		u.loger.Error.Println(err)

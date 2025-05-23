@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	"socialNetwork/entity"
+	"socialNetwork/pkg/utils"
 )
 
 func (g *group) GetGroupsByUserService(ctx context.Context, limit, offset int) (entity.Groups, error) {
@@ -111,7 +112,7 @@ func (g *group) inviteToJoinGroupService(ctx context.Context, invitation entity.
 	}
 	// Create notification message
 	notification := entity.Notification{
-		Id: notificationID,
+		Id:         notificationID,
 		Type:       entity.GroupInvitationNotification,
 		GroupId:    invitation.GroupId,
 		SenderId:   invitation.InviterID,
@@ -234,6 +235,9 @@ func (g *group) CreateEventService(ctx context.Context, event entity.Event) (int
 			err = errors.New("user is not a member of the group")
 		}
 		return 0, http.StatusBadRequest, err
+	}
+	if !utils.ValidateEventCredentials(event) {
+		return 0, http.StatusBadRequest, errors.New("invalid credentials")
 	}
 	eventId, status, err := g.CreateEventRepository(ctx, event)
 	if err != nil {
