@@ -22,7 +22,7 @@ func ParseAndValidatePostForm(r *http.Request) (entity.Post, []byte, error) {
 
 	var post entity.Post
 	post.Content = r.FormValue("content")
-	if IsValidText(post.Content) {
+	if !IsValidText(post.Content) {
 		return post, nil, fmt.Errorf("invalid Content")
 	}
 
