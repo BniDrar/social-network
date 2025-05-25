@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"os"
 	"strconv"
@@ -103,8 +104,6 @@ func (u *user) Register(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-
-	
 
 	status, err := u.RegisterService(user)
 	if err != nil {
@@ -326,13 +325,15 @@ func (u *user) FollowersAndFollowed(w http.ResponseWriter, r *http.Request) {
 	if target == "" {
 		id = r.Context().Value(entity.ContextID).(int)
 	} else {
-		id, err := strconv.Atoi(target)
+		var err error
+		id, err = strconv.Atoi(target)
 		if err != nil || id <= 0 {
 			w.WriteHeader(http.StatusBadRequest)
 			json.NewEncoder(w).Encode(entity.ErrorResponse{Error: "Invalid user ID"})
 			return
 		}
 	}
+	fmt.Println("id", id)
 
 	status, follows, err := u.FollowersAndFollowedService(r.Context(), id)
 	if err != nil {
