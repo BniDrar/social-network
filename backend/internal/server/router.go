@@ -21,9 +21,9 @@ func (app *App) InitRoutes(conf *config.Conf) http.Handler {
 	routes := app.createRoutes()
 	for _, route := range routes {
 		if requireLogin(route.Role) {
-			mux.Handle(route.Path, app.SessionManager.LoadAndSave(app.authenticate(app.requireAuthentication(http.HandlerFunc(route.handler)))))
+			mux.Handle(route.Path, app.Limiter(app.SessionManager.LoadAndSave(app.authenticate(app.requireAuthentication(http.HandlerFunc(route.handler))))))
 		} else {
-			mux.Handle(route.Path, app.SessionManager.LoadAndSave(app.authenticate(http.HandlerFunc(route.handler))))
+			mux.Handle(route.Path, app.Limiter(app.SessionManager.LoadAndSave(app.authenticate(http.HandlerFunc(route.handler)))))
 		}
 	}
 	return app.recoverPanic(app.logRequest(secureHeaders(mux)))
