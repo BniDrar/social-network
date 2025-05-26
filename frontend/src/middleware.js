@@ -21,7 +21,7 @@ export async function middleware(request) {
   if (!isLoggedIn && !isAuthPage) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
-
+       
   if (isLoggedIn && isAuthPage) {
     return NextResponse.redirect(new URL("/", request.url));
   }
@@ -30,11 +30,5 @@ export async function middleware(request) {
 }
 
 export const config = {
-  matcher: [
-    // Apply middleware to all paths except:
-    // - _next (static files)
-    // - favicon
-    // - login and register pages
-    "/((?!_next/static|_next/image|favicon.ico|login|register).*)",
-  ],
+  matcher: ["/", "/group/:path*", "/profile/:path*", "/post/:path*", "/chat", "/event/:path*", "/login", "/register"],
 };
