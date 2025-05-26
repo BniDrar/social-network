@@ -2,32 +2,35 @@
 
 import styles from "./contacs.module.css";
 import Image from "next/image";
-import { GetContacts } from "@/services/contacts";
+import { GetContacts,GetFriends } from "@/services/contacts";
 import { useState, useEffect, useRef } from "react";
 import { useWebSocket } from "@/context/wsContext";
-
-function Contacts({ setId, setIsGroup }) {
+function Contacts({ setId, setIsGroup ,isFriends}) {
   const [contacts, setContacts] = useState([]);
 
   useEffect(() => {
     const fetchContacts = async () => {
+    // get friends
+    if (isFriends) {
+      const data = await GetFriends();
+      setContacts(data.Following,data.Followers);
+    } else {
       const data = await GetContacts();
       setContacts(data);
+    }
     };
-
     fetchContacts();
   }, []);
 
   return (
     <div className={styles.contacts}>
-      <h3>Following</h3>
       <div className={styles.contactsList}>
         {contacts?.map((contact, i) => (
           <Contact
             key={i}
             id={contact.id}
-            first={contact.first_name}
-            last={contact.last_name}
+            first={contact.first_name || contact.first || ""}
+            last={contact.last_name || contact.last || ""}
             image={contact.avatar}
             status={contact.online}
             setId={setId}

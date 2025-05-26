@@ -11,6 +11,7 @@ import Profile from "@/components/profile/profile";
 import CreateGroup from "@/components/createGroup/createGroup";
 import Groups from "@/components/groups/groups";
 import SowOnmoble from "@/components/showOnMobile/showOnmoble";
+import Link from "next/link";
 
 export default function ChatPage() {
   const [id, setId] = useState(null);
@@ -38,10 +39,34 @@ export default function ChatPage() {
   );
 }
 
+
 function Side({ setId, setIsGroup }) {
+  const [isFriends, setIsFriends] = useState(false);
+
   return (
     <div className={styles.side}>
-      <Contacts setId={setId} setIsGroup={setIsGroup} />
+      <div className={styles.TabSwitch}>
+          <button
+            className={`${styles.link} ${!isFriends ? styles.active : ""}`}
+            onClick={() => setIsFriends(false)}
+            type="button"
+          >
+            Contacts
+          </button>
+          <button
+            className={`${styles.link} ${isFriends ? styles.active : ""}`}
+            onClick={() => setIsFriends(true)}
+            type="button"
+          >
+            Friends
+          </button>
+        </div>
+      <div className={styles.contacts} id="contacts" style={{ display: !isFriends ? "block" : "none" }}>
+        <Contacts setId={setId} setIsGroup={setIsGroup} isFriends={false} />
+      </div>
+      <div className={styles.contacts} id="friends" style={{ display: isFriends ? "block" : "none" }}>
+        <Contacts setId={setId} setIsGroup={setIsGroup} isFriends={true} />
+      </div>
     </div>
   );
 }
