@@ -17,6 +17,7 @@ type User struct {
 	FollowingCount uint       `json:"following_count"`
 	IsAdmin        bool       `json:"is_admin"` // whether the user is an admin of a group
 	Online         bool       `json:"online"`
+	SessionToken   string
 }
 
 type Contact struct {
@@ -25,7 +26,7 @@ type Contact struct {
 	LastName  string `json:"last_name"`
 	GroupName string `json:"group_name"`
 	Avatar    string `json:"avatar"`
-	Online    bool    `json:"online"`
+	Online    bool   `json:"online"`
 }
 
 type Follows struct {
@@ -42,3 +43,7 @@ const (
 	PublicUser  = 0
 	PrivateUser = 1
 )
+
+func (u *User) SessionIsValid(currentToken string) bool {
+	return u.SessionToken == currentToken
+}

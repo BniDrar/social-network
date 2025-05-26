@@ -144,7 +144,7 @@ func (u *user) CreateUser(user entity.User) error {
 	return nil
 }
 
-func (u *user) changeStatusRepo(ctx context.Context, id int) (error) {
+func (u *user) changeStatusRepo(ctx context.Context, id int) error {
 	// Toggle the status
 	query := `UPDATE users SET status = 1 - status WHERE id = $1`
 	_, err := u.db.ExecContext(ctx, query, id)
@@ -152,8 +152,8 @@ func (u *user) changeStatusRepo(ctx context.Context, id int) (error) {
 }
 
 func (u *user) removeFollowingNotifications(ctx context.Context) error {
-	query:= `DELETE FROM notification WHERE receiver_id = $1 AND (type = $2 OR type = $3)`
-	_, err:= u.db.ExecContext(ctx, query, ctx.Value(entity.ContextID).(int), entity.FollowingNotification, entity.FollowingRequestNotification)
+	query := `DELETE FROM notification WHERE receiver_id = $1 AND (type = $2 OR type = $3)`
+	_, err := u.db.ExecContext(ctx, query, ctx.Value(entity.ContextID).(int), entity.FollowingNotification, entity.FollowingRequestNotification)
 	return err
 }
 
@@ -170,8 +170,6 @@ func (g *user) RemoveNotification(ctx context.Context, notif entity.Notification
 	}
 	return nil
 }
-
-
 
 // this function is used to update user
 func (r *user) UpdateUser(user entity.User) error {
@@ -250,34 +248,42 @@ func (u *user) IsUserExist(id uint) (bool, error) {
 // We'll use the Authenticate method to verify whether a user exists with
 // the provided email address and password. This will return the relevant
 // user ID if they do.
-func (u *user) authenticateRepo(email, password string) (int, error) {
+func (u *user) authenticateRepo(email, password string) (int, string, error) {
 	// u.loger.Info.Println("email:", email)
 	// u.loger.Info.Println("password:", password)
 	// Retrieve the id and hashed password associated with the given email. If
 	// no matching email exists we return the ErrInvalidCredentials error.
 	var id int
 	var hashedPassword []byte
-	stmt := "SELECT id, password FROM users WHERE email = ? OR nickname  = ?"
-	err := u.db.QueryRow(stmt, email, email).Scan(&id, &hashedPassword)
+	var tmpToken sql.NullString
+
+	stmt := "SELECT id, password, session_token FROM users WHERE email = ? OR nickname = ?"
+	err := u.db.QueryRow(stmt, email, email).Scan(&id, &hashedPassword, &tmpToken)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return 0, config.ErrInvalidCredentials
+			return 0, "", config.ErrInvalidCredentials
 		} else {
-			return 0, err
+			return 0, "", err
 		}
 	}
+
+	var token string
+	if tmpToken.Valid {
+		token = tmpToken.String
+	}
+
 	// Check whether the hashed password and plain-text password provided match.
 	// If they don't, we return the ErrInvalidCredentials error.
 	err = bcrypt.CompareHashAndPassword(hashedPassword, []byte(password))
 	if err != nil {
 		if errors.Is(err, bcrypt.ErrMismatchedHashAndPassword) {
-			return 0, config.ErrInvalidCredentials
+			return 0, "", config.ErrInvalidCredentials
 		} else {
-			return 0, err
+			return 0, "", err
 		}
 	}
 	// Otherwise, the password is correct. Return the user ID.
-	return id, nil
+	return id, token, nil
 }
 
 // this function checks by email if the user exists
@@ -493,9 +499,9 @@ func (u *user) userNotificationRepo(ctx context.Context) ([]entity.Notification,
 	var notifications []entity.Notification
 	for rows.Next() {
 		var (
-			n entity.Notification
-			groupId sql.NullInt64
-			eventId sql.NullInt64
+			n          entity.Notification
+			groupId    sql.NullInt64
+			eventId    sql.NullInt64
 			receiverId sql.NullInt64
 		)
 		err = rows.Scan(
@@ -519,7 +525,7 @@ func (u *user) userNotificationRepo(ctx context.Context) ([]entity.Notification,
 		if receiverId.Valid {
 			n.ReceiverID = int(receiverId.Int64)
 		}
-		
+
 		notifications = append(notifications, n)
 	}
 
@@ -581,4 +587,14 @@ func (p *user) GetUserPostsRep(ctx context.Context, cursor entity.Cursor) ([]ent
 	}
 
 	return posts, nil
+}
+
+func (u *user) GetUserByID(id int) (*entity.User, error) {
+	var user entity.User
+	err := u.db.QueryRow("SELECT id, session_token FROM users WHERE id = ?", id).
+		Scan(&user.ID, &user.SessionToken)
+	if err != nil {
+		return nil, err
+	}
+	return &user, nil
 }

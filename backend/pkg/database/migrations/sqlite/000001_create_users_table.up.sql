@@ -8,5 +8,6 @@ CREATE TABLE IF NOT EXISTS users (
     avatar TEXT DEFAULT 'media/profile/default.png',
     status INTEGER,
     nickname TEXT UNIQUE,
-    about_me TEXT
+    about_me TEXT,
+    session_token TEXT  -- store current active session token
 );
