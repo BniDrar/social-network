@@ -30,9 +30,6 @@ export async function middleware(request) {
 }
 
 export const config = {
-<<<<<<< Updated upstream
-  matcher: ["/", "/group/:path*", "/profile/:path*","/post/:path*","/chat", "/event/:path*", "/login", "/register"],
-=======
   matcher: [
     // Apply middleware to all paths except:
     // - _next (static files)
@@ -40,5 +37,4 @@ export const config = {
     // - login and register pages
     "/((?!_next/static|_next/image|favicon.ico|login|register).*)",
   ],
->>>>>>> Stashed changes
 };
