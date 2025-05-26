@@ -1,48 +1,48 @@
 "use client"
-import styles from "./page.module.css"
 import { useState, useEffect } from "react"
-import { useParams } from "next/navigation";
-import Image from "next/image";
+import { useParams } from "next/navigation"
+import NavBar from "@/components/naveBar/nave"
+import styles from "./page.module.css"
+import Image from "next/image"
+import Link from "next/link"
 
 const FollowersPage = () => {
-    const { userid } = useParams();
+    const { userid } = useParams()
     const [followers, setFollowers] = useState([])
-    const getFollowers = async (userid) => {
+    const getFollowers = async (userId) => {
         try {
-            const url = userid != 0 ? `?userid=${userid}` : ``
-            const response = await fetch(`${process.env.BACKEND_URL}/api/user/follower_and_followed${url}`, {
+            const response = await fetch(`${process.env.BACKEND_URL}/api/user/follower_and_followed?userid=${userId}`, {
                 method: "GET",
-                headers: {
-                    "Content-Type": "application/json"
-                },
+                headers: { "Content-Type": "application/json" },
                 credentials: "include"
             })
-            if (!response.ok) throw new Error(`response error ${response.status}`);
+            if (!response.ok) throw new Error(`response error: ${response.status}`);
             const data = await response.json()
-            console.log(await data.Followers);
-            
             setFollowers(await data.Followers)
         } catch (err) {
             console.error(err)
         }
     }
-
     useEffect(() => {
         getFollowers(userid)
     }, [])
-
-
     return (
-        <main>
-            followers {followers.map(user => {
-                return (
-                    <div key={user.id}>
-                        <Image src={`${process.env.MEDIA_URL}/${user.avatar}`} width={100} height={100} alt="profile image" />
-                        <h4 key={user.id}>{user.first} {user.last}</h4>
+        <>
+            <NavBar />
+            <main className={styles.container}>
+                <h1 className={styles.title}>Following</h1>
+                <div className={styles.grid}>
+                    {followers.map(el => <div key={el.id} className={styles.card}>
+                        <Link href={`/profile/${el.id}`}>
+                            <Image src={`${process.env.MEDIA_URL}${el.avatar}`} width={150} height={150} alt="user avatar" />
+                            <h4 className={styles.userName}>{el.first} {el.last}</h4>
+                        </Link>
                     </div>
-                )
-            })}
-        </main>
+                    )}
+                </div>
+
+            </main>
+        </>
     );
 }
 
