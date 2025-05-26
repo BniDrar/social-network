@@ -7,25 +7,62 @@ import { useState, useEffect, useRef } from "react";
 import { useWebSocket } from "@/context/wsContext";
 function Contacts({ setId, setIsGroup ,isFriends}) {
   const [contacts, setContacts] = useState([]);
+  const [filteredContacts, setFilteredContacts] = useState([]);
 
   useEffect(() => {
     const fetchContacts = async () => {
-    // get friends
-    if (isFriends) {
-      const data = await GetFriends();
-      setContacts(data.Following,data.Followers);
-    } else {
-      const data = await GetContacts();
-      setContacts(data);
-    }
+      if (isFriends) {
+        const data = await GetFriends();
+        const allFriends = [...(data.Following || []), ...(data.Followers || [])];
+        const uniqueFriends = Array.from(new Map(allFriends.map(item => [item.id, item])).values());
+        setContacts(uniqueFriends);
+        setFilteredContacts(uniqueFriends);
+      } else {
+        const data = await GetContacts();
+        setContacts(data);
+        setFilteredContacts(data);
+      }
     };
     fetchContacts();
   }, []);
 
+  const handleSearch = (e) => {
+    e.preventDefault();
+    const searchInput = e.target.elements.searchInput.value;
+    if (searchInput.trim() === "") {
+      setFilteredContacts(contacts);
+      return;
+    }
+    const filtered = contacts.filter(contact => {
+      const fullName = `${contact.first} ${contact.last}`.toLowerCase();
+      const nickname = (contact.nickname || "").toLowerCase();
+      const search = searchInput.toLowerCase();
+      return fullName.includes(search) || nickname.includes(search);
+    });
+    setFilteredContacts(filtered);
+    e.target.elements.searchInput.value = "";
+  };
+
   return (
     <div className={styles.contacts}>
+      <h2 className={styles.title}>{isFriends ? "Friends" : "Contacts"}</h2>
+      {isFriends &&
+        <form className={styles.searchForm} onSubmit={handleSearch}>
+          <input
+            type="text"
+            id="searchInput"
+            placeholder="Search friends..."
+            className={styles.searchInput}
+            onChange={e => {
+              if (e.target.value.trim() === "") {
+                setFilteredContacts(contacts);
+              }
+            }}
+          />
+        </form>
+      }
       <div className={styles.contactsList}>
-        {contacts?.map((contact, i) => (
+        {filteredContacts?.map((contact, i) => (
           <Contact
             key={i}
             id={contact.id}

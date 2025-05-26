@@ -33,7 +33,6 @@ export async function GetFriends() {
       }
     );
     const data = await response.json();
-    console.log("Friends data:", data);
     return data;
   } catch (error) {
     console.error("Error fetching Friends:", error);

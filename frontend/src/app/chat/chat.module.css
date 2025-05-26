@@ -75,7 +75,6 @@
   width: calc(100% - 40%);
   min-height: calc(100vh - 70px);
   display: flex;
-  /* flex-direction: column; */
   align-items: start;
   justify-content: start;
   gap: 1rem;
@@ -116,6 +115,7 @@
   background-color: var(--color-white);
   border-radius: 10px;
   box-shadow: var(--shadow-elevation-2dp);
+  gap: 10px;
 }
 .TabSwitch .link {
   width: 100%;
@@ -123,7 +123,7 @@
   padding: 0.5rem 1rem;
   text-align: center;
   text-decoration: none;
-  color: var(--color-white);
+  color: var(--color-dark);
   font-weight: 500;
   border: 1px solid transparent;
   border-radius: 8px;
@@ -132,10 +132,9 @@
 }
 .contacts {
   width: 100%;
-  height: 70%;
-  background-color: var(--color-gray-light);
-  overflow-y: scroll;
-  padding: 10px;
+  height: 100%;
+  min-height: 100%;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -167,7 +166,7 @@
 }
 .active {
   background-color: var(--color-primary);
-  color: var(--color-text);
+  color: var(--color-white);
 }
 
 
