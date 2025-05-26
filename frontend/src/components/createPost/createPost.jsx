@@ -13,7 +13,7 @@ import {
 import { createPost } from "@/services/posts";
 import { useRouter } from "next/navigation";
 import { useUser } from "@/context/userContext";
-
+import { GetContacts } from "@/services/contacts";
 
 export default function CreatePost({ groupId }) {
   const popupRef = useRef(null);
@@ -27,13 +27,17 @@ export default function CreatePost({ groupId }) {
   const [selectedFriends, setSelectedFriends] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const router = useRouter();
-  const { user } = useUser();
+  const { user } = useUser()
 
   const togglePopup = (show) => {
     if (!popupRef.current) return;
     popupRef.current.classList.toggle(styles.hidden, !show);
     popupRef.current.classList.toggle(styles.active, show);
   };
+
+  useEffect(() => {
+    GetContacts().then(setFriends);
+  }, []);
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -89,6 +93,7 @@ export default function CreatePost({ groupId }) {
       setTimeout(() => setErrorMessage(""), 5000);
     }
   };
+  console.log(friends)
 
   return (
     <>
@@ -186,10 +191,8 @@ export default function CreatePost({ groupId }) {
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
                 <div className={styles.friendList}>
-                  {friends
-                    .filter(friend =>
-                      friend.nickname.toLowerCase().includes(searchQuery.toLowerCase())
-                    )
+                  {
+                    friends?.filter(friend =>`${friend.first_name} ${friend.last_name}`.toLowerCase().includes(searchQuery.toLowerCase()))
                     .map(friend => (
                       <div
                         key={friend.id}
@@ -203,7 +206,7 @@ export default function CreatePost({ groupId }) {
                           height={30}
                           className={styles.friendAvatar}
                         />
-                        <span>{friend.nickname}</span>
+                        <span>{`${friend.first_name} ${friend.last_name}`}</span>
                       </div>
                     ))}
                 </div>
