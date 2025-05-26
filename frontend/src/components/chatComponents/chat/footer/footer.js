@@ -3,18 +3,33 @@ import Button from "./button/button";
 
 import { useWebSocket } from "@/context/wsContext";
 import { useUser } from "@/context/userContext";
-import { useRef, useState } from "react"
+import { useRef, useState,useEffect } from "react";
 
 export default function Footer({ id, setMessage, setMessages, message, messages, scroll, setScroll, isGroup }) {
   const { user } = useUser();
   const ws = useWebSocket();
-
+  const bc = new BroadcastChannel("ws");
+  const myMessage = 4;
 
   const imojiRef = useRef();
   const [showEmojiPicker, setShowEmojiPicker] = useState(false); // Emoji picker state
   const showEmojiPickerRef = useRef();
   showEmojiPickerRef.current = showEmojiPicker;
 
+
+  useEffect(() => {
+    const handleMessage = (event) => {
+      const data = JSON.parse(event.data);
+      setMessages((prevMessages) => [...prevMessages, data]);
+    };
+
+    bc.addEventListener("message", handleMessage);
+
+    return () => {
+      bc.removeEventListener("message", handleMessage);
+      bc.close();
+    };
+  }, [setMessages]);
 
   const handleSend = () => {
     if (message.trim() === "") return; // Do nothing if message is empty
@@ -36,6 +51,14 @@ export default function Footer({ id, setMessage, setMessages, message, messages,
     }
     
     ws.send(JSON.stringify(pack));
+    bc.postMessage(JSON.stringify({
+      created_at: new Date().toISOString(),
+      from: user.myID,
+      text: message,
+      to: id,
+      is_group: isGroup,
+      Type: myMessage ,
+    }));
 
     setMessages([
       ...messages,

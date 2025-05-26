@@ -12,13 +12,8 @@ import ChatBody from "./chatBody/chatBody";
 import { getUserInfoClient } from "@/services/profileClient";
 import { getGroupInfoClient } from "@/services/profileClient";
 
-import { useWebSocket } from "@/context/wsContext";
-import { useUser } from "@/context/userContext";
-
 function Chat({ id, isGroup }) {
-  console.log('is grouoooooooooop', isGroup)
-  const { user } = useUser();
-  const ws = useWebSocket();
+  const bc = new BroadcastChannel("ws"); // Create a broadcast channel for WebSocket messages
 
   const chatBodyRef = useRef(); // Add ref for chat body
 
@@ -37,15 +32,11 @@ function Chat({ id, isGroup }) {
       if (!isGroup) {
         info = await getUserInfoClient(id);
         setUserInfo(info)
-        console.log('info', info)
       } else if (isGroup) {
         info = await getGroupInfoClient(id)
-        console.log('info', info)
         setUserInfo(info)
       }
-      console.log('user info 001-->', info)
     };
-    console.log('user function to fetch info', userInfo)
     fetchUser();
     // clean chat body on change of id
     return () => {
@@ -135,32 +126,38 @@ function Chat({ id, isGroup }) {
 
   /*________________________ web socket _______________________*/
   useEffect(() => {
-    if (!ws) return;
-
+    if (!bc) return;
     const handleMessage = (event) => {
-      try {
-        const message = JSON.parse(event.data);
-        const msg64 = message.Data;
+      // try {
+        console.log("Received message:", event.data.Type);
+        let decoded
+        const temporaryMessage = JSON.parse(event.data)
+        if (temporaryMessage.Type == 4) {
+          decoded = temporaryMessage
+        } else {
+          const message = JSON.parse(event.data);
+          const msg64 = message.Data;
 
         // Safely decode base64 to UTF-8
-        const decodedStr = decodeURIComponent(escape(atob(msg64)));
+          const decodedStr = decodeURIComponent(escape(atob(msg64)));
 
         // Then parse it as JSON
-        const decoded = JSON.parse(decodedStr);
+           decoded = JSON.parse(decodedStr);
+        }
 
         setMessages((prev) => [...prev, decoded]);
         setScroll((prev) => !prev);
-      } catch (err) {
-        console.error("Failed to parse message:", err);
-      }
+      // } catch (err) {
+      //   console.error("Failed to parse message:", err);
+      // }
     };
 
-    ws.addEventListener("message", handleMessage);
+    bc.addEventListener("message", handleMessage);
 
     return () => {
-      ws.removeEventListener("message", handleMessage);
+      bc.removeEventListener("message", handleMessage);
     };
-  }, [ws]);
+  }, [bc]);
 
 
   /*____________________________return component___________________________*/
@@ -215,7 +212,7 @@ function Chat({ id, isGroup }) {
   );
 }
 
-function decodeBase64Utf8(base64) {
-  return decodeURIComponent(escape(atob(base64)));
-}
+// function decodeBase64Utf8(base64) {
+//   return decodeURIComponent(escape(atob(base64)));
+// }
 export default Chat;

@@ -19,8 +19,6 @@ function Contacts() {
     fetchContacts();
   }, []);
   
-  console.log('fetched contacts 1-->', contacts)
-
   return (
     <div className={styles.contacts}>
       <h3>Contacts</h3>

@@ -2,14 +2,12 @@ import React, { useEffect } from "react";
 import styles from "./chatBody.module.css"; // Ensure you create the CSS file and import it
 
 import { useUser } from "@/context/userContext";
-import { useWebSocket } from "@/context/wsContext";
 
-const ChatBody = ({ id, messages, scroll, chatBodyRef, isGroup }) => {
+const ChatBody = ({messages, scroll, chatBodyRef}) => {
   const { user } = useUser();
-  const ws = useWebSocket();
 
   function scrollDown() {
-    // scrol down
+    // scroll down
     setTimeout(() => {
       chatBodyRef.current.scrollTo({
         top: chatBodyRef.current.scrollHeight,

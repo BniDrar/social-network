@@ -6,13 +6,12 @@ import { BiHomeSmile, BiUser, BiConversation } from "react-icons/bi";
 import styles from "./menu.module.css"; // Adjust according to your actual styles file
 import { useState, useEffect } from "react";
 import { useWebSocket } from "@/context/wsContext";
+import notify from "@/utils/notify";
 
 const Menu = () => {
   const ws = useWebSocket();
   const [count, setCount] = useState(null);
   const pathName = usePathname()
-  const notificationSound =
-    typeof window !== "undefined" ? new Audio("/sounds/notif.wav") : null;
   useEffect(() => {
     if (!ws) return;
 
@@ -59,13 +58,7 @@ const Menu = () => {
             console.warn("Unknown message type:", message.type);
         }
 
-        if (notificationSound) {
-          notificationSound.pause();
-          notificationSound.currentTime = 0;
-          notificationSound
-            .play()
-            .catch((err) => console.error("Failed to play sound:", err));
-        }
+        notify("/sounds/notif.wav")
       } catch (err) {
         console.error("Failed to parse message:", err);
       }
