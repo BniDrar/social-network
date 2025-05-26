@@ -1,6 +1,7 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import { WebSocketProvider } from "@/context/wsContext";
 import { UserProvider } from "@/context/userContext";
+import PopstateListener from "@/components/popstateListener/popstateListener"
 
 import "./globals.css";
 
@@ -40,14 +41,17 @@ export const viewport = {
 
 export default function RootLayout({ children }) {
   return (
-    <UserProvider>
-      <WebSocketProvider>
-        <html lang="en">
-          <body className={`${geistSans.variable} ${geistMono.variable}`}>
-            {children}
-          </body>
-        </html>
-      </WebSocketProvider>
-    </UserProvider>
+    <>
+      <PopstateListener />
+      <UserProvider>
+        <WebSocketProvider>
+          <html lang="en">
+            <body className={`${geistSans.variable} ${geistMono.variable}`}>
+              {children}
+            </body>
+          </html>
+        </WebSocketProvider>
+      </UserProvider>
+    </>
   );
 }
