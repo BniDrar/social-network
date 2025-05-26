@@ -16,7 +16,7 @@ import Link from "next/link";
 export default function NavBar() {
   const router = useRouter();
   const [theme, setTheme] = useState("light");
-  const { user, setUser } = useUser();
+  const { user, setUser, setIsLoggedIn } = useUser();
 
   useEffect(() => {
     if (user && user.avatar && !user.avatar.startsWith("http")) {
@@ -50,6 +50,7 @@ export default function NavBar() {
       localStorage.removeItem("theme");
       router.push("/login");
       setTheme("light");
+      setIsLoggedIn(false);
       document.documentElement.classList.replace("dark", "light");
       return
     } catch (error) {

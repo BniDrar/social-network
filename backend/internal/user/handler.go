@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"net/http"
 	"os"
 	"strconv"
@@ -333,8 +332,6 @@ func (u *user) FollowersAndFollowed(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	fmt.Println("id", id)
-
 	status, follows, err := u.FollowersAndFollowedService(r.Context(), id)
 	if err != nil {
 		u.loger.Error.Println(err)

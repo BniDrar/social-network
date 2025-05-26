@@ -3,19 +3,18 @@
 import styles from "./notif.module.css";
 import { BiBell } from "react-icons/bi";
 import { useEffect, useState } from "react";
-import { useWebSocket } from "@/context/wsContext";
 import { NotifPopup } from "@/components/notifPopup/NotifPopup"
 import { useRef } from "react"
 import { GetNotifs } from "@/services/notifs";
+import notify from "@/utils/notify";
 
 export default function Notif() {
-  const ws = useWebSocket();
-
   const [notifs, setNotifs] = useState([])
   const [count, setCount] = useState(null);
 
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const contactRef = useRef(null);
+  const bc = new BroadcastChannel("ws");
 
   useEffect(() => {
     async function fetchNotifs() {
@@ -58,59 +57,55 @@ export default function Notif() {
     setIsNotifOpen(false);
   };
 
-  const notificationSound = typeof window !== "undefined"
-    ? new Audio("/sounds/notif.wav")
-    : null;
-
   useEffect(() => {
-    if (!ws) return;
+    const bc = new BroadcastChannel("ws");
 
     const handleMessage = (event) => {
-      // PrivateMessage MessageType = iota
-      // GroupMessage
-      // BroadcastMessage
-      // NotificationMessage 
       try {
-        const notif = JSON.parse(event.data);
-        const jsonString = atob(notif.Data);
-        const message = JSON.parse(jsonString);
+        // Check if the data is a JSON string
+        if (typeof event.data === 'string' && event.data.startsWith('{') && event.data.endsWith('}')) {
+          const notif = JSON.parse(event.data);
+          let decoded
+          try {
+            const jsonString = atob(notif.Data);
+            const message = JSON.parse(jsonString);
+            const msg64 = notif.Data;
 
-        const msg64 = notif.Data;
+            // Safely decode base64 to UTF-8
+            const decodedStr = decodeURIComponent(escape(atob(msg64)));
+  
+            decoded = JSON.parse(decodedStr);
+          } catch (err) {
+            decoded = notif; // Fallback to raw data if parsing fails
+            console.log("the notification is:", notif);
+          }
 
-        // Safely decode base64 to UTF-8
-        const decodedStr = decodeURIComponent(escape(atob(msg64)));
-
-        const decoded = JSON.parse(decodedStr);
-
-        switch (notif.Type) {
-          case 0: // PrivateMessage
-            // console.log("Private message:", message.text);
-            // add = { text: `you have message from ${notif.UserID}` }
-            // setNotifs(prevNotifs => [add, ...prevNotifs]);
-            break;
-          case 1: // GroupMessage
-            // console.log("Group message:", message.text);
-            // add = { text: `you have message from Group ${notif.GroupID}` }
-            // setNotifs(prevNotifs => [add, ...prevNotifs]);
-            break;
-          case 2: // BroadcastMessage --> leave it 
-            setNotifs(prevNotifs => [decoded, ...prevNotifs]);
-            setCount(count => (count ?? 0) + 1);
-            break;
-          case 3: // NotificationMessage --> 
-            setNotifs(prevNotifs => [decoded, ...prevNotifs]);
-            setCount(count => (count ?? 0) + 1);
-            break;
-          default:
-            console.warn("Unknown message type:", message.type);
-        }
-
-        if (notificationSound) {
-          notificationSound.pause();
-          notificationSound.currentTime = 0;
-          notificationSound.play().catch((err) =>
-            console.error("Failed to play sound:", err)
-          );
+          switch (notif.Type) {
+            case 0: // PrivateMessage
+              // console.log("Private message:", message.text);
+              // add = { text: `you have message from ${notif.UserID}` }
+              // setNotifs(prevNotifs => [add, ...prevNotifs]);
+              break;
+            case 1: // GroupMessage
+              // console.log("Group message:", message.text);
+              // add = { text: `you have message from Group ${notif.GroupID}` }
+              // setNotifs(prevNotifs => [add, ...prevNotifs]);
+              break;
+            case 2: // BroadcastMessage --> leave it
+              setNotifs(prevNotifs => [decoded, ...prevNotifs]);
+              setCount(count => (count ?? 0) + 1);
+              break;
+            case 3: // NotificationMessage -->
+              setNotifs(prevNotifs => [decoded, ...prevNotifs]);
+              setCount(count => (count ?? 0) + 1);
+              break;
+            case 4: // my message from another tab
+              console.log("My message from another tab:", decoded);
+              break
+            default:
+              console.warn("Unknown message type:", message?.type);
+          }
+          if (notif.Type !== 4) notify("/sounds/notif.wav");
         }
 
       } catch (err) {
@@ -118,12 +113,13 @@ export default function Notif() {
       }
     };
 
-    ws.addEventListener("message", handleMessage);
+    bc.onmessage = handleMessage;
 
     return () => {
-      ws.removeEventListener("message", handleMessage);
+      bc.removeEventListener("message", handleMessage);
+      bc.close();
     };
-  }, [ws]);
+  }, [bc]);
 
   return (
     <>

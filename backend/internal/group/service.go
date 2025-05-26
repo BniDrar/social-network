@@ -76,11 +76,6 @@ func (g *group) inviteToJoinGroupService(ctx context.Context, invitation entity.
 		return http.StatusBadRequest, err
 	}
 
-	notificationID, status, err := g.CreateInvitationNotification(ctx, invitation)
-	if err != nil {
-		return status, err
-	}
-
 	// Get group information
 	group, err := g.GetGroupByIdRepository(ctx, invitation.InviterID, invitation.GroupId)
 	if err != nil {
@@ -109,6 +104,10 @@ func (g *group) inviteToJoinGroupService(ctx context.Context, invitation entity.
 			g.loger.Error.Printf("Error getting inviter info: %v", err)
 			return http.StatusInternalServerError, err
 		}
+	}
+	notificationID, status, err := g.CreateInvitationNotification(ctx, invitation)
+	if err != nil {
+		return status, err
 	}
 	// Create notification message
 	notification := entity.Notification{

@@ -16,9 +16,19 @@ export function WebSocketProvider({ children }) {
 
     const socket = new WebSocket("ws://localhost:8080/api/ws");
     setWs(socket);
-
+    const bc = new BroadcastChannel("ws");
+    socket.onmessage = (event) => {
+      bc.postMessage(event.data);
+    };
+    socket.onerror = (error) => {
+      bc.postMessage(error.message);
+    };
+    socket.onclose = (err) => {
+      console.error("WebSocket connection closed:", err);
+    };
     return () => {
       socket.close();
+      bc.close();
     };
   }, [ isLoggedIn]);
 
