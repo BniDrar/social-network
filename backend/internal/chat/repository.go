@@ -91,14 +91,17 @@ func (r *chat) SaveMessage(ctx context.Context, message entity.Message) error {
 func (c *chat) getContacts(ctx context.Context, userId int) ([]entity.Contact, error) {
 	query := `
 	SELECT DISTINCT 
-		u.id,
-		NULL AS group_name,
-		u.first_name,
-		u.last_name,
-		u.avatar
+	u.id,
+	NULL AS group_name,
+	u.first_name,
+	u.last_name,
+	u.avatar
 	FROM users u
-	JOIN messages m ON (u.id = m.sender_id AND m.receiver_id = $1) OR (u.id = m.receiver_id AND m.sender_id = $1)
-	WHERE u.id != $1
+	JOIN messages m 
+	ON (
+		(u.id = m.sender_id AND m.receiver_id = $1) OR (u.id = m.receiver_id AND m.sender_id = $1)
+	)
+
 
 	UNION ALL
 
@@ -136,7 +139,7 @@ func (c *chat) getContacts(ctx context.Context, userId int) ([]entity.Contact, e
 		); err != nil {
 			return nil, fmt.Errorf("scan contact: %w", err)
 		}
-
+		
 		contact.GroupName = groupName.String
 		contact.FirstName = firstName.String
 		contact.LastName = lastName.String
