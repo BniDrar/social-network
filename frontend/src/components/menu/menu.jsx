@@ -7,13 +7,12 @@ import styles from "./menu.module.css"; // Adjust according to your actual style
 import { useState, useEffect } from "react";
 import { useWebSocket } from "@/context/wsContext";
 import notify from "@/utils/notify";
-
 const Menu = () => {
-  const ws = useWebSocket();
+  const bc = new BroadcastChannel("ws");
   const [count, setCount] = useState(null);
   const pathName = usePathname()
   useEffect(() => {
-    if (!ws) return;
+      if (!bc) return;
 
     const handleMessage = (event) => {
       if (pathName === "/chat") {
@@ -64,12 +63,12 @@ const Menu = () => {
       }
     };
 
-    ws.addEventListener("message", handleMessage);
+    bc.addEventListener("message", handleMessage);
 
     return () => {
-      ws.removeEventListener("message", handleMessage);
+      bc.removeEventListener("message", handleMessage);
     };
-  }, [ws]);
+  }, [bc]);
   /*________________________________________________________________________*/
   const pathname = usePathname();
   const isActive = (path) => (pathname === path ? styles.active : "");

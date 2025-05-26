@@ -62,8 +62,7 @@ function Contacts({ setId, setIsGroup ,isFriends}) {
         </form>
       }
       <div className={styles.contactsList}>
-        {filteredContacts.length > 0 &&
-        filteredContacts.map((contact, i) => (
+        {filteredContacts?.map((contact, i) => (
           <Contact
             key={i}
             id={contact.id}
