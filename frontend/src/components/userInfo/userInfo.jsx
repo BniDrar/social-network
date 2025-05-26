@@ -5,6 +5,7 @@ import { useState } from "react";
 import Image from "next/image";
 import man from "@/assets/man.png"
 import UserFollow from "../userFollow/userFollow";
+import Link from "next/link";
 
 
 
@@ -52,8 +53,8 @@ const UserInfo = ({ info }) => {
                 <div className={styles.cardBody}>
                     {/* following, followers */}
                     <div className={styles.friends}>
-                        <div className={styles.friends_link}>{data.following_count ? data.following_count : 0} Following</div>
-                        <div className={styles.friends_link}>{data.followers_count ? data.followers_count : 0} Followers</div>
+                        <Link href={`/profile/${data.id}/following`} className={styles.friends_link}>{data.following_count ? data.following_count : 0} Following</Link>
+                        <Link href={`/profile/${data.id}/followers`} className={styles.friends_link}>{data.followers_count ? data.followers_count : 0} Followers</Link>
                     </div>
                     <br />
                     {/* nickname, date of birth, email, about me */}
