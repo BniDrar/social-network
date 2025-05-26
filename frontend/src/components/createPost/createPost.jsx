@@ -93,19 +93,17 @@ export default function CreatePost({ groupId }) {
       setTimeout(() => setErrorMessage(""), 5000);
     }
   };
-  console.log(friends)
-
   return (
     <>
       <div className={styles.createPostContainer}>
         <div className={styles.createPostHeader}>
-            <Image
-              className={styles.avatar}
-              src={user.avatar || "/default-avatar.jpeg"}
-              alt="Avatar"
-              width={40}
-              height={40}
-            />
+          <Image
+            className={styles.avatar}
+            src={user.avatar || "/default-avatar.jpeg"}
+            alt="Avatar"
+            width={40}
+            height={40}
+          />
           <button
             type="button"
             className={styles.createPostForm}
@@ -192,23 +190,23 @@ export default function CreatePost({ groupId }) {
                 />
                 <div className={styles.friendList}>
                   {
-                    friends?.filter(friend =>`${friend.first_name} ${friend.last_name}`.toLowerCase().includes(searchQuery.toLowerCase()))
-                    .map(friend => (
-                      <div
-                        key={friend.id}
-                        className={`${styles.friendItem} ${selectedFriends.includes(friend.id) ? styles.selected : ""}`}
-                        onClick={() => handleFriendSelect(friend.id)}
-                      >
-                        <Image
-                          src={`${process.env.MEDIA_URL}${friend.avatar}` || "/default-avatar.jpeg"}
-                          alt="Avatar"
-                          width={30}
-                          height={30}
-                          className={styles.friendAvatar}
-                        />
-                        <span>{`${friend.first_name} ${friend.last_name}`}</span>
-                      </div>
-                    ))}
+                    friends?.filter(friend => `${friend.first_name} ${friend.last_name}`.toLowerCase().includes(searchQuery.toLowerCase()))
+                      .map(friend => (
+                        <div
+                          key={friend.id}
+                          className={`${styles.friendItem} ${selectedFriends.includes(friend.id) ? styles.selected : ""}`}
+                          onClick={() => handleFriendSelect(friend.id)}
+                        >
+                          <Image
+                            src={`${process.env.MEDIA_URL}${friend.avatar}` || "/default-avatar.jpeg"}
+                            alt="Avatar"
+                            width={30}
+                            height={30}
+                            className={styles.friendAvatar}
+                          />
+                          <span>{`${friend.first_name} ${friend.last_name}`}</span>
+                        </div>
+                      ))}
                 </div>
               </div>
             )}

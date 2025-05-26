@@ -16,7 +16,10 @@ const FollowersPage = () => {
                 headers: { "Content-Type": "application/json" },
                 credentials: "include"
             })
-            if (!response.ok) throw new Error(`response error: ${response.status}`);
+            if (!response.ok) {
+                console.error("Failed to fetch followers")
+                return;
+            }
             const data = await response.json()
             setFollowers(await data.Followers)
         } catch (err) {
