@@ -43,11 +43,13 @@ export default function Home() {
         setHasMore(false);
       } else {
         setPosts((prev) => {
-          const existingIds = new Set(prev.map((p) => p.id));
-          const newUniquePosts = fetchedPosts.filter(
-            (p) => !existingIds.has(p.id)
-          );
-          return [...prev, ...newUniquePosts];
+          const existingIds = prev ? new Set(prev.map((p) => p.id)) : new Set();
+          if (fetchedPosts.length > 0) {
+            const newUniquePosts = fetchedPosts.filter(
+              (p) => !existingIds.has(p.id)
+            );
+            return [...prev, ...newUniquePosts];
+          }
         });
       }
     } catch (error) {

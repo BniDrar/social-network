@@ -22,10 +22,11 @@ const Posts = ({ body, lien }) => {
         try {
             const fetchedPosts = await getPosts(body, lien);
 
-            if (!fetchedPosts || fetchedPosts.length === 0) {
+            if (fetchedPosts.length === 0) {
                 setHasMore(false);
             } else {
-                setPosts((prev) => [...prev, ...fetchedPosts]);
+                const postsArray = Array.isArray(fetchedPosts) ? fetchedPosts : [];
+                setPosts((prev) => prev.length > 0 ? [...prev, ...postsArray] : [...postsArray]);
             }
         } catch (error) {
             console.error("Error fetching posts:", error);
