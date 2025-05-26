@@ -461,15 +461,15 @@ func (g *group) VoteEventRepository(ctx context.Context, eventId, status int) (i
 
 func (g *group) CreateInvitationNotification(ctx context.Context, invt entity.Invitation) (int, int, error) {
 	query := `
-		INSERT INTO notification (type, sender_id, receiver_id)
-		VALUES (?, ?, ?)
+		INSERT INTO notification (type, sender_id, receiver_id, group_id)
+		VALUES (?, ?, ?, ?)
 	`
 	stmt, err := g.db.PrepareContext(ctx, query)
 	if err != nil {
 		return 0, http.StatusInternalServerError, err
 	}
 	defer stmt.Close()
-	result, err := stmt.ExecContext(ctx, entity.GroupInvitationNotification, invt.InviterID, invt.InvitedID)
+	result, err := stmt.ExecContext(ctx, entity.GroupInvitationNotification, invt.InviterID, invt.InvitedID, invt.GroupId)
 	if err != nil {
 		return 0, http.StatusBadRequest, err
 	}
