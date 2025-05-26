@@ -13,9 +13,31 @@ import CreateGroup from "@/components/createGroup/createGroup";
 import Groups from "@/components/groups/groups";
 import { usePathname } from "next/navigation";
 import SowOnmoble from "@/components/showOnMobile/showOnmoble";
-
+import { checkLogin } from "@/services/auth"
 
 export default function Home() {
+  useEffect(() => {
+    let lastCheck = 0;
+    const throttleInterval = 1000; // 1 second
+
+    const onPopState = () => {
+      const now = Date.now();
+      if (now - lastCheck > throttleInterval) {
+        lastCheck = now;
+
+        if (!checkLogin()) {
+          window.location.href = "/login";
+        }
+      }
+    };
+
+    window.addEventListener("popstate", onPopState);
+
+    return () => {
+      window.removeEventListener("popstate", onPopState);
+    };
+  }, []);
+
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
@@ -73,7 +95,7 @@ export default function Home() {
       debounceTimer = setTimeout(() => {
         if (
           window.innerHeight + window.scrollY >=
-            document.body.offsetHeight - 100 &&
+          document.body.offsetHeight - 100 &&
           !loading &&
           hasMore
         ) {
@@ -93,7 +115,7 @@ export default function Home() {
     <div className={styles.page}>
       <Navbar />
       <main className={styles.main}>
-        <SowOnmoble/>
+        <SowOnmoble />
         <div className={styles.leftSidebar} id="left-sidebar">
           <Profile />
           <Menu />
