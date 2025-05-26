@@ -177,10 +177,12 @@ func (u *user) Login(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("______________>> old tocken:", oldToken)
 	// Invalidate previous session
 	if oldToken != "" {
+		// log.Println("111 old tocken user id:", userId)
 		_, err := u.db.Exec("DELETE FROM sessions WHERE token = ?", oldToken)
 		if err != nil {
 			u.loger.Error.Println(err)
 		}
+		u.hub.Unregister(uint(id))
 	}
 
 	err = u.sessionManager.RenewToken(r.Context())
