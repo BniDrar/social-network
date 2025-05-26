@@ -89,7 +89,7 @@ func (u *user) GetGroupById(ctx context.Context, groupId int) (entity.Group, err
 		FROM groups g
 		WHERE g.id = $1
 	`
-
+	fmt.Println("groupId:", groupId)
 	err := u.db.QueryRowContext(ctx, query, groupId).Scan(&group.ID, &group.Name)
 	if err != nil {
 		if err == sql.ErrNoRows {

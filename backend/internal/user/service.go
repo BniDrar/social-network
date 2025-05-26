@@ -283,7 +283,7 @@ func (u *user) userNotificationSerice(ctx context.Context) ([]entity.Notificatio
 				u.loger.Error.Printf("Error getting user info: %v", err)
 				return nil, http.StatusInternalServerError, err
 			}
-			notifications[i].Message = fmt.Sprintf("%s has request to joing the groupp %s", user.Nickname.String, group.Name)
+			notifications[i].Message = fmt.Sprintf("%s has requested to join the group %s", user.Nickname.String, group.Name)
 		}
 	}
 	return notifications, status, err
