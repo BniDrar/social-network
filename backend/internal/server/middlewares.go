@@ -73,10 +73,31 @@ func (app *App) requireAuthentication(next http.Handler) http.Handler {
 		// the chain are executed.
 		if !app.isAuthenticated(r) {
 			w.WriteHeader(http.StatusForbidden)
-			//			http.Redirect(w, r, "api/login", http.StatusSeeOther)
+			// http.Redirect(w, r, "api/login", http.StatusSeeOther)
 			return
 		}
+		// Single-session enforcement logic
+		// Get the authenticated user ID from context.
+		userID, ok := r.Context().Value(entity.AuthenticatedUserID).(int)
 
+		// not the first time the user log in
+		if ok {
+
+			user, err := app.User.GetUserByID(userID)
+			if err != nil {
+				_ = app.SessionManager.Destroy(r.Context())
+				w.WriteHeader(http.StatusForbidden)
+				return
+			}
+
+			currentToken := app.SessionManager.Token(r.Context())
+			if !user.SessionIsValid(currentToken) {
+				_ = app.SessionManager.Destroy(r.Context())
+				w.WriteHeader(http.StatusForbidden)
+				return
+			}
+
+		}
 		// Otherwise set the "Cache-Control: no-store" header so that pages
 		// require authentication are not stored in the users browser cache (or
 		// other intermediary cache).

@@ -47,7 +47,7 @@ func (s *user) RegisterService(user entity.User) (int, error) {
 	return http.StatusCreated, nil
 }
 
-func (u *user) authenticateService(email, password string) (int, error) {
+func (u *user) authenticateService(email, password string) (int, string, error) {
 	return u.authenticateRepo(email, password)
 }
 
@@ -101,12 +101,11 @@ func (u *user) GetUserPostsService(ctx context.Context, cursor entity.Cursor) ([
 
 func (u *user) ChangeStatusService(ctx context.Context) error {
 	id := ctx.Value(entity.ContextID).(int)
-	err:= u.changeStatusRepo(ctx, id)
+	err := u.changeStatusRepo(ctx, id)
 	if err != nil {
 		return err
 	}
 	return u.removeFollowingNotifications(ctx)
-	
 }
 
 func (u *user) FollowersAndFollowedService(ctx context.Context, id int) (int, entity.Follows, error) {
@@ -135,7 +134,7 @@ func (u *user) FollowService(ctx context.Context, followedID int) (int, error) {
 	if userId == followedID {
 		return http.StatusBadRequest, errors.New("you can't follow yourself")
 	}
-	//check if the followed account is private
+	// check if the followed account is private
 	user, err := u.GetUserProfileById(ctx, followedID)
 	if err != nil {
 		return http.StatusBadRequest, errors.New("unavailable user")
@@ -215,7 +214,6 @@ func (u *user) processRequestResponse(ctx context.Context, notification entity.N
 	userId := ctx.Value(entity.ContextID).(int)
 	// this user is contained in the group
 	if notification.ReceiverID != userId {
-
 		return http.StatusForbidden, errors.New("forbidden access to this action")
 	}
 	notification.Type = entity.FollowingRequestNotification
@@ -236,17 +234,17 @@ func (u *user) processRequestResponse(ctx context.Context, notification entity.N
 // const (
 // 	//type of notification
 // 	FollowingNotification = iota
-// 	EventNotification 
-// 	GroupInvitationNotification 
-// 	GroupParticipationNotification 
+// 	EventNotification
+// 	GroupInvitationNotification
+// 	GroupParticipationNotification
 // )
 
 func (u *user) userNotificationSerice(ctx context.Context) ([]entity.Notification, int, error) {
-	notifications, status, err:=  u.userNotificationRepo(ctx)
+	notifications, status, err := u.userNotificationRepo(ctx)
 	if err != nil {
 		return nil, status, err
 	}
-	for i, notification:= range notifications {
+	for i, notification := range notifications {
 		fmt.Println("the notification is: ", notification)
 		if notification.Type == entity.FollowingRequestNotification {
 			follower, err := u.GetUserProfileById(ctx, notification.SenderId)
@@ -257,7 +255,7 @@ func (u *user) userNotificationSerice(ctx context.Context) ([]entity.Notificatio
 			notifications[i].Message = fmt.Sprintf("%s requested to follow you", follower.Nickname.String)
 		}
 		if notification.Type == entity.EventNotification {
-			group, err:= u.GetGroupById(ctx, notification.GroupId)
+			group, err := u.GetGroupById(ctx, notification.GroupId)
 			if err != nil {
 				u.loger.Error.Printf("Error getting group info: %v", err)
 				return nil, http.StatusInternalServerError, err

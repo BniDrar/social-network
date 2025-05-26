@@ -289,3 +289,41 @@ func (s *SessionManager) getSessionDataFromContext(ctx context.Context) *session
 	}
 	return c
 }
+
+// Destroy deletes the session data from the session store and sets the session
+// status to Destroyed. Any further operations in the same request cycle will
+// result in a new session being created.
+func (s *SessionManager) Destroy(ctx context.Context) error {
+	sd := s.getSessionDataFromContext(ctx)
+
+	sd.mu.Lock()
+	defer sd.mu.Unlock()
+
+	err := s.doStoreDelete(ctx, sd.token)
+	if err != nil {
+		return err
+	}
+
+	sd.status = Destroyed
+
+	// Reset everything else to defaults.
+	sd.token = ""
+	sd.deadline = time.Now().Add(s.Lifetime).UTC()
+	for key := range sd.values {
+		delete(sd.values, key)
+	}
+
+	return nil
+}
+
+// Token returns the session token. Please note that this will return the
+// empty string "" if it is called before the session has been committed to
+// the store.
+func (s *SessionManager) Token(ctx context.Context) string {
+	sd := s.getSessionDataFromContext(ctx)
+
+	sd.mu.Lock()
+	defer sd.mu.Unlock()
+
+	return sd.token
+}

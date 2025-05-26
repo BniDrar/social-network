@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"os"
 	"strconv"
@@ -22,6 +23,7 @@ type user struct {
 	hub            *websocket.Hub
 	loger          *loger.CstmLogger
 	sessionManager *scs.SessionManager
+	SessionToken   string
 }
 
 type User interface {
@@ -38,6 +40,12 @@ type User interface {
 	Authenticate(w http.ResponseWriter, r *http.Request)
 	DeleteUserByNickName(Nickname string) error
 	IsUserExist(id uint) (bool, error)
+	SessionIsValid(currentToken string) bool
+	GetUserByID(id int) (*entity.User, error)
+}
+
+func (u *user) SessionIsValid(currentToken string) bool {
+	return u.SessionToken == currentToken
 }
 
 func NewUser(dep *config.Dependencies) User {
@@ -154,7 +162,8 @@ func (u *user) Login(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(entity.ErrorResponse{Error: err.Error()})
 		return
 	}
-	id, err := u.authenticateService(User.Username, User.Password)
+
+	id, oldToken, err := u.authenticateService(User.Username, User.Password)
 	if err != nil {
 		if errors.Is(err, config.ErrInvalidCredentials) {
 			w.WriteHeader(http.StatusBadRequest)
@@ -165,10 +174,28 @@ func (u *user) Login(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
+	fmt.Println("______________>> old tocken:", oldToken)
+	// Invalidate previous session
+	if oldToken != "" {
+		_, err := u.db.Exec("DELETE FROM sessions WHERE token = ?", oldToken)
+		if err != nil {
+			u.loger.Error.Println(err)
+		}
+	}
+
 	err = u.sessionManager.RenewToken(r.Context())
 	if err != nil {
 		u.loger.Error.Println(err) // that's for registering error in log file
 		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	// Start new session
+	newToken := u.sessionManager.Token(r.Context())
+	fmt.Println("______________>> new tocken:", newToken)
+	// Save new session token to user
+	_, err = u.db.Exec("UPDATE users SET session_token = ? WHERE id = ?", newToken, id)
+	if err != nil {
+		http.Error(w, "Server error", http.StatusInternalServerError)
 		return
 	}
 	u.sessionManager.Put(r.Context(), "authenticatedUserID", id)
