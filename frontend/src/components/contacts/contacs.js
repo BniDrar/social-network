@@ -121,6 +121,7 @@ function Contact({ id, first, last, image, status, groupName }) {
             }
             break;
           case 1: // GroupMessage
+          console.log('group message but should be notification message')
             if (from === id && groupName) {
               setCount(count => (count ?? 0) + 1);
             }
@@ -128,6 +129,7 @@ function Contact({ id, first, last, image, status, groupName }) {
           case 2: // BroadcastMessage
             break;
           case 3: // NotificationMessage
+          console.log('type 3 message')
             break;
           default:
             console.warn("Unknown message type:", message.type);

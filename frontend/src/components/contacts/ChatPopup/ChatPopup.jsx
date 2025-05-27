@@ -113,17 +113,31 @@ const ChatCard = ({ id, first, last, status, position, onClose, isGroup }) => {
 
     const handleMessage = (event) => {
       try {
-        const message = JSON.parse(event.data);
-        const msg64 = message.Data;
+        const notif = JSON.parse(event.data);
+        const msg64 = notif.Data;
 
         // Safely decode base64 to UTF-8
         const decodedStr = decodeURIComponent(escape(atob(msg64)));
         // Then parse it as JSON
         const decoded = JSON.parse(decodedStr);
 
-
-        setMessages((prev) => [...prev, decoded]);
-        scrollDown();
+        switch (notif.Type) {
+          case 0: // PrivateMessage
+            setMessages((prev) => [...prev, decoded]);
+            scrollDown();
+            break;
+          case 1: // GroupMessage
+            setMessages((prev) => [...prev, decoded]);
+            scrollDown();
+            break;
+          case 2: // BroadcastMessage
+            break;
+          case 3: // NotificationMessage
+            console.log("type 3 message");
+            break;
+          default:
+            console.warn("Unknown message type:", message.type);
+        }
       } catch (err) {
         console.error("Failed to parse message:", err);
       }
@@ -138,8 +152,8 @@ const ChatCard = ({ id, first, last, status, position, onClose, isGroup }) => {
 
   const handleSend = () => {
     if (message.trim() === "") return; // Do nothing if message is empty
-    console.log("the group status is:", isGroup)
-    let pack = {}
+    console.log("the group status is:", isGroup);
+    let pack = {};
     if (isGroup) {
       pack = {
         text: message,
@@ -223,7 +237,7 @@ const ChatCard = ({ id, first, last, status, position, onClose, isGroup }) => {
             className={`${styles.message} ${
               //outgoing  incoming
               styles[msg.from == user.myID ? "outgoing" : "incoming"]
-              }`}
+            }`}
           >
             <p>{msg.text}</p>
             <span className={styles.timestamp}>

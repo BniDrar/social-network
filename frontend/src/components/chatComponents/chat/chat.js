@@ -13,6 +13,7 @@ import { getUserInfoClient } from "@/services/profileClient";
 import { getGroupInfoClient } from "@/services/profileClient";
 
 function Chat({ id, isGroup }) {
+  console.log('id is group', id , isGroup)
   const bc = new BroadcastChannel("ws"); // Create a broadcast channel for WebSocket messages
 
   const chatBodyRef = useRef(); // Add ref for chat body
@@ -42,7 +43,7 @@ function Chat({ id, isGroup }) {
     return () => {
       setMessages([]);
     };
-  }, [id]);
+  }, [id, isGroup]);
 
 
   /*________________________fetch more data___________________*/
@@ -122,7 +123,7 @@ function Chat({ id, isGroup }) {
     };
     fetchMessages();
     setScroll(!scroll)
-  }, [id]);
+  }, [id, isGroup]);
 
   /*________________________ web socket _______________________*/
   useEffect(() => {
@@ -132,8 +133,9 @@ function Chat({ id, isGroup }) {
         console.log("Received message:", event.data.Type);
         let decoded
         const temporaryMessage = JSON.parse(event.data)
-        if (temporaryMessage.Type == 4) {
-          decoded = temporaryMessage
+        if (temporaryMessage.Type != 1 && temporaryMessage.Type != 2) {
+          // decoded = temporaryMessage
+          return
         } else {
           const message = JSON.parse(event.data);
           const msg64 = message.Data;
