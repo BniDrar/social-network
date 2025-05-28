@@ -129,7 +129,7 @@ const ChatCard = ({ id, first, last, status, position, onClose, isGroup }) => {
             }
             break;
           case 1: // GroupMessage
-            if (from === decoded.group_id && isGroup) {
+            if (from === decoded.group_id && isGroup) { 
               setMessages((prev) => [...prev, decoded]);
               scrollDown();
             }
