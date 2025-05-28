@@ -140,8 +140,15 @@ func (u *user) FollowService(ctx context.Context, followedID int) (int, error) {
 		return http.StatusBadRequest, errors.New("unavailable user")
 	}
 	if user.Status == entity.PrivateUser {
+		exist, err:= u.removeIfExistFollow(ctx, userId, followedID)
+		if err != nil {
+			return http.StatusInternalServerError, err
+		}
+		if exist {
+			return http.StatusOK, nil
+		}
 		// create notification in database
-		_, err := u.CreateFollowNotification(ctx, userId, followedID)
+		_, err = u.CreateFollowNotification(ctx, userId, followedID)
 		if err != nil {
 			return http.StatusInternalServerError, err
 		}

@@ -10,5 +10,4 @@ CREATE TABLE IF NOT EXISTS notification (
     FOREIGN KEY (sender_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE, 
     FOREIGN KEY (receiver_id) REFERENCES users(id) ON DELETE CASCADE
-    UNIQUE(sender_id, receiver_id, type)
 );

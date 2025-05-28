@@ -18,7 +18,7 @@ const UserFollow = ({ is_following, id, status }) => {
                 setFollow("pending")
             } else if (status === 0 && follow === "follow") {
                 setFollow("unfollow")
-            } else if (status === 0 && follow === "unfollow") {
+            } else if (follow === "unfollow") {
                 setFollow("follow")
             }
             console.log(`response status ${response.status}`)
@@ -37,7 +37,7 @@ const UserFollow = ({ is_following, id, status }) => {
     },[])
     return (
         <>
-            <button className={styles.followBtn} onClick={() => useFollow()}>{follow}</button>
+            <button className={styles.followBtn} onClick={() => {follow !== "pending" ? useFollow(): ''}}>{follow}</button>
         </>
     );
 }

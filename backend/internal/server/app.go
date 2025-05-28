@@ -27,11 +27,11 @@ func NewApp(dep *config.Dependencies) *App {
 	return &App{
 		SessionManager: dep.SessionManager,
 		Loger:          dep.Loger,
-		RateLimiter: NewRateLimiter(1000, 1*time.Minute),
+		RateLimiter: NewRateLimiter(10000, 1*time.Minute),
 		Comment:        comment.NewComment(dep),
 		Chat:           chat.NewChat(dep),
-		Group:          group.NewGroup(dep /* we need to add the hub to group*/),
-		User:           user.NewUser(dep /* we need to add the hub*/),
+		Group:          group.NewGroup(dep),
+		User:           user.NewUser(dep),
 		Post:           post.Newpost(dep),
 	}
 }
