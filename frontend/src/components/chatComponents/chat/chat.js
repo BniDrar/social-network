@@ -13,7 +13,7 @@ import { getUserInfoClient } from "@/services/profileClient";
 import { getGroupInfoClient } from "@/services/profileClient";
 
 function Chat({ id, isGroup }) {
-  console.log('id is group', id , isGroup)
+  console.log('id is group', id, isGroup)
   const bc = new BroadcastChannel("ws"); // Create a broadcast channel for WebSocket messages
 
   const chatBodyRef = useRef(); // Add ref for chat body
@@ -129,29 +129,39 @@ function Chat({ id, isGroup }) {
   useEffect(() => {
     if (!bc) return;
     const handleMessage = (event) => {
-      // try {
-        console.log("Received message:", event.data.Type);
-        let decoded
-        const temporaryMessage = JSON.parse(event.data)
-        if (temporaryMessage.Type != 1 && temporaryMessage.Type != 2) {
-          // decoded = temporaryMessage
-          return
-        } else {
-          const message = JSON.parse(event.data);
-          const msg64 = message.Data;
+      try {
+        const notif = JSON.parse(event.data);
+        const msg64 = notif.Data;
 
         // Safely decode base64 to UTF-8
-          const decodedStr = decodeURIComponent(escape(atob(msg64)));
-
+        const decodedStr = decodeURIComponent(escape(atob(msg64)));
         // Then parse it as JSON
-           decoded = JSON.parse(decodedStr);
+        const decoded = JSON.parse(decodedStr);
+        const from = decoded.from;
+        switch (notif.Type) {
+          case 0: // PrivateMessage
+            if (from === id && !isGroup) {
+              setMessages((prev) => [...prev, decoded]);
+              scrollDown();
+            }
+            break;
+          case 1: // GroupMessage
+            if (from === decoded.group_id && isGroup) {
+              setMessages((prev) => [...prev, decoded]);
+              scrollDown();
+            }
+            break;
+          case 2: // BroadcastMessage
+            break;
+          case 3: // NotificationMessage
+            console.log("type 3 message");
+            break;
+          default:
+            console.warn("Unknown message type:", message.type);
         }
-
-        setMessages((prev) => [...prev, decoded]);
-        setScroll((prev) => !prev);
-      // } catch (err) {
-      //   console.error("Failed to parse message:", err);
-      // }
+      } catch (err) {
+        console.error("Failed to parse message:", err);
+      }
     };
 
     bc.addEventListener("message", handleMessage);

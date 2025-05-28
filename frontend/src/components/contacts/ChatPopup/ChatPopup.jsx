@@ -120,15 +120,19 @@ const ChatCard = ({ id, first, last, status, position, onClose, isGroup }) => {
         const decodedStr = decodeURIComponent(escape(atob(msg64)));
         // Then parse it as JSON
         const decoded = JSON.parse(decodedStr);
-
+        const from = decoded.from;
         switch (notif.Type) {
           case 0: // PrivateMessage
-            setMessages((prev) => [...prev, decoded]);
-            scrollDown();
+            if (from === id && !isGroup) {
+              setMessages((prev) => [...prev, decoded]);
+              scrollDown();
+            }
             break;
           case 1: // GroupMessage
-            setMessages((prev) => [...prev, decoded]);
-            scrollDown();
+            if (from === decoded.group_id && isGroup) {
+              setMessages((prev) => [...prev, decoded]);
+              scrollDown();
+            }
             break;
           case 2: // BroadcastMessage
             break;

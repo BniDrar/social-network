@@ -13,45 +13,46 @@ function Contacts() {
   useEffect(() => {
     const fetchContacts = async () => {
       const contacts = await GetContacts();
-      setContacts(contacts)
+      setContacts(contacts);
     };
 
     fetchContacts();
   }, []);
-  
+
+  console.log("fetched contacts: 012", contacts);
   return (
     <div className={styles.contacts}>
       <h3>Contacts</h3>
       <div className={styles.contactsList}>
-        {contacts.length > 0 && contacts.map((contact, i) => (
-          <Contact
-            key={i}
-            id={contact.id}
-            first={contact.first_name}
-            last={contact.last_name}
-            image={contact.avatar}
-            status={contact.online}
-            groupName={contact.group_name}
-          />
-        ))}
+        {contacts.length > 0 &&
+          contacts.map((contact, i) => (
+            <Contact
+              key={i}
+              id={contact.id}
+              first={contact.first_name}
+              last={contact.last_name}
+              image={contact.avatar}
+              status={contact.online}
+              groupName={contact.group_name}
+            />
+          ))}
       </div>
     </div>
   );
 }
 
 function Contact({ id, first, last, image, status, groupName }) {
-  const isGroup = !!groupName
+  const isGroup = !!groupName;
   if (isGroup) {
-    status = true
+    status = true;
   }
+  console.log(`contacts arriving id: ${id}, ${groupName}, isGroup:${isGroup}`)
   const ws = useWebSocket();
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [chatPosition, setChatPosition] = useState(null);
-  const [count, setCount] = useState(null)
+  const [count, setCount] = useState(null);
 
   const contactRef = useRef(null);
-
-
 
   const handleContactClick = (e) => {
     if (contactRef.current) {
@@ -69,26 +70,26 @@ function Contact({ id, first, last, image, status, groupName }) {
 
       setChatPosition({ top, right });
     }
-    setCount(null)
+    setCount(null);
     setIsChatOpen(true);
   };
 
   const handleCloseChat = () => {
     setIsChatOpen(false);
   };
-  let defaultPic = ""
+  let defaultPic = "";
   if (image) {
-    defaultPic = `${process.env.BACKEND_URL}/api/pictures/${image}`
+    defaultPic = `${process.env.BACKEND_URL}/api/pictures/${image}`;
   } else if (first) {
-    defaultPic = "/default-avatar.jpg"
+    defaultPic = "/default-avatar.jpg";
   } else if (groupName) {
-    defaultPic = "/default-group.jpg"
+    defaultPic = "/default-group.jpg";
   }
-  let name = ""
+  let name = "";
   if (first) {
-    name = `${first} ${last}`
+    name = `${first} ${last}`;
   } else if (groupName) {
-    name = groupName
+    name = groupName;
   }
 
   useEffect(() => {
@@ -98,7 +99,7 @@ function Contact({ id, first, last, image, status, groupName }) {
       // PrivateMessage MessageType = iota
       // GroupMessage
       // BroadcastMessage
-      // NotificationMessage 
+      // NotificationMessage
       try {
         const notif = JSON.parse(event.data);
         const jsonString = atob(notif.Data);
@@ -110,31 +111,31 @@ function Contact({ id, first, last, image, status, groupName }) {
         const decodedStr = decodeURIComponent(escape(atob(msg64)));
 
         const decoded = JSON.parse(decodedStr);
-        const from = decoded.from
+        const from = decoded.from;
 
-        console.log('decoded notif 404', decoded)
-
+        console.log("decoded notif 404 hhh", decoded);
+        console.log("is group", isGroup);
         switch (notif.Type) {
           case 0: // PrivateMessage
-            if (from === id && !groupName) {
-              setCount(count => (count ?? 0) + 1);
+            console.log("just a private message");
+            if (from === id && !isGroup) {
+              setCount((count) => (count ?? 0) + 1);
             }
             break;
           case 1: // GroupMessage
-          console.log('group message but should be notification message')
-            if (from === id && groupName) {
-              setCount(count => (count ?? 0) + 1);
+            console.log("group message but should be notification message");
+            if (from === id && isGroup) {
+              setCount((count) => (count ?? 0) + 1);
             }
             break;
           case 2: // BroadcastMessage
             break;
           case 3: // NotificationMessage
-          console.log('type 3 message')
+            console.log("type 3 message");
             break;
           default:
             console.warn("Unknown message type:", message.type);
         }
-
       } catch (err) {
         console.error("Failed to parse message:", err);
       }
@@ -172,22 +173,20 @@ function Contact({ id, first, last, image, status, groupName }) {
           <p>{name}</p>
         </div>
         <span className={count && styles.notificationCount}>{count}</span>
-      </div >
+      </div>
 
       {/* Chat Popup */}
-      {
-        isChatOpen && chatPosition && (
-          <ChatPopup
-            id={id}
-            first={first}
-            last={last}
-            status={status}
-            position={chatPosition} // Pass the dynamic position
-            onClose={handleCloseChat} // Close function
-            isGroup={isGroup}
-          />
-        )
-      }
+      {isChatOpen && chatPosition && (
+        <ChatPopup
+          id={id}
+          first={first}
+          last={last}
+          status={status}
+          position={chatPosition} // Pass the dynamic position
+          onClose={handleCloseChat} // Close function
+          isGroup={isGroup}
+        />
+      )}
     </>
   );
 }
