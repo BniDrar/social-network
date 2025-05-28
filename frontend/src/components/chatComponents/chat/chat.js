@@ -146,7 +146,7 @@ function Chat({ id, isGroup }) {
             }
             break;
           case 1: // GroupMessage
-            if (from === decoded.group_id && isGroup) {
+            if (id === decoded.group_id && isGroup) {
               setMessages((prev) => [...prev, decoded]);
               scrollDown();
             }

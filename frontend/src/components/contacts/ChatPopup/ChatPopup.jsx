@@ -121,6 +121,7 @@ const ChatCard = ({ id, first, last, status, position, onClose, isGroup }) => {
         // Then parse it as JSON
         const decoded = JSON.parse(decodedStr);
         const from = decoded.from;
+
         switch (notif.Type) {
           case 0: // PrivateMessage
             if (from === id && !isGroup) {
@@ -129,7 +130,8 @@ const ChatCard = ({ id, first, last, status, position, onClose, isGroup }) => {
             }
             break;
           case 1: // GroupMessage
-            if (from === decoded.group_id && isGroup) { 
+            if (id === decoded.group_id&& isGroup) {
+              console.log('condition 1 is group:', isGroup)
               setMessages((prev) => [...prev, decoded]);
               scrollDown();
             }
@@ -241,7 +243,7 @@ const ChatCard = ({ id, first, last, status, position, onClose, isGroup }) => {
             className={`${styles.message} ${
               //outgoing  incoming
               styles[msg.from == user.myID ? "outgoing" : "incoming"]
-            }`}
+              }`}
           >
             <p>{msg.text}</p>
             <span className={styles.timestamp}>

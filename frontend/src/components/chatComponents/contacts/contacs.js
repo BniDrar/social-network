@@ -81,6 +81,7 @@ function Contacts({ setId, setIsGroup ,isFriends}) {
 }
 
 function Contact({ id, first, last, image, status, setId, setIsGroup, groupName }) {
+  const isGroup =  !!groupName
   const ws = useWebSocket();
   const [count, setCount] = useState(null)
 
@@ -142,12 +143,12 @@ function Contact({ id, first, last, image, status, setId, setIsGroup, groupName 
 
         switch (notif.Type) {
           case 0: // PrivateMessage
-            if (from === id && !groupName) {
+            if (from === id && !isGroup) {
               setCount(count => (count ?? 0) + 1);
             }
             break;
           case 1: // GroupMessage
-            if (from === id && groupName) {
+            if (id === decoded.group_id && isGroup) {
               setCount(count => (count ?? 0) + 1);
             }
             break;

@@ -124,7 +124,7 @@ function Contact({ id, first, last, image, status, groupName }) {
             break;
           case 1: // GroupMessage
             console.log("group message but should be notification message");
-            if (from === id && isGroup) {
+            if (id === decoded.group_id && isGroup) {
               setCount((count) => (count ?? 0) + 1);
             }
             break;
