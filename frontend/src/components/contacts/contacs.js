@@ -24,8 +24,8 @@ function Contacts() {
     <div className={styles.contacts}>
       <h3>Contacts</h3>
       <div className={styles.contactsList}>
-        {contacts.length > 0 &&
-          contacts.map((contact, i) => (
+      {contacts && contacts.length > 0 &&
+          contacts?.map((contact, i) => (
             <Contact
               key={i}
               id={contact.id}

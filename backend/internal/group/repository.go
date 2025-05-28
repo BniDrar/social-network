@@ -146,7 +146,7 @@ func (g *group) CreateGroupRepository(ctx context.Context, group entity.Group) (
 func (g *group) GetAllGroupsRepository(ctx context.Context, typeGroup int) (entity.Groups, error) {
 	userId := ctx.Value(entity.ContextID).(int)
 	query := `
-		SELECT
+		SELECT DISTINCT
 			g.id,
 			g.name,
 			g.description,
