@@ -32,7 +32,7 @@ export default function Notif() {
     }
 
     fetchNotifs();
-  }, [isNotifOpen]);
+  },[]);
 
 
   const handleClick = (e) => {
@@ -121,6 +121,7 @@ export default function Notif() {
     };
   }, [bc]);
 
+
   return (
     <>
       <button
@@ -139,6 +140,7 @@ export default function Notif() {
           <NotifPopup
             onClose={handleCloseNotif} // Close function
             notifs={notifs}
+            setNotifications={setNotifs}
           />
         )
       }
