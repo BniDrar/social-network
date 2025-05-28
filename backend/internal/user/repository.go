@@ -381,8 +381,11 @@ func (u *user) FollowRepository(followerId, followedId int) (bool, error) {
 }
 
 func (u *user) CreateFollowNotification(ctx context.Context, senderId, receiverId int) (int, error) {
-	query := `INSERT INTO notification (sender_id, receiver_id, type) 
-	VALUES (?, ?, ?)`
+	// query := `INSERT INTO notification (sender_id, receiver_id, type)
+	// VALUES (?, ?, ?)`
+	query := `INSERT OR IGNORE INTO notification (sender_id, receiver_id, type) 
+	VALUES (?, ?, ?);`
+
 	stmt, err := u.db.PrepareContext(ctx, query)
 	if err != nil {
 		return 0, err
