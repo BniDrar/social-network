@@ -22,7 +22,7 @@ const Posts = ({ body, lien }) => {
         try {
             const fetchedPosts = await getPosts(body, lien);
 
-            if (fetchedPosts.length === 0) {
+            if (!fetchedPosts || fetchedPosts.length === 0) {
                 setHasMore(false);
             } else {
                 const postsArray = Array.isArray(fetchedPosts) ? fetchedPosts : [];

@@ -32,7 +32,7 @@ export default function Notif() {
     }
 
     fetchNotifs();
-  }, []);
+  }, [isNotifOpen]);
 
 
   const handleClick = (e) => {
