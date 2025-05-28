@@ -13,6 +13,16 @@ import { getUserInfoClient } from "@/services/profileClient";
 import { getGroupInfoClient } from "@/services/profileClient";
 
 function Chat({ id, isGroup }) {
+  function scrollDown() {
+    // scroll down
+    setTimeout(() => {
+      chatBodyRef.current.scrollTo({
+        top: chatBodyRef.current.scrollHeight,
+        behavior: "smooth",
+      });
+    }, 100);
+  }
+  
   console.log('id is group', id, isGroup)
   const bc = new BroadcastChannel("ws"); // Create a broadcast channel for WebSocket messages
 
