@@ -79,11 +79,13 @@ func (u *user) GetUserPostsService(ctx context.Context, cursor entity.Cursor) ([
 	id := ctx.Value(entity.ContextID).(int)
 	user, err := u.GetUserProfileById(ctx, cursor.ID)
 	if err != nil {
+		fmt.Println("the problem number 1, the user id is:", cursor.ID)
 		return nil, http.StatusInternalServerError, err
 	}
 	if user.Status == entity.PrivateUser && id != cursor.ID {
 		authorized, err := u.isFollowedBy(id, cursor.ID)
 		if err != nil {
+			fmt.Println("the problem number 2")
 			return nil, http.StatusInternalServerError, err
 		}
 		if !authorized {
@@ -93,6 +95,7 @@ func (u *user) GetUserPostsService(ctx context.Context, cursor entity.Cursor) ([
 	fmt.Println(cursor)
 	posts, err := u.GetUserPostsRep(ctx, cursor)
 	if err != nil {
+		fmt.Println("the problem number 3")
 		return nil, http.StatusInternalServerError, err
 	}
 

@@ -11,7 +11,7 @@ async function getPosts(LastPost,lien) {
         credentials: 'include',
       }
     );
-
+    
     const text = await response.text();
     if (!text) {
       console.warn('Empty response from server');

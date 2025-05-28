@@ -14,6 +14,7 @@ import SowOnmoble from "@/components/showOnMobile/showOnmoble";
 async function ProfilePage({ params }) {
     const { userid } = await params
     const info = await getUserInfo(userid)
+    
 
     return (
         <>
@@ -41,7 +42,7 @@ async function ProfilePage({ params }) {
                 <section className={styles.container}>
                     {userid == 0 ? <CreatePost /> : ""}
                     <br />
-                    <Posts body={{ id: info.id, last_id: 0 }} lien={`${process.env.BACKEND_URL}/api/user/posts`} />
+                        <Posts body={{ id: info.id, last_id: 0 }} lien={`${process.env.BACKEND_URL}/api/user/posts`} />
                 </section>
             </main> : <div className={styles.noPosts} style={{ textAlign: "center" }}>User not found!</div>}
         </>

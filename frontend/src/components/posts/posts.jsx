@@ -17,18 +17,19 @@ const Posts = ({ body, lien }) => {
         if (loading || !hasMore) return;
         setLoading(true);
 
-        const body = {};
+        const body2 = {};
         if (posts.length > 0) {
             const lastPost = posts[posts.length - 1];
-            body.last_id = lastPost.id;
-            body.creation_time = lastPost.created_at;
+            body2.last_id = lastPost.id || 0;
+            body2.creation_time = lastPost.created_at;
         }
-        body.limit = 10;
+        body2.id = body.id
+        body2.limit = 10;
 
         try {
             const fetchedPosts = await getPosts(
-                body,
-                `${process.env.BACKEND_URL}/api/posts`
+                body2,
+                lien
             );
 
             if (!fetchedPosts || fetchedPosts.length === 0) {
